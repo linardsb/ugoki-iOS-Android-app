@@ -1,0 +1,82 @@
+{
+  "expo": {
+    "name": "UGOKI",
+    "slug": "ugoki",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "ugoki",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ugoki.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "UGOKI needs camera access to take photos of your bloodwork results.",
+        "NSPhotoLibraryUsageDescription": "UGOKI needs photo library access to upload bloodwork results.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.ugoki.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-splash-screen",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#14b8a6"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "UGOKI needs access to your photos to upload bloodwork results."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "UGOKI needs microphone access for workout audio cues."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "838f33cf-4bab-4cd9-b306-d6d4633f51cb"
+      },
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
