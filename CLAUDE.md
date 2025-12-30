@@ -1594,3 +1594,165 @@ Files modified:
 4. **Safe area**: ScreenHeader and other header components MUST use `useSafeAreaInsets` for proper notch/status bar handling.
 
 5. **Tamagui vs React Native**: When Tamagui components have rendering issues (colors not applying, text not visible), switch to React Native native components with explicit style objects.
+
+### December 30, 2025 - AI Coach Safety Filtering & Health Disclaimers
+
+**AI Coach Safety Module Implemented (Backend):**
+
+Created comprehensive safety filtering system to prevent AI coach from providing medical advice:
+
+- **New File: `src/modules/ai_coach/safety.py`**
+  - `SafetyAction` enum: ALLOW, REDIRECT, BLOCK
+  - `SafetyResult` dataclass with action, detected keywords, category, redirect message
+  - Keyword detection for dangerous topics:
+    - **Blocked Medical Conditions**: diabetes, heart disease, cancer, eating disorders, pregnancy, breastfeeding
+    - **Blocked Emergencies**: chest pain, difficulty breathing, suicidal thoughts (redirects to 911)
+    - **Blocked Allergies**: food allergies, celiac, anaphylaxis, epipen
+    - **Blocked Medications**: medication questions, drug interactions, insulin, prescriptions
+    - **Redirected Health Concerns**: inflammation, thyroid, depression, blood pressure (adds disclaimer)
+  - `check_message_safety()` - Pre-filters user messages before AI processing
+  - `filter_ai_response()` - Post-filters AI responses for medical advice patterns
+  - `get_safety_disclaimer()` - Returns standard health disclaimer text
+
+- **Updated: `src/modules/ai_coach/agents/coach.py`**
+  - Added critical safety rules to system prompt:
+    ```
+    CRITICAL SAFETY RULES - YOU MUST FOLLOW THESE:
+    1. YOU ARE NOT A MEDICAL PROFESSIONAL
+    2. ALWAYS redirect to healthcare professionals for medical topics
+    3. SAFE TOPICS: fasting schedules, workouts, motivation, habit building
+    ```
+
+- **Updated: `src/modules/ai_coach/models.py`**
+  - Added `safety_redirected: bool = False` to `ChatResponse` model
+  - Flag indicates when response was safety-filtered
+
+- **Updated: `src/modules/ai_coach/service.py`**
+  - Integrated safety filter in `chat()` method
+  - Blocked messages return friendly redirect without calling AI
+  - Redirected messages add disclaimer to AI response
+
+- **New File: `tests/test_ai_coach_safety.py`**
+  - 38 comprehensive unit tests:
+    - 6 tests for blocked medical conditions
+    - 3 tests for emergency detection
+    - 3 tests for allergy blocking
+    - 3 tests for medication blocking
+    - 4 tests for health concern redirects
+    - 7 tests for allowed safe topics
+    - 4 edge case tests
+    - 4 response filtering tests
+    - 3 integration tests
+  - All tests passing
+
+**Mobile Health Disclaimers Implemented:**
+
+- **Updated: `app/(auth)/onboarding.tsx`**
+  - Added new Step 0: Health Disclaimer (REQUIRED)
+  - Total onboarding steps increased from 4 to 5
+  - Scrollable disclaimer content with sections:
+    - "UGOKI is NOT" (medical device, substitute for medical advice)
+    - "Consult healthcare provider if you have" (diabetes, eating disorders, pregnancy, etc.)
+    - "AI Coach Limitations" (general wellness only)
+    - "Safety Warning" (discontinue use if adverse effects)
+  - Checkbox acknowledgment required to continue
+  - Cannot be skipped (Skip button only appears on Step 2+)
+
+- **Updated: `app/(modals)/settings.tsx`**
+  - Added "Legal & Health" section at bottom of settings
+  - Expandable health disclaimer (collapsed by default)
+  - Same disclaimer content as onboarding
+  - Allows existing users to review health information
+
+- **Updated: `features/coach/components/WelcomeMessage.tsx`**
+  - Added subtle disclaimer at bottom of coach welcome screen:
+    ```
+    For general wellness guidance only. Not medical advice.
+    ```
+
+**Bug Fixes:**
+
+- **Fixed: Duplicate Index Definition in Recipe ORM**
+  - Issue: `ix_recipes_meal_type` was defined twice:
+    1. `index=True` on `meal_type` column (line 138)
+    2. Explicit `Index("ix_recipes_meal_type", "meal_type")` in `__table_args__` (line 167)
+  - Both generated same index name, causing "index already exists" error in tests
+  - Fix: Removed `index=True` from column definition, kept explicit Index
+  - File: `src/modules/content/orm.py`
+
+- **Fixed: Test Fixture Isolation**
+  - Updated `tests/conftest.py` to use file-based test database
+  - Ensures clean database state for each test function
+  - Properly disposes engine after test completion
+
+**Git Repository Setup:**
+
+- Initialized git repository in `ugoki_1_0` project directory
+- Added `.gitignore` with standard Python/Node/Expo exclusions
+- Created initial commit with all project files
+- Added remote: `https://github.com/linardsb/ugoki-iOS-Android-app.git`
+- Pushed to GitHub on `main` branch
+
+**Files Created:**
+- `apps/api/src/modules/ai_coach/safety.py` - Safety filtering module
+- `apps/api/tests/test_ai_coach_safety.py` - 38 safety filter tests
+
+**Files Modified:**
+- `apps/api/src/modules/ai_coach/agents/coach.py` - Safety instructions in system prompt
+- `apps/api/src/modules/ai_coach/models.py` - Added `safety_redirected` flag
+- `apps/api/src/modules/ai_coach/service.py` - Integrated safety filter
+- `apps/api/src/modules/ai_coach/routes.py` - Updated documentation
+- `apps/api/src/modules/content/orm.py` - Fixed duplicate index
+- `apps/api/tests/conftest.py` - Improved test isolation
+- `apps/mobile/app/(auth)/onboarding.tsx` - Health disclaimer step
+- `apps/mobile/app/(modals)/settings.tsx` - Expandable health disclaimer
+- `apps/mobile/features/coach/components/WelcomeMessage.tsx` - Small disclaimer
+
+**Test Results:**
+```
+tests/test_ai_coach_safety.py ......................................  [97%]
+tests/test_health.py .                                                [100%]
+
+============================== 39 passed in 0.17s ==============================
+```
+
+---
+
+## Current Status (December 30, 2025)
+
+**Mobile App - FULLY FUNCTIONAL:**
+- ✅ Authentication (anonymous mode)
+- ✅ Onboarding flow (4 steps + required health disclaimer)
+- ✅ Fasting timer with protocols (16:8, 18:6, 20:4)
+- ✅ Dashboard with level, streaks, weight, workout stats
+- ✅ Workouts browser and player
+- ✅ AI Coach chat with safety filtering
+- ✅ Profile and settings with health disclaimer
+- ✅ Push notifications
+- ✅ Weight logging
+- ✅ Bloodwork upload and analysis
+- ✅ Avatar upload (Cloudflare R2)
+- ✅ Recipes feature - 30 curated recipes
+- ✅ Saved recipes functionality
+
+**Backend API - ALL MODULES COMPLETE:**
+- ✅ IDENTITY - JWT auth, anonymous mode
+- ✅ TIME_KEEPER - Fasting/workout timers
+- ✅ METRICS - Weight, body metrics, biomarkers
+- ✅ PROGRESSION - Streaks, XP, levels, achievements
+- ✅ CONTENT - Workouts (16) + Recipes (30)
+- ✅ AI_COACH - Chat, insights, bloodwork analysis, **safety filtering**
+- ✅ NOTIFICATION - Push tokens, preferences
+- ✅ PROFILE - User data, GDPR compliance
+
+**Safety & Compliance:**
+- ✅ AI coach blocks medical condition queries
+- ✅ AI coach blocks allergy/medication questions
+- ✅ Emergency detection with 911 redirect
+- ✅ Health disclaimers in onboarding (required)
+- ✅ Health disclaimers in settings (expandable)
+- ✅ Coach welcome screen disclaimer
+- ✅ 39 backend tests passing
+
+**Repository:**
+- GitHub: https://github.com/linardsb/ugoki-iOS-Android-app
