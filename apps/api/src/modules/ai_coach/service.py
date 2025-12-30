@@ -134,40 +134,85 @@ class AICoachService(AICoachInterface):
     ) -> CoachResponse:
         """Generate a simple response based on message patterns."""
         message_lower = message.lower()
-        
-        # Pattern matching for common queries
-        if any(word in message_lower for word in ["fast", "fasting"]):
+
+        # Pattern matching for affirmative responses (context-sensitive)
+        if message_lower.strip() in ["yes", "yeah", "yep", "sure", "ok", "okay", "let's go", "ready", "start"]:
             return CoachResponse(
-                message="Fasting is a powerful tool for metabolic health! "
-                        "The 16:8 method is a great starting point. "
-                        "Ready to start a new fast?",
-                suggestions=["Start 16:8 fast", "Start 18:6 fast"],
+                message="Let's do this! Head to the **Fasting tab** at the bottom of your screen "
+                        "and tap **'Start Fast'** to begin. I recommend starting with 16:8 - "
+                        "that's 16 hours fasting, 8 hours eating window. You've got this!",
+                suggestions=["Go to Fasting tab", "Start 16:8 fast"],
+                encouragement="The first step is always the most important!",
+            )
+
+        # Pattern matching for common queries
+        if any(word in message_lower for word in ["start fast", "begin fast", "start a fast"]):
+            return CoachResponse(
+                message="Great choice! To start your fast:\n\n"
+                        "1. Tap the **Fasting** tab at the bottom\n"
+                        "2. Choose your protocol (16:8 is perfect for beginners)\n"
+                        "3. Tap **'Start Fast'**\n\n"
+                        "I'll be here to cheer you on!",
+                suggestions=["Go to Fasting tab"],
                 encouragement="Every hour of fasting brings you closer to your goals!",
             )
-        
+
+        elif any(word in message_lower for word in ["fast", "fasting"]):
+            return CoachResponse(
+                message="Fasting is a powerful tool for metabolic health! "
+                        "Head to the **Fasting tab** to get started. "
+                        "The 16:8 method is great for beginners - 16 hours fast, 8 hour eating window.",
+                suggestions=["Go to Fasting tab", "Learn about 16:8"],
+                encouragement="Every hour of fasting brings you closer to your goals!",
+            )
+
+        elif any(word in message_lower for word in ["start workout", "do workout", "begin workout"]):
+            return CoachResponse(
+                message="Let's get moving! To start a workout:\n\n"
+                        "1. Tap the **Workouts** tab at the bottom\n"
+                        "2. Browse or search for a workout\n"
+                        "3. Tap any workout card to see details, then **'Start Workout'**\n\n"
+                        "I recommend 'Quick HIIT Blast' for a fast calorie burn!",
+                suggestions=["Go to Workouts tab"],
+                workout_recommendation="Quick HIIT Blast",
+                encouragement="Movement is medicine!",
+            )
+
         elif any(word in message_lower for word in ["workout", "exercise", "hiit", "train"]):
             return CoachResponse(
-                message="Let's get moving! I recommend checking out our HIIT workouts - "
-                        "they're efficient and effective. Even 10 minutes makes a difference!",
-                suggestions=["Quick HIIT Blast", "Bodyweight Basics"],
+                message="Let's get moving! Check out the **Workouts tab** - "
+                        "we have HIIT, strength, cardio, and more. "
+                        "Even 10 minutes makes a difference! Try 'Quick HIIT Blast' to start.",
+                suggestions=["Go to Workouts tab", "Quick HIIT Blast"],
                 workout_recommendation="Quick HIIT Blast",
                 encouragement="Movement is medicine!",
             )
         
         elif any(word in message_lower for word in ["progress", "stats", "level", "xp"]):
             return CoachResponse(
-                message="Your consistency is paying off! Keep tracking your progress "
-                        "with workouts and fasting to level up faster.",
-                suggestions=["View achievements", "Check streaks"],
+                message="Your consistency is paying off! Check the **Home tab** to see "
+                        "your level, XP, and streaks. Tap on the level card to see "
+                        "all your achievements!",
+                suggestions=["Go to Home tab", "View achievements"],
                 encouragement="Every day you're getting stronger!",
             )
-        
-        elif any(word in message_lower for word in ["weight", "lost", "gained", "scale"]):
+
+        elif any(word in message_lower for word in ["weight", "log weight", "track weight"]):
             return CoachResponse(
-                message="Tracking your weight helps you see the bigger picture. "
+                message="Great idea to track your weight! On the **Home tab**, "
+                        "tap the **weight card** to log your current weight. "
                         "Remember, weight fluctuates daily - focus on the weekly trend!",
-                suggestions=["Log weight", "View trend"],
+                suggestions=["Go to Home tab", "Log weight"],
                 encouragement="Trust the process!",
+            )
+
+        elif any(word in message_lower for word in ["recipe", "recipes", "food", "meal", "eat"]):
+            return CoachResponse(
+                message="Looking for healthy meal ideas? Go to your **Profile tab** "
+                        "and tap **'Browse Recipes'** to find delicious, nutritious options! "
+                        "We have meals for every preference.",
+                suggestions=["Go to Profile", "Browse Recipes"],
+                encouragement="Good nutrition fuels great workouts!",
             )
         
         elif any(word in message_lower for word in ["hello", "hi", "hey", "morning", "afternoon"]):
@@ -205,12 +250,15 @@ class AICoachService(AICoachInterface):
             )
         
         else:
-            # Generic helpful response
+            # Generic helpful response with navigation hints
             return CoachResponse(
-                message="I'm here to help you on your wellness journey! "
-                        "You can ask me about fasting, workouts, tracking your progress, "
-                        "or just chat when you need motivation.",
-                suggestions=["Start workout", "Start fast", "Check progress"],
+                message="I'm here to help! Here's what you can do:\n\n"
+                        "🍽️ **Fasting tab** - Start or track your fast\n"
+                        "💪 **Workouts tab** - Browse and start workouts\n"
+                        "🏠 **Home tab** - See your progress and log weight\n"
+                        "👤 **Profile tab** - Find recipes and settings\n\n"
+                        "What would you like to do?",
+                suggestions=["Start a fast", "Find a workout", "Check my progress"],
                 encouragement="Consistency is the key to transformation!",
             )
 
