@@ -1,10 +1,10 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Platform, Alert, StyleSheet } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Platform, Alert, StyleSheet, TouchableOpacity, Text as RNText } from 'react-native';
 import { YStack, XStack, Text, Button } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Gear, Trash } from 'phosphor-react-native';
+import { Gear } from 'phosphor-react-native';
 import {
   useSendMessage,
   useChatStore,
@@ -75,12 +75,12 @@ export default function CoachScreen() {
 
   const handleClearChat = () => {
     Alert.alert(
-      'Clear Chat',
-      'Are you sure you want to clear all messages?',
+      'End Chat',
+      'Are you sure you want to end this chat and clear all messages?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Clear',
+          text: 'End Chat',
           style: 'destructive',
           onPress: () => clearMessages(),
         },
@@ -109,30 +109,33 @@ export default function CoachScreen() {
             borderBottomColor="$borderColor"
             backgroundColor="$background"
           >
-              <XStack gap="$3" alignItems="center">
-                <YStack>
-                  <Text fontSize="$5" fontWeight="bold" color="$color">
-                    AI Coach
+              {/* Left: AI Coach title */}
+              <YStack flex={1}>
+                <Text fontSize="$5" fontWeight="bold" color="$color">
+                  AI Coach
+                </Text>
+                <XStack gap="$1" alignItems="center">
+                  <Text fontSize="$2" color="$colorMuted">
+                    {currentPersonality?.emoji} {currentPersonality?.name}
                   </Text>
-                  <XStack gap="$1" alignItems="center">
-                    <Text fontSize="$2" color="$colorMuted">
-                      {currentPersonality?.emoji} {currentPersonality?.name}
-                    </Text>
-                  </XStack>
-                </YStack>
-                {messages.length > 0 && (
-                  <Button
-                    size="$3"
-                    circular
-                    backgroundColor="$cardBackground"
-                    onPress={handleClearChat}
-                  >
-                    <Trash size={18} color="$colorMuted" weight="thin" />
-                  </Button>
-                )}
-              </XStack>
+                </XStack>
+              </YStack>
 
-              <XStack gap="$3" alignItems="center">
+              {/* Center: End Chat button */}
+              <View style={styles.centerSection}>
+                {messages.length > 0 && (
+                  <TouchableOpacity
+                    onPress={handleClearChat}
+                    style={styles.endChatButton}
+                    activeOpacity={0.7}
+                  >
+                    <RNText style={styles.endChatText}>End Chat</RNText>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Right: Settings and Theme */}
+              <XStack gap="$3" alignItems="center" flex={1} justifyContent="flex-end">
                 <Button
                   size="$4"
                   width={44}
@@ -141,7 +144,7 @@ export default function CoachScreen() {
                   backgroundColor="$cardBackground"
                   onPress={() => router.push('/(modals)/settings')}
                 >
-                  <Gear size={24} color="$color" weight="thin" />
+                  <Gear size={24} color="#2B2B32" weight="regular" />
                 </Button>
                 <ThemeToggle size={44} />
               </XStack>
@@ -199,5 +202,21 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  centerSection: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  endChatButton: {
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  endChatText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
