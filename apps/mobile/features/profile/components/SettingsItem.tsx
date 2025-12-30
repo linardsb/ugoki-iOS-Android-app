@@ -1,4 +1,4 @@
-import { XStack, Text } from 'tamagui';
+import { XStack, Text, useTheme } from 'tamagui';
 import { CaretRight } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 
@@ -25,6 +25,8 @@ export function SettingsItem({
   onToggle,
   destructive = false,
 }: SettingsItemProps) {
+  const theme = useTheme();
+  const mutedIconColor = theme.colorMuted.val;
   return (
     <XStack
       backgroundColor="$cardBackground"
@@ -70,7 +72,7 @@ export function SettingsItem({
 
       {/* Chevron for navigation items */}
       {onPress && !isToggle && (
-        <CaretRight size={20} color="$colorMuted" weight="thin" />
+        <CaretRight size={20} color={mutedIconColor} weight="regular" />
       )}
     </XStack>
   );

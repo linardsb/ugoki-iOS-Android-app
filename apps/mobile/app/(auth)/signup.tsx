@@ -1,4 +1,4 @@
-import { YStack, H1, Text, Button, Input, XStack } from 'tamagui';
+import { YStack, H1, Text, Button, Input, XStack, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -6,6 +6,9 @@ import { ArrowLeft } from 'phosphor-react-native';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -19,7 +22,7 @@ export default function SignupScreen() {
             pressStyle={{ backgroundColor: '$backgroundHover' }}
             onPress={() => router.back()}
           >
-            <ArrowLeft size={20} color="$color" weight="thin" />
+            <ArrowLeft size={20} color={iconColor} weight="regular" />
           </Button>
           <H1 color="$color" fontSize="$7">
             Create account
@@ -29,59 +32,59 @@ export default function SignupScreen() {
         {/* Form */}
         <YStack gap="$4" flex={1}>
           <YStack gap="$2">
-            <Text color="#2B2B32" fontWeight="500">
+            <Text color="$color" fontWeight="500">
               Name
             </Text>
             <Input
               size="$5"
               height={52}
               placeholder="Your name"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={mutedColor}
               autoCapitalize="words"
-              backgroundColor="white"
-              borderColor="#d1d5db"
+              backgroundColor="$backgroundStrong"
+              borderColor="$borderColor"
               borderWidth={1}
-              color="#2B2B32"
-              focusStyle={{ borderColor: '#14b8a6', borderWidth: 2 }}
+              color="$color"
+              focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
             />
           </YStack>
 
           <YStack gap="$2">
-            <Text color="#2B2B32" fontWeight="500">
+            <Text color="$color" fontWeight="500">
               Email
             </Text>
             <Input
               size="$5"
               height={52}
               placeholder="your@email.com"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={mutedColor}
               keyboardType="email-address"
               autoCapitalize="none"
-              backgroundColor="white"
-              borderColor="#d1d5db"
+              backgroundColor="$backgroundStrong"
+              borderColor="$borderColor"
               borderWidth={1}
-              color="#2B2B32"
-              focusStyle={{ borderColor: '#14b8a6', borderWidth: 2 }}
+              color="$color"
+              focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
             />
           </YStack>
 
           <YStack gap="$2">
-            <Text color="#2B2B32" fontWeight="500">
+            <Text color="$color" fontWeight="500">
               Password
             </Text>
             <Input
               size="$5"
               height={52}
               placeholder="Create a password"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={mutedColor}
               secureTextEntry
-              backgroundColor="white"
-              borderColor="#d1d5db"
+              backgroundColor="$backgroundStrong"
+              borderColor="$borderColor"
               borderWidth={1}
-              color="#2B2B32"
-              focusStyle={{ borderColor: '#14b8a6', borderWidth: 2 }}
+              color="$color"
+              focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
             />
-            <Text color="#6b7280" fontSize="$2">
+            <Text color="$colorMuted" fontSize="$2">
               At least 8 characters
             </Text>
           </YStack>
@@ -102,7 +105,7 @@ export default function SignupScreen() {
           </Button>
 
           <XStack justifyContent="center" gap="$2" alignItems="center">
-            <Text color="#6b7280">Already have an account?</Text>
+            <Text color="$colorMuted">Already have an account?</Text>
             <Pressable onPress={() => router.push('/(auth)/login')}>
               <Text color="#14b8a6" fontWeight="700" fontSize="$4">
                 Sign in

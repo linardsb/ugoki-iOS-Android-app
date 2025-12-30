@@ -1,4 +1,4 @@
-import { XStack, YStack, H1, Text, Button } from 'tamagui';
+import { XStack, YStack, H1, Text, Button, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, X } from 'phosphor-react-native';
@@ -24,6 +24,8 @@ export function ScreenHeader({
 }: ScreenHeaderProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
 
   const handleBack = () => {
     if (onBack) {
@@ -60,7 +62,7 @@ export function ScreenHeader({
             pressStyle={{ backgroundColor: '$backgroundHover' }}
             onPress={handleBack}
           >
-            <ArrowLeft size={20} color="$color" weight="thin" />
+            <ArrowLeft size={20} color={iconColor} weight="regular" />
           </Button>
         )}
 
@@ -72,7 +74,7 @@ export function ScreenHeader({
             pressStyle={{ backgroundColor: '$backgroundHover' }}
             onPress={handleClose}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
         )}
 

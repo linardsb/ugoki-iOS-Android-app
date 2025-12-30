@@ -1761,6 +1761,138 @@ tests/test_health.py .                                                [100%]
 c7dc3916 Update AI Coach header UI
 ```
 
+### December 30, 2025 (Continued) - Activity Navigation & Icon Visibility Fixes
+
+**Activity Item Navigation (New Feature):**
+
+Added click-to-navigate functionality for activity feed items. Tapping any activity now navigates to the relevant screen.
+
+- **New Functions in `features/activity/components/ActivityFeedItem.tsx`:**
+  - `getActivityNavigation()` - Determines navigation destination based on event category/metadata
+  - `navigateToActivity()` - Performs the navigation using expo-router
+
+- **Navigation Mapping:**
+  | Activity Category | Navigation Destination |
+  |-------------------|------------------------|
+  | Workout Started/Completed | Workouts tab (or specific workout detail if workout_id in metadata) |
+  | Recipe Saved | Specific recipe page (or Saved Recipes list) |
+  | Fasting events | Fasting tab |
+  | Progress events (XP, Level Up, Streak) | Achievements modal |
+  | Metrics (Weight, Biomarkers) | Dashboard (or Bloodwork modal) |
+  | Profile changes | Settings modal |
+  | Coach messages | Coach tab |
+  | Auth events | No navigation (not meaningful) |
+
+- **Updated `ActivityFeedItem` Component:**
+  - Added `navigateOnPress` prop (defaults to `true`)
+  - Items are automatically pressable when they have a navigation destination
+  - Uses `useRouter` hook internally for navigation
+
+- **Updated `RecentActivityCard` Component:**
+  - Dashboard activity items now clickable with navigation
+  - Added CaretRight chevron indicator for navigable items
+
+**Icon Visibility Fixes (Light Mode):**
+
+Fixed all navigation icons (X close buttons, arrows, chevrons) that were invisible or hard to see on light mode.
+
+**Root Cause:** Phosphor icons with `weight="thin"` and theme tokens like `$color`/`$colorMuted` were too faint on light backgrounds.
+
+**Fix:** Changed all navigation icons to use:
+- `weight="regular"` instead of `weight="thin"`
+- Hardcoded colors instead of theme tokens:
+  - Dark icons (close, back): `#2B2B32`
+  - Muted icons (chevrons): `#6b7280`
+  - Primary icons (teal): `#14b8a6`
+
+**Files Modified:**
+
+| File | Icons Fixed |
+|------|-------------|
+| `shared/components/ui/ScreenHeader.tsx` | ArrowLeft, X |
+| `app/(auth)/login.tsx` | ArrowLeft back button |
+| `app/(auth)/signup.tsx` | ArrowLeft back button |
+| `features/profile/components/SettingsItem.tsx` | CaretRight chevron |
+| `app/(modals)/workout/[id].tsx` | X close (×2), CaretRight |
+| `app/(modals)/settings.tsx` | X close, CaretUp/Down (×5 sections), CaretRight |
+| `app/(tabs)/profile.tsx` | Question, ChatText, Shield, SignOut icons |
+| `features/dashboard/components/LevelCard.tsx` | CaretRight "View Achievements" |
+| `features/activity/components/ActivityFeedItem.tsx` | Added navigation imports |
+| `features/activity/components/RecentActivityCard.tsx` | Added navigation + chevron indicators |
+| `features/activity/components/index.ts` | Export navigation functions |
+| `features/activity/index.ts` | Export navigation functions |
+
+**Exports Added:**
+- `getActivityNavigation` - Get navigation route for activity item
+- `navigateToActivity` - Navigate to activity destination
+
+### December 30, 2025 (Continued) - Theme-Aware Icons & UI Polish
+
+**Dark Theme Icon Visibility Fix:**
+
+Made all icons theme-aware so they display correctly in both light and dark modes.
+
+- **Pattern Used:** `useTheme()` from Tamagui to get theme colors:
+  ```tsx
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const mutedIconColor = theme.colorMuted.val;
+  ```
+
+**Files Updated for Theme-Aware Icons:**
+| File | Changes |
+|------|---------|
+| `shared/components/ui/ScreenHeader.tsx` | ArrowLeft, X icons use `iconColor` |
+| `app/(auth)/login.tsx` | Back arrow uses theme color |
+| `app/(auth)/signup.tsx` | Back arrow uses theme color |
+| `app/(modals)/settings.tsx` | All CaretUp/Down/Right icons use `mutedIconColor` |
+| `app/(modals)/workout/[id].tsx` | X close and CaretRight use theme colors |
+| `features/profile/components/SettingsItem.tsx` | CaretRight uses `mutedIconColor` |
+| `app/(tabs)/profile.tsx` | All menu icons use theme colors |
+| `app/(tabs)/coach.tsx` | Gear icon uses `iconColor` |
+| `features/activity/components/RecentActivityCard.tsx` | CaretRight uses `mutedIconColor` |
+| `features/dashboard/components/LevelCard.tsx` | CaretRight uses theme color |
+
+**WorkoutCard Icon Improvements:**
+
+- **File: `features/workouts/components/WorkoutCard.tsx`**
+  - Changed fixed colors to theme-aware: `iconColor` and `mutedIconColor`
+  - Increased icon sizes for better visibility:
+    - Main workout type icon: 24px → 28px
+    - Clock icon: 12px → 16px
+    - Fire (calories) icon: 14px → 18px
+  - Kept `weight="thin"` for consistent style
+
+**Welcome Screen Redesign:**
+
+- **File: `app/(auth)/welcome.tsx`**
+  - Replaced system font "UGOKI" text with actual logo image from `assets/splash.png`
+  - Created `FeatureBadge` component with colored circles and Phosphor icons
+  - Added staggered entrance animations using react-native-reanimated
+
+- **Feature Badges:**
+  | Icon | Color | Text |
+  |------|-------|------|
+  | `Timer` | Teal (#14b8a6) | Personalized fasting protocols |
+  | `Lightning` | Orange (#f97316) | 15-minute HIIT workouts |
+  | `Sparkle` | Purple (#8b5cf6) | AI-powered coaching |
+
+- **Animations:**
+  - Logo: fade in + scale spring animation
+  - Tagline: delayed fade in (400ms)
+  - Feature badges: staggered slide-in from left (600ms, 750ms, 900ms delays)
+
+**Gender Dropdown Update:**
+
+- **File: `app/(modals)/settings.tsx`**
+  - Replaced emojis with Phosphor gender symbol icons
+  - Options simplified to Male and Female only:
+    | Option | Icon |
+    |--------|------|
+    | Male | `GenderMale` (♂) |
+    | Female | `GenderFemale` (♀) |
+  - Icons: 20px size, `weight="regular"`, white when selected, gray (#6b7280) when not
+
 ---
 
 ## Current Status (December 30, 2025)
@@ -1779,6 +1911,7 @@ c7dc3916 Update AI Coach header UI
 - ✅ Avatar upload (Cloudflare R2)
 - ✅ Recipes feature - 30 curated recipes
 - ✅ Saved recipes functionality
+- ✅ Activity feed with click-to-navigate
 
 **Backend API - ALL MODULES COMPLETE:**
 - ✅ IDENTITY - JWT auth, anonymous mode

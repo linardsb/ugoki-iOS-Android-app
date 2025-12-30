@@ -24,6 +24,7 @@ export default function CoachScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const scrollViewRef = useRef<any>(null);
+  const iconColor = theme.color.val;
 
   // Get user profile for gender-based coach avatar
   const { data: profile } = useProfile();
@@ -144,7 +145,7 @@ export default function CoachScreen() {
                   backgroundColor="$cardBackground"
                   onPress={() => router.push('/(modals)/settings')}
                 >
-                  <Gear size={24} color="#2B2B32" weight="regular" />
+                  <Gear size={24} color={iconColor} weight="regular" />
                 </Button>
                 <ThemeToggle size={44} />
               </XStack>

@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, ScrollView, Button, Spinner } from 'tamagui';
+import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from 'tamagui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
@@ -32,6 +32,9 @@ export default function WorkoutDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const mutedIconColor = theme.colorMuted.val;
 
   const { data: workout, isLoading, error } = useWorkout(id);
   const startWorkout = useStartWorkout({
@@ -93,7 +96,7 @@ export default function WorkoutDetailScreen() {
               backgroundColor="$cardBackground"
               onPress={handleClose}
             >
-              <X size={20} color="$color" weight="thin" />
+              <X size={20} color={iconColor} weight="regular" />
             </Button>
           </XStack>
           <YStack flex={1} alignItems="center" justifyContent="center" gap="$3">
@@ -128,7 +131,7 @@ export default function WorkoutDetailScreen() {
             backgroundColor="$cardBackground"
             onPress={handleClose}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
         </XStack>
 
@@ -338,6 +341,8 @@ export default function WorkoutDetailScreen() {
 }
 
 function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }) {
+  const theme = useTheme();
+  const mutedIconColor = theme.colorMuted.val;
   const formatTime = (seconds: number) => {
     if (seconds >= 60) {
       const mins = Math.floor(seconds / 60);
@@ -392,7 +397,7 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
         </XStack>
       </YStack>
 
-      <CaretRight size={16} color="$colorMuted" weight="thin" />
+      <CaretRight size={16} color={mutedIconColor} weight="regular" />
     </XStack>
   );
 }

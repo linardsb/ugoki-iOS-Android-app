@@ -28,4 +28,6 @@ export {
   ActivityEmptyState,
   ActivityItemSkeleton,
   RecentActivityCard,
+  getActivityNavigation,
+  navigateToActivity,
 } from './components';

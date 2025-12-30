@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { YStack, XStack, Text, Card } from 'tamagui';
+import { YStack, XStack, Text, Card, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Star, CaretRight } from 'phosphor-react-native';
 import type { UserLevel } from '../types';
@@ -11,6 +11,8 @@ interface LevelCardProps {
 
 export function LevelCard({ level, isLoading }: LevelCardProps) {
   const router = useRouter();
+  const theme = useTheme();
+  const progressBarBg = theme.backgroundHover.val;
 
   const handlePress = () => {
     router.push('/(modals)/achievements');
@@ -72,7 +74,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
           <View
             style={{
               height: 8,
-              backgroundColor: '#e4e4e7',
+              backgroundColor: progressBarBg,
               borderRadius: 4,
               overflow: 'hidden',
             }}
@@ -101,7 +103,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
           <Text fontSize="$3" color="$primary" fontWeight="600">
             View Achievements
           </Text>
-          <CaretRight size={16} color="$primary" weight="thin" />
+          <CaretRight size={16} color="#14b8a6" weight="regular" />
         </XStack>
       </YStack>
     </Card>

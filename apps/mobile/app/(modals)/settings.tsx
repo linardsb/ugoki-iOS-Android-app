@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, Input } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, FirstAid, ShieldCheck } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 import {
   useProfile,
@@ -19,11 +19,9 @@ import { useChatStore, PERSONALITIES } from '@/features/coach';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '@/features/notifications';
 import type { UnitSystem, FastingProtocol, GoalType, Gender } from '@/features/profile';
 
-const GENDER_OPTIONS: { value: Gender; label: string; icon: string }[] = [
-  { value: 'male', label: 'Male', icon: '👨' },
-  { value: 'female', label: 'Female', icon: '👩' },
-  { value: 'other', label: 'Other', icon: '🧑' },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say', icon: '❔' },
+const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[] = [
+  { value: 'male', label: 'Male', Icon: GenderMale },
+  { value: 'female', label: 'Female', Icon: GenderFemale },
 ];
 
 const GOALS: { value: GoalType; label: string }[] = [
@@ -48,6 +46,8 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const iconColor = theme.color.val;
+  const mutedIconColor = theme.colorMuted.val;
 
   const { data: profile } = useProfile();
   const { data: preferences } = usePreferences();
@@ -167,7 +167,7 @@ export default function SettingsScreen() {
           backgroundColor="$cardBackground"
           onPress={() => router.back()}
         >
-          <X size={20} color="$color" weight="thin" />
+          <X size={20} color={iconColor} weight="regular" />
         </Button>
       </XStack>
 
@@ -217,7 +217,7 @@ export default function SettingsScreen() {
                   onPress={() => setShowGender(!showGender)}
                 >
                   <Text color="$color" fontWeight="500">{getGenderLabel(selectedGender)}</Text>
-                  {showGender ? <CaretUp size={18} color="$colorMuted" weight="thin" /> : <CaretDown size={18} color="$colorMuted" weight="thin" />}
+                  {showGender ? <CaretUp size={18} color={mutedIconColor} weight="regular" /> : <CaretDown size={18} color={mutedIconColor} weight="regular" />}
                 </Button>
 
                 {showGender && (
@@ -234,8 +234,12 @@ export default function SettingsScreen() {
                         pressStyle={{ scale: 0.98 }}
                         onPress={() => handleSelectGender(option.value)}
                       >
-                        <XStack gap="$2" alignItems="center">
-                          <Text fontSize="$4">{option.icon}</Text>
+                        <XStack gap="$3" alignItems="center">
+                          <option.Icon
+                            size={20}
+                            color={selectedGender === option.value ? 'white' : '#6b7280'}
+                            weight="regular"
+                          />
                           <Text
                             color={selectedGender === option.value ? 'white' : '$color'}
                             fontWeight={selectedGender === option.value ? '600' : '400'}
@@ -278,7 +282,7 @@ export default function SettingsScreen() {
                 onPress={() => setShowNotificationDetails(!showNotificationDetails)}
               >
                 <Text fontSize="$3" color="$color">Customize Notifications</Text>
-                {showNotificationDetails ? <CaretUp size={16} color="$colorMuted" weight="thin" /> : <CaretDown size={16} color="$colorMuted" weight="thin" />}
+                {showNotificationDetails ? <CaretUp size={16} color={mutedIconColor} weight="regular" /> : <CaretDown size={16} color={mutedIconColor} weight="regular" />}
               </Button>
 
               {/* Expandable category toggles */}
@@ -395,7 +399,7 @@ export default function SettingsScreen() {
                     <Text fontSize="$2" color="$colorMuted">Upload lab results for AI analysis</Text>
                   </YStack>
                 </XStack>
-                <CaretRight size={18} color="$colorMuted" weight="thin" />
+                <CaretRight size={18} color={mutedIconColor} weight="regular" />
               </Button>
             </YStack>
           </SettingsSection>
@@ -415,7 +419,7 @@ export default function SettingsScreen() {
                   onPress={() => setShowGoals(!showGoals)}
                 >
                   <Text color="$color" fontWeight="500">{getGoalLabel(selectedGoal)}</Text>
-                  {showGoals ? <CaretUp size={18} color="$colorMuted" weight="thin" /> : <CaretDown size={18} color="$colorMuted" weight="thin" />}
+                  {showGoals ? <CaretUp size={18} color={mutedIconColor} weight="regular" /> : <CaretDown size={18} color={mutedIconColor} weight="regular" />}
                 </Button>
 
                 {showGoals && (
@@ -461,7 +465,7 @@ export default function SettingsScreen() {
                   onPress={() => setShowProtocols(!showProtocols)}
                 >
                   <Text color="$color" fontWeight="500">{getProtocolLabel(selectedProtocol)}</Text>
-                  {showProtocols ? <CaretUp size={18} color="$colorMuted" weight="thin" /> : <CaretDown size={18} color="$colorMuted" weight="thin" />}
+                  {showProtocols ? <CaretUp size={18} color={mutedIconColor} weight="regular" /> : <CaretDown size={18} color={mutedIconColor} weight="regular" />}
                 </Button>
 
                 {showProtocols && (
@@ -626,9 +630,9 @@ export default function SettingsScreen() {
                   </YStack>
                 </XStack>
                 {showHealthDisclaimer ? (
-                  <CaretUp size={18} color="$colorMuted" weight="thin" />
+                  <CaretUp size={18} color={mutedIconColor} weight="regular" />
                 ) : (
-                  <CaretDown size={18} color="$colorMuted" weight="thin" />
+                  <CaretDown size={18} color={mutedIconColor} weight="regular" />
                 )}
               </Button>
 

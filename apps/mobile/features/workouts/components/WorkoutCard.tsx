@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Card, Image } from 'tamagui';
+import { YStack, XStack, Text, Card, Image, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Clock, Fire, Barbell, Lightning, Play } from 'phosphor-react-native';
 import type { Workout, DifficultyLevel, WorkoutType } from '../types';
@@ -25,6 +25,9 @@ const workoutTypeIcons: Record<WorkoutType, typeof Barbell> = {
 
 export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCardProps) {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const mutedIconColor = theme.colorMuted.val;
 
   const handlePress = () => {
     if (onPress) {
@@ -65,7 +68,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
                 resizeMode="cover"
               />
             ) : (
-              <Icon size={24} color="$secondary" weight="thin" />
+              <Icon size={28} color={iconColor} weight="thin" />
             )}
           </XStack>
 
@@ -76,15 +79,16 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             </Text>
             <XStack gap="$2" alignItems="center">
               <XStack gap="$1" alignItems="center">
-                <Clock size={12} color="$colorMuted" weight="thin" />
-                <Text fontSize="$2" color="$colorMuted">
+                <Clock size={16} color={mutedIconColor} weight="thin" />
+                <Text fontSize="$3" color="$colorMuted">
                   {workout.duration_minutes}m
                 </Text>
               </XStack>
               <Text color="$colorMuted">·</Text>
               <Text
-                fontSize="$2"
+                fontSize="$3"
                 color={difficultyColor}
+                fontWeight="500"
                 textTransform="capitalize"
               >
                 {workout.difficulty}
@@ -95,12 +99,12 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
           {/* Calories */}
           <YStack alignItems="flex-end">
             <XStack gap="$1" alignItems="center">
-              <Fire size={14} color="#ef4444" weight="thin" />
-              <Text fontSize="$3" fontWeight="500" color="$color">
+              <Fire size={18} color={iconColor} weight="thin" />
+              <Text fontSize="$4" fontWeight="600" color="$color">
                 {workout.calories_estimate}
               </Text>
             </XStack>
-            <Text fontSize="$1" color="$colorMuted">cal</Text>
+            <Text fontSize="$2" color="$colorMuted">cal</Text>
           </YStack>
         </XStack>
       </Card>
@@ -218,7 +222,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             resizeMode="cover"
           />
         ) : (
-          <Icon size={48} color="$secondary" weight="thin" />
+          <Icon size={48} color={iconColor} weight="thin" />
         )}
 
         {/* Duration badge */}
@@ -278,7 +282,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
           </XStack>
 
           <XStack gap="$1" alignItems="center">
-            <Fire size={14} color="#ef4444" weight="thin" />
+            <Fire size={14} color={iconColor} weight="thin" />
             <Text fontSize="$3" fontWeight="500" color="$color">
               {workout.calories_estimate}
             </Text>

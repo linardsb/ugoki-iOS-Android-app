@@ -41,6 +41,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const mutedIconColor = theme.colorMuted.val;
 
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: preferences, isLoading: preferencesLoading } = usePreferences();
@@ -210,17 +211,17 @@ export default function ProfileScreen() {
             {/* Support Section */}
             <SettingsSection title="Support">
               <SettingsItem
-                icon={<Question size={20} color="$colorMuted" weight="thin" />}
+                icon={<Question size={20} color={mutedIconColor} weight="regular" />}
                 label="Help Center"
                 onPress={() => Linking.openURL('https://ugoki.app/help')}
               />
               <SettingsItem
-                icon={<ChatText size={20} color="$colorMuted" weight="thin" />}
+                icon={<ChatText size={20} color={mutedIconColor} weight="regular" />}
                 label="Send Feedback"
                 onPress={() => Linking.openURL('mailto:feedback@ugoki.app')}
               />
               <SettingsItem
-                icon={<Shield size={20} color="$colorMuted" weight="thin" />}
+                icon={<Shield size={20} color={mutedIconColor} weight="regular" />}
                 label="Privacy Policy"
                 onPress={() => Linking.openURL('https://ugoki.app/privacy')}
               />
@@ -229,7 +230,7 @@ export default function ProfileScreen() {
             {/* Danger Zone */}
             <SettingsSection title="Account Actions">
               <SettingsItem
-                icon={<SignOut size={20} color="$colorMuted" weight="thin" />}
+                icon={<SignOut size={20} color={mutedIconColor} weight="regular" />}
                 label="Sign Out"
                 onPress={handleLogout}
               />

@@ -3,7 +3,7 @@
  * Shows the 3 most recent activities with a "See All" link
  */
 
-import { View, Text, XStack, YStack, Card } from 'tamagui';
+import { View, Text, XStack, YStack, Card, useTheme } from 'tamagui';
 import { TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { CaretRight } from 'phosphor-react-native';
 import { useRecentActivity, formatEventTime } from '../hooks/useActivityFeed';
 import { CATEGORY_COLORS } from '../types';
 import type { ActivityFeedItem } from '../types';
+import { navigateToActivity, getActivityNavigation } from './ActivityFeedItem';
 
 // Map backend icon names to Ionicons
 const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -43,12 +44,16 @@ const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   'bookmark-minus': 'bookmark-outline',
 };
 
-function ActivityItem({ item }: { item: ActivityFeedItem }) {
+function ActivityItem({ item, router }: { item: ActivityFeedItem; router: ReturnType<typeof useRouter> }) {
+  const theme = useTheme();
+  const mutedIconColor = theme.colorSubtle.val;
   const iconName = ICON_MAP[item.icon] || 'ellipse';
   const categoryColor = CATEGORY_COLORS[item.category];
   const time = formatEventTime(item.timestamp);
+  const navDestination = getActivityNavigation(item);
+  const isNavigable = navDestination !== null;
 
-  return (
+  const content = (
     <XStack gap="$3" alignItems="center" paddingVertical="$2">
       <View
         width={36}
@@ -70,15 +75,35 @@ function ActivityItem({ item }: { item: ActivityFeedItem }) {
           </Text>
         )}
       </YStack>
-      <Text fontSize="$2" color="$colorSubtle">
-        {time}
-      </Text>
+      <XStack alignItems="center" gap="$1">
+        <Text fontSize="$2" color="$colorSubtle">
+          {time}
+        </Text>
+        {isNavigable && (
+          <CaretRight size={12} color={mutedIconColor} weight="bold" />
+        )}
+      </XStack>
     </XStack>
   );
+
+  if (isNavigable) {
+    return (
+      <TouchableOpacity
+        onPress={() => navigateToActivity(router, item)}
+        activeOpacity={0.7}
+      >
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
 }
 
 export function RecentActivityCard() {
   const router = useRouter();
+  const theme = useTheme();
+  const mutedIconColor = theme.colorSubtle.val;
   const { data: activities, isLoading } = useRecentActivity(3);
 
   if (isLoading) {
@@ -116,7 +141,7 @@ export function RecentActivityCard() {
             alignItems="center"
             justifyContent="center"
           >
-            <Ionicons name="time-outline" size={24} color="#9ca3af" />
+            <Ionicons name="time-outline" size={24} color={mutedIconColor} />
           </View>
           <Text fontSize="$3" color="$colorSubtle" textAlign="center">
             No activity yet. Start a fast or workout!
@@ -147,7 +172,7 @@ export function RecentActivityCard() {
         </XStack>
 
         {activities.map((item) => (
-          <ActivityItem key={item.id} item={item} />
+          <ActivityItem key={item.id} item={item} router={router} />
         ))}
       </YStack>
     </Card>

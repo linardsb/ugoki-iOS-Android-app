@@ -6,9 +6,77 @@
 import { View, Text, XStack, YStack } from 'tamagui';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { ActivityFeedItem as ActivityFeedItemType, EventCategory } from '../types';
+import { useRouter, Router } from 'expo-router';
+import type { ActivityFeedItem as ActivityFeedItemType, EventCategory, EventType } from '../types';
 import { CATEGORY_COLORS, CATEGORY_LABELS } from '../types';
 import { formatEventTime } from '../hooks/useActivityFeed';
+
+/**
+ * Get navigation destination based on event type and metadata
+ */
+export function getActivityNavigation(
+  item: ActivityFeedItemType
+): { route: string; params?: Record<string, string> } | null {
+  const { event_type, category, metadata } = item;
+
+  switch (category) {
+    case 'fasting':
+      // All fasting events → Fasting tab
+      return { route: '/(tabs)/fasting' };
+
+    case 'workout':
+      // If we have a workout_id, go to that workout detail
+      if (metadata?.workout_id) {
+        return { route: `/(modals)/workout/${metadata.workout_id}` };
+      }
+      // Otherwise go to workouts tab
+      return { route: '/(tabs)/workouts' };
+
+    case 'progression':
+      // Progress events → Achievements modal
+      return { route: '/(modals)/achievements' };
+
+    case 'metrics':
+      // Metrics events → Dashboard (which shows weight card)
+      if (event_type === 'biomarker_uploaded') {
+        return { route: '/(modals)/bloodwork' };
+      }
+      // Weight logged → stay on dashboard
+      return { route: '/(tabs)/' };
+
+    case 'content':
+      // Recipe events → saved recipes or specific recipe
+      if (metadata?.recipe_id) {
+        return { route: `/(modals)/recipes/${metadata.recipe_id}` };
+      }
+      return { route: '/(modals)/saved-recipes' };
+
+    case 'profile':
+      // Profile events → Settings modal
+      return { route: '/(modals)/settings' };
+
+    case 'coach':
+      // Coach events → Coach tab
+      return { route: '/(tabs)/coach' };
+
+    case 'auth':
+      // Auth events don't navigate anywhere meaningful
+      return null;
+
+    default:
+      return null;
+  }
+}
+
+/**
+ * Navigate to the appropriate screen for an activity item
+ */
+export function navigateToActivity(router: Router, item: ActivityFeedItemType): void {
+  const nav = getActivityNavigation(item);
+  if (nav) {
+    router.push(nav.route as any);
+  }
+}
 
 // Map backend icon names to Ionicons
 const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -45,12 +113,23 @@ interface ActivityFeedItemProps {
   item: ActivityFeedItemType;
   onPress?: () => void;
   showCategory?: boolean;
+  navigateOnPress?: boolean; // Enable automatic navigation on press
 }
 
-export function ActivityFeedItem({ item, onPress, showCategory = false }: ActivityFeedItemProps) {
+export function ActivityFeedItem({
+  item,
+  onPress,
+  showCategory = false,
+  navigateOnPress = true,
+}: ActivityFeedItemProps) {
+  const router = useRouter();
   const iconName = ICON_MAP[item.icon] || 'ellipse';
   const categoryColor = CATEGORY_COLORS[item.category];
   const time = formatEventTime(item.timestamp);
+
+  // Check if this item has a navigation destination
+  const navDestination = getActivityNavigation(item);
+  const isNavigable = navDestination !== null;
 
   const content = (
     <XStack
@@ -118,9 +197,21 @@ export function ActivityFeedItem({ item, onPress, showCategory = false }: Activi
     </XStack>
   );
 
-  if (onPress) {
+  // Handle press - either custom handler or navigate
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else if (navigateOnPress && isNavigable) {
+      navigateToActivity(router, item);
+    }
+  };
+
+  // Make item pressable if it has a handler or navigation destination
+  const isPressable = onPress || (navigateOnPress && isNavigable);
+
+  if (isPressable) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
         {content}
       </TouchableOpacity>
     );

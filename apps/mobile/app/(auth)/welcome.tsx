@@ -1,15 +1,95 @@
-import { useState } from 'react';
-import { YStack, XStack, H1, Text, Button } from 'tamagui';
+import { useState, useEffect } from 'react';
+import { YStack, XStack, Text, Button } from 'tamagui';
+import { Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Alert } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
+import { Timer, Lightning, Sparkle } from 'phosphor-react-native';
 
 import { useCreateAnonymous } from '@/features/auth';
+
+// Import logo image
+const logoImage = require('../../assets/splash.png');
+
+// Feature badge component
+function FeatureBadge({
+  icon: Icon,
+  color,
+  text,
+  delay
+}: {
+  icon: typeof Timer;
+  color: string;
+  text: string;
+  delay: number;
+}) {
+  const opacity = useSharedValue(0);
+  const translateX = useSharedValue(-20);
+
+  useEffect(() => {
+    opacity.value = withDelay(delay, withTiming(1, { duration: 400 }));
+    translateX.value = withDelay(delay, withSpring(0, { damping: 15 }));
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <XStack gap="$3" alignItems="center">
+        <XStack
+          width={44}
+          height={44}
+          borderRadius={22}
+          backgroundColor={color}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Icon size={22} color="white" weight="fill" />
+        </XStack>
+        <Text fontSize="$4" color="#18181b" fontWeight="500">
+          {text}
+        </Text>
+      </XStack>
+    </Animated.View>
+  );
+}
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+
+  // Animation values
+  const logoOpacity = useSharedValue(0);
+  const logoScale = useSharedValue(0.8);
+  const taglineOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    // Logo animation
+    logoOpacity.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) });
+    logoScale.value = withSpring(1, { damping: 12, stiffness: 100 });
+    // Tagline fade in after logo
+    taglineOpacity.value = withDelay(400, withTiming(1, { duration: 500 }));
+  }, []);
+
+  const logoAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
+  }));
+
+  const taglineAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: taglineOpacity.value,
+  }));
 
   // Create anonymous identity using the auth hook
   const createAnonymous = useCreateAnonymous({
@@ -40,46 +120,48 @@ export default function WelcomeScreen() {
       <SafeAreaView style={{ flex: 1 }}>
         <YStack flex={1} padding="$6" justifyContent="space-between">
           {/* Logo and tagline */}
-          <YStack flex={1} justifyContent="center" alignItems="center" gap="$4">
-            <YStack
-              width={120}
-              height={120}
-              borderRadius="$6"
-              backgroundColor="$primary"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Text fontSize={48} fontWeight="bold" color="white">
-                U
+          <YStack flex={1} justifyContent="center" alignItems="center" gap="$6">
+            {/* Animated Logo */}
+            <Animated.View style={logoAnimatedStyle}>
+              <Image
+                source={logoImage}
+                style={{ width: 280, height: 120 }}
+                resizeMode="contain"
+              />
+            </Animated.View>
+
+            {/* Tagline */}
+            <Animated.View style={taglineAnimatedStyle}>
+              <Text
+                fontSize="$5"
+                color="#71717a"
+                textAlign="center"
+                maxWidth={280}
+              >
+                Intermittent Fasting meets HIIT Training
               </Text>
-            </YStack>
+            </Animated.View>
 
-            <H1 fontSize={42} fontWeight="bold" textAlign="center" color="#18181b">
-              UGOKI
-            </H1>
-
-            <Text
-              fontSize="$5"
-              color="#71717a"
-              textAlign="center"
-              maxWidth={280}
-            >
-              Intermittent Fasting meets HIIT Training
-            </Text>
-
-            <YStack gap="$2" marginTop="$4">
-              <XStack gap="$2" alignItems="center">
-                <Text fontSize="$4">🎯</Text>
-                <Text color="#18181b">Personalized fasting protocols</Text>
-              </XStack>
-              <XStack gap="$2" alignItems="center">
-                <Text fontSize="$4">💪</Text>
-                <Text color="#18181b">15-minute HIIT workouts</Text>
-              </XStack>
-              <XStack gap="$2" alignItems="center">
-                <Text fontSize="$4">🤖</Text>
-                <Text color="#18181b">AI-powered coaching</Text>
-              </XStack>
+            {/* Feature badges with staggered animation */}
+            <YStack gap="$4" marginTop="$4" alignItems="flex-start">
+              <FeatureBadge
+                icon={Timer}
+                color="#14b8a6"
+                text="Personalized fasting protocols"
+                delay={600}
+              />
+              <FeatureBadge
+                icon={Lightning}
+                color="#f97316"
+                text="15-minute HIIT workouts"
+                delay={750}
+              />
+              <FeatureBadge
+                icon={Sparkle}
+                color="#8b5cf6"
+                text="AI-powered coaching"
+                delay={900}
+              />
             </YStack>
           </YStack>
 
