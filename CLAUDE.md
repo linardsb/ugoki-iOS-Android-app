@@ -1716,6 +1716,51 @@ tests/test_health.py .                                                [100%]
 ============================== 39 passed in 0.17s ==============================
 ```
 
+### December 30, 2025 (Continued) - AI Coach UX Improvements
+
+**Workout Seeding Script:**
+
+- **New File: `apps/api/scripts/seed_workouts.py`**
+  - 5 workout categories: HIIT, Strength, Cardio, Flexibility, Recovery
+  - 16 complete workouts with varying difficulty levels
+  - 78 exercises with durations, rest times, and order
+  - Featured workouts marked for homepage display
+  - Run with: `uv run python scripts/seed_workouts.py`
+
+**AI Coach Response Improvements (Backend):**
+
+- **Updated: `src/modules/ai_coach/agents/coach.py`**
+  - Added "ACTION GUIDANCE" section to system prompt
+  - Coach now provides specific navigation instructions
+  - Examples: "Head to the Fasting tab and tap 'Start Fast'"
+
+- **Updated: `src/modules/ai_coach/service.py`**
+  - Added pattern matching for affirmative responses ("yes", "yeah", "ok", "ready", "start")
+  - All responses now include specific navigation instructions
+  - Added step-by-step guides for starting fasts and workouts
+  - Added recipe navigation guidance
+  - Improved generic fallback with navigation overview
+  - Uses bold markdown for UI elements (`**Fasting tab**`, `**Start Fast**`)
+
+**AI Coach Header UI Updates (Mobile):**
+
+- **Updated: `apps/mobile/app/(tabs)/coach.tsx`**
+  - Replaced trash icon with "End Chat" text button
+  - Light red background (#fee2e2) to indicate destructive action
+  - Red text (#dc2626) for clear visual indication
+  - Button centered between title and settings using 3-section flex layout
+  - Fixed gear icon visibility on light theme (hardcoded #2B2B32)
+  - Changed gear icon weight from "thin" to "regular"
+  - Alert dialog updated from "Clear Chat" to "End Chat"
+  - Used TouchableOpacity with native Text for reliable rendering
+
+**Commits:**
+```
+08485724 Add workout seeding script
+7428416c Improve AI coach responses with actionable navigation guidance
+c7dc3916 Update AI Coach header UI
+```
+
 ---
 
 ## Current Status (December 30, 2025)
