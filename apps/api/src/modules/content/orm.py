@@ -135,8 +135,8 @@ class RecipeORM(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     meal_type: Mapped[MealType] = mapped_column(
-        SQLEnum(MealType), nullable=False, index=True
-    )
+        SQLEnum(MealType), nullable=False
+    )  # Index defined in __table_args__
     prep_time_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     cook_time_minutes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     servings: Mapped[int] = mapped_column(Integer, default=1, nullable=False)

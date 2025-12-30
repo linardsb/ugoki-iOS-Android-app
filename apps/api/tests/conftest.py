@@ -1,3 +1,4 @@
+import os
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -7,24 +8,34 @@ from src.db import get_db
 from src.main import app
 
 
-# Test database
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-
-engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-TestSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+TEST_DB_PATH = "./test_ugoki.db"
 
 
 @pytest.fixture(scope="function")
 async def db_session():
     """Create a fresh database for each test."""
+    # Remove test database file if exists
+    if os.path.exists(TEST_DB_PATH):
+        os.remove(TEST_DB_PATH)
+
+    # Create a fresh file-based database for each test
+    engine = create_async_engine(
+        f"sqlite+aiosqlite:///{TEST_DB_PATH}",
+        echo=False,
+    )
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    TestSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with TestSessionLocal() as session:
         yield session
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+    # Clean up test database file
+    if os.path.exists(TEST_DB_PATH):
+        os.remove(TEST_DB_PATH)
 
 
 @pytest.fixture(scope="function")
