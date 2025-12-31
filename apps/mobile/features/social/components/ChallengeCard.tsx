@@ -32,8 +32,8 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
     ? Math.min(100, (challenge.my_progress / challenge.goal_value) * 100)
     : 0;
 
-  const statusColor = CHALLENGE_STATUS_COLORS[challenge.status];
-  const typeLabel = CHALLENGE_TYPE_LABELS[challenge.challenge_type];
+  const statusColor = CHALLENGE_STATUS_COLORS[challenge.status] || '#6b7280';
+  const typeLabel = CHALLENGE_TYPE_LABELS[challenge.challenge_type] || challenge.challenge_type;
 
   if (variant === 'compact') {
     return (
@@ -45,7 +45,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
           alignItems="center"
           gap="$3"
         >
-          <RNView style={[styles.iconContainer, { backgroundColor: statusColor + '20' }]}>
+          <RNView style={[styles.iconContainer, { backgroundColor: `${statusColor}20` }]}>
             <Flag size={20} color={statusColor} weight="fill" />
           </RNView>
           <YStack flex={1}>
@@ -81,9 +81,9 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
               {typeLabel}
             </Text>
           </YStack>
-          <RNView style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+          <RNView style={[styles.statusBadge, { backgroundColor: `${statusColor}20` }]}>
             <Text fontSize={12} fontWeight="600" style={{ color: statusColor }}>
-              {challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1)}
+              {challenge.status ? challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1) : 'Unknown'}
             </Text>
           </RNView>
         </XStack>

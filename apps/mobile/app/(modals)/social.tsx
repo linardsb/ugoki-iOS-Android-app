@@ -24,7 +24,8 @@ import {
   useLeaderboard,
   useFriendRequestCount,
 } from '@/features/social/hooks';
-import { ChallengeCard, LeaderboardEntryRow } from '@/features/social/components';
+import { ChallengeCard } from '@/features/social/components/ChallengeCard';
+import { LeaderboardEntryRow } from '@/features/social/components/LeaderboardEntry';
 
 export default function SocialScreen() {
   const theme = useTheme();
@@ -150,11 +151,11 @@ export default function SocialScreen() {
               </TouchableOpacity>
             </XStack>
 
-            {activeChallenges.length > 0 ? (
+            {Array.isArray(activeChallenges) && activeChallenges.length > 0 ? (
               <YStack gap="$3">
-                {activeChallenges.slice(0, 3).map((challenge) => (
+                {activeChallenges.slice(0, 3).map((challenge, index) => (
                   <ChallengeCard
-                    key={challenge.id}
+                    key={challenge.id || `challenge-${index}`}
                     challenge={challenge}
                     onPress={() => router.push(`/(modals)/challenges/${challenge.id}`)}
                   />
@@ -197,10 +198,10 @@ export default function SocialScreen() {
               padding="$3"
               gap="$2"
             >
-              {leaderboard?.entries && leaderboard.entries.length > 0 ? (
-                leaderboard.entries.slice(0, 5).map((entry) => (
+              {leaderboard?.entries && Array.isArray(leaderboard.entries) && leaderboard.entries.length > 0 ? (
+                leaderboard.entries.slice(0, 5).map((entry, index) => (
                   <LeaderboardEntryRow
-                    key={entry.identity_id}
+                    key={entry.identity_id || `entry-${index}`}
                     entry={entry}
                     valueLabel="XP"
                   />
