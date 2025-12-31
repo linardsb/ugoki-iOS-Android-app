@@ -2933,3 +2933,183 @@ Successfully fixed 6 workout sessions!
 | `shared/components/ui/ProfilePopupMenu.tsx` | Added Recipes menu item |
 | `app/(modals)/recipes/index.tsx` | Added Saved button in header |
 | `app/(tabs)/profile.tsx` | Removed Content section |
+
+### December 31, 2025 (Continued) - Comprehensive API Testing & TypeScript Fixes
+
+**Comprehensive API Test Script Created:**
+
+Created `apps/api/scripts/test_api.py` - a full end-to-end test suite covering all backend modules.
+
+**Test Results: ✅ 64/64 PASSED**
+
+```
+============================================================
+UGOKI API COMPREHENSIVE TEST
+============================================================
+
+=== IDENTITY MODULE ===
+✅ Health check
+✅ Create anonymous identity
+✅ Get current identity
+
+=== PROFILE MODULE ===
+✅ Create/update profile
+✅ Get profile
+✅ Update goals
+✅ Get goals
+✅ Update preferences
+✅ Get preferences
+
+=== TIME_KEEPER MODULE ===
+✅ Start fasting window
+✅ Get active window
+✅ Get elapsed time
+✅ Get fasting history
+✅ Close fasting window
+
+=== METRICS MODULE ===
+✅ Log weight
+✅ Get latest weight
+✅ Get weight trend
+✅ Get metrics history
+
+=== PROGRESSION MODULE ===
+✅ Get user level
+✅ Get streaks
+✅ Get user achievements (21 total)
+✅ Get all achievements (19 available)
+✅ Get XP history
+✅ Get progression overview
+
+=== CONTENT MODULE (Workouts) ===
+✅ Get workout categories (5 categories)
+✅ Get workouts (16 total)
+✅ Get single workout
+✅ Get workout recommendations
+✅ Start workout session
+✅ Get active session
+✅ Complete workout session
+✅ Get workout stats
+✅ Get session history
+
+=== CONTENT MODULE (Recipes) ===
+✅ Get recipes (20 total)
+✅ Get single recipe
+✅ Save recipe
+✅ Get saved recipes
+✅ Unsave recipe
+
+=== AI_COACH MODULE ===
+✅ Send chat message
+✅ Safety filter - blocked query (diabetes)
+   Safety redirected: True
+✅ Get coach context
+✅ Get daily insight
+✅ Get motivation
+
+=== SOCIAL MODULE ===
+✅ Update social profile
+✅ Get friends list
+✅ Get incoming friend requests
+✅ Get outgoing friend requests
+✅ Get followers
+✅ Get following
+✅ Get global XP leaderboard
+✅ Get friends XP leaderboard
+✅ Get challenges list
+✅ Create challenge
+✅ Get my challenges
+✅ Get challenge detail
+✅ Get challenge leaderboard
+✅ Search users
+
+=== NOTIFICATION MODULE ===
+✅ Get notification preferences
+✅ Update notification preferences
+✅ Get notifications
+✅ Get unread count
+
+=== EVENT JOURNAL MODULE ===
+✅ Get activity feed
+✅ Get events
+✅ Get event summary
+
+============================================================
+TEST SUMMARY
+============================================================
+✅ Passed: 64
+❌ Failed: 0
+============================================================
+```
+
+**Test Coverage by Module:**
+
+| Module | Endpoints Tested | Status |
+|--------|------------------|--------|
+| IDENTITY | 3 | ✅ All Pass |
+| PROFILE | 6 | ✅ All Pass |
+| TIME_KEEPER | 5 | ✅ All Pass |
+| METRICS | 4 | ✅ All Pass |
+| PROGRESSION | 6 | ✅ All Pass |
+| CONTENT (Workouts) | 9 | ✅ All Pass |
+| CONTENT (Recipes) | 5 | ✅ All Pass |
+| AI_COACH | 5 | ✅ All Pass |
+| SOCIAL | 14 | ✅ All Pass |
+| NOTIFICATIONS | 4 | ✅ All Pass |
+| EVENT_JOURNAL | 3 | ✅ All Pass |
+| **TOTAL** | **64** | **✅ 100%** |
+
+**Run Tests:**
+```bash
+cd apps/api
+uv run python scripts/test_api.py
+```
+
+---
+
+**TypeScript Errors Fixed:**
+
+1. **LeaderboardEntry naming conflict:**
+   - Component renamed from `LeaderboardEntry` to `LeaderboardEntryRow`
+   - Prevents conflict with `LeaderboardEntry` type in `types.ts`
+   - Files updated: `components/LeaderboardEntry.tsx`, `components/index.ts`
+
+2. **Prop naming consistency:**
+   - `ScreenHeader` uses `rightAction` prop
+   - `UserCard` uses `rightElement` prop
+   - Fixed in: `friends.tsx`, `challenges/index.tsx`, `challenges/[id].tsx`
+
+3. **useFriendRequestCount hook:**
+   - Returns `number` directly, not `{ data: number }`
+   - Fixed in: `social.tsx`
+
+**Files Modified:**
+
+| File | Change |
+|------|--------|
+| `features/social/components/LeaderboardEntry.tsx` | Renamed export to `LeaderboardEntryRow` |
+| `features/social/components/index.ts` | Updated export name |
+| `app/(modals)/social.tsx` | Fixed import and hook usage |
+| `app/(modals)/leaderboards.tsx` | Updated component name |
+| `app/(modals)/challenges/[id].tsx` | Fixed `rightAction` prop |
+| `app/(modals)/challenges/index.tsx` | Fixed `rightAction` prop |
+| `app/(modals)/friends.tsx` | Fixed `rightElement` for UserCard |
+
+**Files Created:**
+
+| File | Purpose |
+|------|---------|
+| `apps/api/scripts/test_api.py` | Comprehensive API test suite (64 tests) |
+
+---
+
+**Current Application Status:**
+
+| Component | Status |
+|-----------|--------|
+| Backend API | ✅ All 64 endpoints tested and working |
+| Backend Tests | ✅ 39 unit tests + 64 API tests passing |
+| Mobile TypeScript | ✅ No compilation errors |
+| Mobile App | ✅ Running on localhost:8081 |
+
+**GitHub:** All changes pushed to `main` branch
