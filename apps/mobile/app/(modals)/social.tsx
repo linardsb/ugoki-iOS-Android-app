@@ -85,13 +85,13 @@ export default function SocialScreen() {
                 {friends?.length || 0}
               </Text>
               <Text fontSize={12} color="#6b7280">Friends</Text>
-              {requestCount && requestCount > 0 && (
+              {requestCount > 0 ? (
                 <View style={styles.badge}>
                   <Text fontSize={10} fontWeight="700" color="white">
                     {requestCount}
                   </Text>
                 </View>
-              )}
+              ) : null}
             </TouchableOpacity>
 
             <TouchableOpacity
