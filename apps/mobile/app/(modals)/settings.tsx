@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, Input } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, GenderNonbinary, UserCircle, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 import {
   useProfile,
@@ -22,6 +22,8 @@ import type { UnitSystem, FastingProtocol, GoalType, Gender } from '@/features/p
 const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[] = [
   { value: 'male', label: 'Male', Icon: GenderMale },
   { value: 'female', label: 'Female', Icon: GenderFemale },
+  { value: 'other', label: 'Other', Icon: GenderNonbinary },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say', Icon: UserCircle },
 ];
 
 const PERSONALITY_ICONS = {
@@ -76,6 +78,7 @@ export default function SettingsScreen() {
   // Notification preferences
   const { data: notificationPrefs } = useNotificationPreferences();
   const updateNotificationPrefs = useUpdateNotificationPreferences();
+  const isNotificationUpdating = updateNotificationPrefs.isPending;
 
   // Coach personality
   const { personality: coachPersonality, setPersonality: setCoachPersonality } = useChatStore();
@@ -266,11 +269,12 @@ export default function SettingsScreen() {
           <SettingsSection title="Notifications">
             <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
               {/* Master toggle */}
-              <XStack justifyContent="space-between" alignItems="center">
+              <XStack justifyContent="space-between" alignItems="center" opacity={isNotificationUpdating ? 0.6 : 1}>
                 <YStack flex={1} marginRight="$3">
                   <Text fontSize="$4" fontWeight="600" color="$color">Push Notifications</Text>
                 </YStack>
                 <AppSwitch
+                  disabled={isNotificationUpdating}
                   checked={notificationPrefs?.push_enabled ?? true}
                   onCheckedChange={(checked) => {
                     updateNotificationPrefs.mutate({ push_enabled: checked });
@@ -294,11 +298,11 @@ export default function SettingsScreen() {
 
               {/* Expandable category toggles */}
               {showNotificationDetails && (
-                <YStack gap="$2" opacity={notificationPrefs?.push_enabled ? 1 : 0.5} paddingTop="$2">
+                <YStack gap="$2" opacity={!notificationPrefs?.push_enabled || isNotificationUpdating ? 0.5 : 1} paddingTop="$2">
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text fontSize="$3" color="$color">Fasting Reminders</Text>
                     <AppSwitch
-                      disabled={!notificationPrefs?.push_enabled}
+                      disabled={!notificationPrefs?.push_enabled || isNotificationUpdating}
                       checked={notificationPrefs?.fasting_notifications ?? true}
                       onCheckedChange={(checked) => {
                         updateNotificationPrefs.mutate({ fasting_notifications: checked });
@@ -309,7 +313,7 @@ export default function SettingsScreen() {
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text fontSize="$3" color="$color">Workout Reminders</Text>
                     <AppSwitch
-                      disabled={!notificationPrefs?.push_enabled}
+                      disabled={!notificationPrefs?.push_enabled || isNotificationUpdating}
                       checked={notificationPrefs?.workout_notifications ?? true}
                       onCheckedChange={(checked) => {
                         updateNotificationPrefs.mutate({ workout_notifications: checked });
@@ -320,7 +324,7 @@ export default function SettingsScreen() {
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text fontSize="$3" color="$color">Streak Alerts</Text>
                     <AppSwitch
-                      disabled={!notificationPrefs?.push_enabled}
+                      disabled={!notificationPrefs?.push_enabled || isNotificationUpdating}
                       checked={notificationPrefs?.streak_notifications ?? true}
                       onCheckedChange={(checked) => {
                         updateNotificationPrefs.mutate({ streak_notifications: checked });
@@ -331,7 +335,7 @@ export default function SettingsScreen() {
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text fontSize="$3" color="$color">Achievement Unlocks</Text>
                     <AppSwitch
-                      disabled={!notificationPrefs?.push_enabled}
+                      disabled={!notificationPrefs?.push_enabled || isNotificationUpdating}
                       checked={notificationPrefs?.achievement_notifications ?? true}
                       onCheckedChange={(checked) => {
                         updateNotificationPrefs.mutate({ achievement_notifications: checked });
@@ -342,7 +346,7 @@ export default function SettingsScreen() {
                   <XStack justifyContent="space-between" alignItems="center">
                     <Text fontSize="$3" color="$color">Daily Motivation</Text>
                     <AppSwitch
-                      disabled={!notificationPrefs?.push_enabled}
+                      disabled={!notificationPrefs?.push_enabled || isNotificationUpdating}
                       checked={notificationPrefs?.motivational_notifications ?? true}
                       onCheckedChange={(checked) => {
                         updateNotificationPrefs.mutate({ motivational_notifications: checked });
@@ -358,6 +362,7 @@ export default function SettingsScreen() {
                         <Text fontSize="$3" color="$colorMuted">10 PM - 7 AM</Text>
                       </YStack>
                       <AppSwitch
+                        disabled={isNotificationUpdating}
                         checked={notificationPrefs?.quiet_hours_enabled ?? false}
                         onCheckedChange={(checked) => {
                           updateNotificationPrefs.mutate({ quiet_hours_enabled: checked });

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, View, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTheme } from '@tamagui/core';
@@ -8,8 +9,9 @@ import { useUIStore } from '@/shared/stores/ui';
 
 function ProfileTabIcon({ color, size }: { color: string; size: number }) {
   const { data: profile } = useProfile();
+  const [imageError, setImageError] = useState(false);
 
-  if (profile?.avatar_url) {
+  if (profile?.avatar_url && !imageError) {
     return (
       <View
         style={{
@@ -23,6 +25,7 @@ function ProfileTabIcon({ color, size }: { color: string; size: number }) {
           source={{ uri: profile.avatar_url }}
           style={{ width: size + 4, height: size + 4 }}
           resizeMode="cover"
+          onError={() => setImageError(true)}
         />
       </View>
     );

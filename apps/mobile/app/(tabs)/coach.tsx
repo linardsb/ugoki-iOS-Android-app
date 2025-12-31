@@ -49,7 +49,9 @@ export default function CoachScreen() {
     },
     onError: (error) => {
       setTyping(false);
-      Alert.alert('Error', error);
+      // Add error message to chat so user sees feedback
+      addAssistantMessage("Sorry, I couldn't process that request. Please try again.");
+      Alert.alert('Connection Error', 'Failed to send message. Please check your connection and try again.');
     },
   });
 

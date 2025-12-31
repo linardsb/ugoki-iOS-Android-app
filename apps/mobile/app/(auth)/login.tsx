@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { YStack, H1, Text, Button, Input, XStack, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
+import { Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'phosphor-react-native';
 
@@ -9,6 +10,25 @@ export default function LoginScreen() {
   const theme = useTheme();
   const iconColor = theme.color.val;
   const mutedColor = theme.colorMuted.val;
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSignIn = () => {
+    if (!email || !password) {
+      Alert.alert('Missing Fields', 'Please enter both email and password.');
+      return;
+    }
+    // Email/password auth coming soon - for now show message
+    Alert.alert(
+      'Coming Soon',
+      'Email sign-in will be available soon. For now, please use the Get Started button on the welcome screen to continue with anonymous mode.',
+      [
+        { text: 'Go Back', onPress: () => router.back() },
+        { text: 'OK' },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -47,6 +67,8 @@ export default function LoginScreen() {
               borderWidth={1}
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+              value={email}
+              onChangeText={setEmail}
             />
           </YStack>
 
@@ -65,6 +87,8 @@ export default function LoginScreen() {
               borderWidth={1}
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+              value={password}
+              onChangeText={setPassword}
             />
           </YStack>
 
@@ -81,9 +105,12 @@ export default function LoginScreen() {
             backgroundColor="$primary"
             borderRadius="$4"
             pressStyle={{ backgroundColor: '$primaryPress', scale: 0.98 }}
+            onPress={handleSignIn}
+            disabled={isLoading}
+            opacity={isLoading ? 0.7 : 1}
           >
             <Text color="white" fontWeight="700" fontSize="$5">
-              Sign In
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </Text>
           </Button>
 

@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { YStack, H1, Text, Button, Input, XStack, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Pressable } from 'react-native';
+import { Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowLeft } from 'phosphor-react-native';
 
@@ -9,6 +10,30 @@ export default function SignupScreen() {
   const theme = useTheme();
   const iconColor = theme.color.val;
   const mutedColor = theme.colorMuted.val;
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCreateAccount = () => {
+    if (!name || !email || !password) {
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      return;
+    }
+    if (password.length < 8) {
+      Alert.alert('Weak Password', 'Password must be at least 8 characters.');
+      return;
+    }
+    // Email/password auth coming soon - for now show message
+    Alert.alert(
+      'Coming Soon',
+      'Account creation will be available soon. For now, please use the Get Started button on the welcome screen to continue with anonymous mode.',
+      [
+        { text: 'Go Back', onPress: () => router.back() },
+        { text: 'OK' },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -46,6 +71,8 @@ export default function SignupScreen() {
               borderWidth={1}
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+              value={name}
+              onChangeText={setName}
             />
           </YStack>
 
@@ -65,6 +92,8 @@ export default function SignupScreen() {
               borderWidth={1}
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+              value={email}
+              onChangeText={setEmail}
             />
           </YStack>
 
@@ -83,6 +112,8 @@ export default function SignupScreen() {
               borderWidth={1}
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+              value={password}
+              onChangeText={setPassword}
             />
             <Text color="$colorMuted" fontSize="$3">
               At least 8 characters
@@ -98,9 +129,12 @@ export default function SignupScreen() {
             backgroundColor="$primary"
             borderRadius="$4"
             pressStyle={{ backgroundColor: '$primaryPress', scale: 0.98 }}
+            onPress={handleCreateAccount}
+            disabled={isLoading}
+            opacity={isLoading ? 0.7 : 1}
           >
             <Text color="white" fontWeight="700" fontSize="$5">
-              Create Account
+              {isLoading ? 'Creating...' : 'Create Account'}
             </Text>
           </Button>
 

@@ -69,8 +69,6 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  const totalTime = recipe.prep_time_minutes + recipe.cook_time_minutes;
-
   return (
     <View flex={1} backgroundColor="$background">
       <ScreenHeader
