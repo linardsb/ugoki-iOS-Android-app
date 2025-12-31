@@ -196,30 +196,55 @@ export default function AchievementsScreen() {
           </YStack>
         </XStack>
 
-        {/* Category Filters */}
-        <XStack paddingHorizontal="$4" paddingVertical="$3" gap="$2" justifyContent="space-between">
-          {FILTERS.map((f) => (
-            <XStack
-              key={f.key}
-              flex={1}
-              height={36}
-              backgroundColor={filter === f.key ? '$primary' : '$cardBackground'}
-              borderRadius={18}
-              alignItems="center"
-              justifyContent="center"
-              pressStyle={{ opacity: 0.8, scale: 0.97 }}
-              onPress={() => setFilter(f.key)}
-            >
-              <Text
-                fontSize={13}
-                fontWeight="600"
-                color={filter === f.key ? 'white' : '$colorMuted'}
+        {/* Category Filters - 2 rows of 3 */}
+        <YStack paddingHorizontal="$4" paddingVertical="$3" gap="$2">
+          <XStack gap="$2">
+            {FILTERS.slice(0, 3).map((f) => (
+              <XStack
+                key={f.key}
+                flex={1}
+                height={40}
+                backgroundColor={filter === f.key ? '$primary' : '$cardBackground'}
+                borderRadius={20}
+                alignItems="center"
+                justifyContent="center"
+                pressStyle={{ opacity: 0.8, scale: 0.97 }}
+                onPress={() => setFilter(f.key)}
               >
-                {f.label}
-              </Text>
-            </XStack>
-          ))}
-        </XStack>
+                <Text
+                  fontSize={14}
+                  fontWeight="600"
+                  color={filter === f.key ? 'white' : '$colorMuted'}
+                >
+                  {f.label}
+                </Text>
+              </XStack>
+            ))}
+          </XStack>
+          <XStack gap="$2">
+            {FILTERS.slice(3, 6).map((f) => (
+              <XStack
+                key={f.key}
+                flex={1}
+                height={40}
+                backgroundColor={filter === f.key ? '$primary' : '$cardBackground'}
+                borderRadius={20}
+                alignItems="center"
+                justifyContent="center"
+                pressStyle={{ opacity: 0.8, scale: 0.97 }}
+                onPress={() => setFilter(f.key)}
+              >
+                <Text
+                  fontSize={14}
+                  fontWeight="600"
+                  color={filter === f.key ? 'white' : '$colorMuted'}
+                >
+                  {f.label}
+                </Text>
+              </XStack>
+            ))}
+          </XStack>
+        </YStack>
 
         {/* Achievements Grid */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>

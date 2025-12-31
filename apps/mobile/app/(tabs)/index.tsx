@@ -106,18 +106,18 @@ export default function HomeScreen() {
         </YStack>
       </XStack>
 
-      {/* Weight & Workout Stats Row */}
-      <XStack gap="$3" marginBottom="$4">
-        <YStack flex={1}>
-          <WeightCard
-            latestWeight={latestWeight ?? null}
-            trend={weightTrend ?? null}
-          />
-        </YStack>
-        <YStack flex={1}>
-          <WorkoutStatsCard stats={workoutStats ?? null} />
-        </YStack>
-      </XStack>
+      {/* Weight Card - Full Width */}
+      <YStack marginBottom="$3">
+        <WeightCard
+          latestWeight={latestWeight ?? null}
+          trend={weightTrend ?? null}
+        />
+      </YStack>
+
+      {/* Workout Stats Card - Full Width */}
+      <YStack marginBottom="$4">
+        <WorkoutStatsCard stats={workoutStats ?? null} />
+      </YStack>
 
       {/* Quick Actions */}
       <YStack marginBottom="$4">

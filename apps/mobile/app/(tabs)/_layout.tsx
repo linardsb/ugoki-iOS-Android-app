@@ -1,17 +1,8 @@
-import { Image, View, Dimensions } from 'react-native';
-import { withLayoutContext } from 'expo-router';
+import { Image, View } from 'react-native';
+import { Tabs } from 'expo-router';
 import { useTheme } from '@tamagui/core';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { House, Timer, Barbell, Chat, User } from 'phosphor-react-native';
 import { useProfile } from '@/features/profile';
-
-const { Navigator } = createMaterialTopTabNavigator();
-
-const MaterialTopTabs = withLayoutContext<
-  React.ComponentProps<typeof Navigator>['screenOptions'],
-  typeof Navigator
->(Navigator);
 
 function ProfileTabIcon({ color, size }: { color: string; size: number }) {
   const { data: profile } = useProfile();
@@ -40,24 +31,11 @@ function ProfileTabIcon({ color, size }: { color: string; size: number }) {
 
 export default function TabsLayout() {
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
-
-  const { width } = Dimensions.get('window');
 
   return (
-    <MaterialTopTabs
-      tabBarPosition="bottom"
-      initialLayout={{ width }}
-      pagerStyle={{ flex: 1 }}
+    <Tabs
       screenOptions={{
-        swipeEnabled: true,
-        animationEnabled: true,
-        lazy: false,
-        lazyPreloadDistance: 1,
-        tabBarScrollEnabled: false,
-        tabBarBounces: false,
-        tabBarPressColor: 'transparent',
-        tabBarPressOpacity: 0.8,
+        headerShown: false,
         tabBarActiveTintColor: theme.primary?.val || '#14b8a6',
         tabBarInactiveTintColor: theme.colorHover?.val || '#9ca3af',
         tabBarStyle: {
@@ -65,65 +43,53 @@ export default function TabsLayout() {
           borderTopColor: theme.borderColor?.val || '#e5e5e5',
           borderTopWidth: 1,
           paddingTop: 8,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
-          height: 70 + (insets.bottom > 0 ? insets.bottom : 12),
+          paddingBottom: 28,
+          height: 85,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
           marginTop: 4,
-          textTransform: 'none',
         },
-        tabBarIndicatorStyle: {
-          backgroundColor: theme.primary?.val || '#14b8a6',
-          height: 3,
-          borderRadius: 1.5,
-          position: 'absolute',
-          top: 0,
-        },
-        tabBarIconStyle: {
-          marginTop: 4,
-        },
-        tabBarShowIcon: true,
       }}
     >
-      <MaterialTopTabs.Screen
+      <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <House size={24} color={color} weight="thin" />,
+          tabBarIcon: ({ color, size }) => <House size={size} color={color} weight="thin" />,
         }}
       />
-      <MaterialTopTabs.Screen
+      <Tabs.Screen
         name="fasting"
         options={{
           title: 'Fast',
-          tabBarIcon: ({ color }) => <Timer size={24} color={color} weight="thin" />,
+          tabBarIcon: ({ color, size }) => <Timer size={size} color={color} weight="thin" />,
         }}
       />
-      <MaterialTopTabs.Screen
+      <Tabs.Screen
         name="workouts"
         options={{
           title: 'Workouts',
-          tabBarIcon: ({ color }) => <Barbell size={24} color={color} weight="thin" />,
+          tabBarIcon: ({ color, size }) => <Barbell size={size} color={color} weight="thin" />,
         }}
       />
-      <MaterialTopTabs.Screen
+      <Tabs.Screen
         name="coach"
         options={{
           title: 'Coach',
-          tabBarIcon: ({ color }) => <Chat size={24} color={color} weight="thin" />,
+          tabBarIcon: ({ color, size }) => <Chat size={size} color={color} weight="thin" />,
         }}
       />
-      <MaterialTopTabs.Screen
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <ProfileTabIcon color={color} size={24} />
+          tabBarIcon: ({ color, size }) => (
+            <ProfileTabIcon color={color} size={size} />
           ),
         }}
       />
-    </MaterialTopTabs>
+    </Tabs>
   );
 }

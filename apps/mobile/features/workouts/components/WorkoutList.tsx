@@ -1,5 +1,5 @@
-import { YStack, XStack, Text, ScrollView, Spinner } from 'tamagui';
-import { FlatList, ListRenderItem } from 'react-native';
+import { YStack, XStack, Text, Spinner } from 'tamagui';
+import { FlatList, ListRenderItem, ScrollView } from 'react-native';
 import { Barbell } from 'phosphor-react-native';
 import { WorkoutCard } from './WorkoutCard';
 import type { Workout } from '../types';
@@ -51,6 +51,8 @@ export function WorkoutList({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+        nestedScrollEnabled={true}
+        scrollEventThrottle={16}
       >
         {workouts.map((workout) => (
           <WorkoutCard

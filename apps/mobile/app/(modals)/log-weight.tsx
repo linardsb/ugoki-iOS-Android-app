@@ -105,7 +105,7 @@ export default function LogWeightScreen() {
             </Button>
           </XStack>
 
-          <YStack flex={1} padding="$4" gap="$5">
+          <YStack padding="$4" gap="$5">
             {/* Current Stats */}
             <XStack gap="$3">
               <YStack
@@ -227,10 +227,8 @@ export default function LogWeightScreen() {
                 </XStack>
               </YStack>
             )}
-          </YStack>
 
-          {/* Save Button */}
-          <YStack padding="$4" paddingBottom={34}>
+            {/* Save Button */}
             <Button
               size="$6"
               height={56}
@@ -239,6 +237,7 @@ export default function LogWeightScreen() {
               pressStyle={{ backgroundColor: '$primaryPress', scale: 0.98 }}
               onPress={handleSave}
               disabled={!weight || logWeight.isPending}
+              marginTop="$4"
             >
               <Text
                 color={weight ? 'white' : '$colorMuted'}

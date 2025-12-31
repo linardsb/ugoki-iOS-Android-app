@@ -1948,33 +1948,6 @@ Mobile pull-to-refresh → useStreaks() + useFastingHistory()
                     Calculate & display real metrics
 ```
 
-**Tab Navigation with Swipe Gestures:**
-
-Replaced Expo Router's default Tabs with Material Top Tabs for swipe navigation:
-
-- **Dependencies Added:**
-  - `@react-navigation/material-top-tabs@7.4.11`
-  - `react-native-pager-view@6.5.1`
-
-- **File: `apps/mobile/app/(tabs)/_layout.tsx`**
-  - Used `withLayoutContext` to integrate Material Top Tabs with Expo Router
-  - Set `tabBarPosition: 'bottom'` to keep tabs at bottom
-  - Enabled `swipeEnabled: true` for swipe between tabs
-  - Enabled `animationEnabled: true` for slide transitions
-  - Added teal indicator at top of tab bar
-  - Preserved all existing icons (House, Timer, Barbell, Chat, User/Avatar)
-
-- **Features:**
-  - Swipe left/right between tabs
-  - Smooth slide animation on tab press
-  - Same visual design as before
-
-- **Performance Optimizations:**
-  - `lazy: false` - All screens pre-loaded for instant switching
-  - `initialLayout: { width }` - Prevents layout jump on first render
-  - `tabBarBounces: false` - No bounce on tab bar
-  - `tabBarPressColor: 'transparent'` - Clean press effect
-
 **Coach Disclaimer Font Fix:**
 
 - **File: `features/coach/components/WelcomeMessage.tsx`**
@@ -1986,6 +1959,43 @@ Replaced Expo Router's default Tabs with Material Top Tabs for swipe navigation:
 - **File: `app/(modals)/settings.tsx`**
   - Replaced generic icons with Phosphor gender symbols (GenderMale, GenderFemale)
   - Removed "Other" and "Prefer not to say" options
+
+### December 31, 2025 (Continued) - Achievements Fix & UI Updates
+
+**Achievements Not Showing - Bug Fix:**
+
+**Problem:** Achievements screen showed "0 of 0 unlocked" despite 21 achievements existing in the database.
+
+**Root Cause:** The `get_user_achievements` method in `progression/service.py` only returned achievements where the user had records in the `user_achievements` table. For new users with no progress, it returned an empty array.
+
+**Fix Applied:**
+- **File: `apps/api/src/modules/progression/service.py` (lines 264-307)**
+  - Now fetches ALL achievements (including 2 hidden ones)
+  - Merges with user progress data from `user_achievements` table
+  - Defaults to `progress: 0, is_unlocked: false` for achievements with no user records
+  - Hidden achievements returned so UI can show "Hidden Achievement" placeholders
+
+**Before:**
+```python
+query = select(UserAchievementORM).where(identity_id == ...)
+# Returns empty for new users
+```
+
+**After:**
+```python
+all_achievements = await self.get_achievements(include_hidden=True)
+progress_map = {orm.achievement_id: orm for orm in user_progress}
+# Merge all achievements with user progress, defaulting to 0
+```
+
+**Achievements Filter UI Update:**
+
+- **File: `apps/mobile/app/(modals)/achievements.tsx`**
+  - Changed filter buttons from 1 row of 6 to 2 rows of 3
+  - Row 1: All, Streak, Fasting
+  - Row 2: Workout, Weight, Special
+  - Increased button height from 36px to 40px
+  - Increased font size from 13 to 14
 
 ---
 
@@ -2007,7 +2017,7 @@ Replaced Expo Router's default Tabs with Material Top Tabs for swipe navigation:
 - ✅ Recipes feature - 30 curated recipes
 - ✅ Saved recipes functionality
 - ✅ Activity feed with click-to-navigate
-- ✅ **Swipeable tab navigation** - slide between tabs with gestures
+- ✅ **Achievements gallery** - 21 achievements with progress tracking
 
 **Backend API - ALL MODULES COMPLETE:**
 - ✅ IDENTITY - JWT auth, anonymous mode

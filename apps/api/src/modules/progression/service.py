@@ -266,30 +266,42 @@ class ProgressionService(ProgressionInterface):
         identity_id: str,
         unlocked_only: bool = False,
     ) -> list[UserAchievement]:
-        query = select(UserAchievementORM).where(
-            UserAchievementORM.identity_id == identity_id
-        )
-        if unlocked_only:
-            query = query.where(UserAchievementORM.is_unlocked == True)  # noqa: E712
+        # Get ALL achievements including hidden ones (UI will show them as locked)
+        all_achievements = await self.get_achievements(include_hidden=True)
 
-        result = await self._db.execute(query)
+        # Get user's progress records
+        progress_result = await self._db.execute(
+            select(UserAchievementORM).where(
+                UserAchievementORM.identity_id == identity_id
+            )
+        )
+
+        # Create a map of achievement_id -> user progress
+        progress_map = {
+            orm.achievement_id: orm for orm in progress_result.scalars()
+        }
+
         user_achievements = []
 
-        for orm in result.scalars():
-            # Get achievement details
-            ach_result = await self._db.execute(
-                select(AchievementORM).where(AchievementORM.id == orm.achievement_id)
-            )
-            ach_orm = ach_result.scalar_one_or_none()
+        for achievement in all_achievements:
+            user_progress = progress_map.get(achievement.id)
+
+            is_unlocked = user_progress.is_unlocked if user_progress else False
+            progress = user_progress.progress if user_progress else 0
+            unlocked_at = user_progress.unlocked_at if user_progress else None
+
+            # Filter by unlocked_only if requested
+            if unlocked_only and not is_unlocked:
+                continue
 
             user_achievements.append(UserAchievement(
-                id=orm.id,
-                identity_id=orm.identity_id,
-                achievement_id=orm.achievement_id,
-                achievement=self._achievement_to_model(ach_orm) if ach_orm else None,
-                progress=orm.progress,
-                is_unlocked=orm.is_unlocked,
-                unlocked_at=orm.unlocked_at or datetime.now(UTC),
+                id=user_progress.id if user_progress else f"pending_{achievement.id}",
+                identity_id=identity_id,
+                achievement_id=achievement.id,
+                achievement=achievement,
+                progress=progress,
+                is_unlocked=is_unlocked,
+                unlocked_at=unlocked_at or datetime.now(UTC),
             ))
 
         return user_achievements
