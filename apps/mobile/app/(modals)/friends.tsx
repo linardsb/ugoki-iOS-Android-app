@@ -90,7 +90,7 @@ export default function FriendsScreen() {
       <ScreenHeader
         title="Friends"
         showClose
-        rightElement={
+        rightAction={
           <XStack gap="$3">
             <TouchableOpacity onPress={() => router.push('/friend-requests')}>
               <View>

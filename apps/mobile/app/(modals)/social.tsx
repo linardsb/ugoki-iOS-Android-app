@@ -24,7 +24,7 @@ import {
   useLeaderboard,
   useFriendRequestCount,
 } from '@/features/social/hooks';
-import { ChallengeCard, LeaderboardEntry } from '@/features/social/components';
+import { ChallengeCard, LeaderboardEntryRow } from '@/features/social/components';
 
 export default function SocialScreen() {
   const theme = useTheme();
@@ -35,7 +35,7 @@ export default function SocialScreen() {
   const { data: followers, refetch: refetchFollowers } = useFollowers();
   const { data: myChallenges, isLoading: challengesLoading, refetch: refetchChallenges } = useMyChallenges();
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard('global_xp', 'all_time', 5);
-  const { data: requestCount } = useFriendRequestCount();
+  const requestCount = useFriendRequestCount();
 
   const isRefreshing = friendsLoading || challengesLoading;
 
@@ -199,7 +199,7 @@ export default function SocialScreen() {
             >
               {leaderboard?.entries && leaderboard.entries.length > 0 ? (
                 leaderboard.entries.slice(0, 5).map((entry) => (
-                  <LeaderboardEntry
+                  <LeaderboardEntryRow
                     key={entry.identity_id}
                     entry={entry}
                     valueLabel="XP"

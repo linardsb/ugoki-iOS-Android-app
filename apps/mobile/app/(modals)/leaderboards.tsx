@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Trophy, Users, Flame, Star } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import { useLeaderboard } from '@/features/social/hooks';
-import { LeaderboardEntry as LeaderboardEntryComponent } from '@/features/social/components';
+import { LeaderboardEntryRow } from '@/features/social/components';
 import type { LeaderboardType, LeaderboardPeriod } from '@/features/social/types';
 
 type MetricType = 'xp' | 'streaks';
@@ -166,7 +166,7 @@ export default function LeaderboardsScreen() {
             </Text>
           ) : leaderboard && leaderboard.entries.length > 0 ? (
             leaderboard.entries.map((entry) => (
-              <LeaderboardEntryComponent
+              <LeaderboardEntryRow
                 key={entry.identity_id}
                 entry={entry}
                 valueLabel={valueLabel}

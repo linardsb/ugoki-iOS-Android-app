@@ -16,7 +16,7 @@ interface LeaderboardEntryProps {
   onPress?: () => void;
 }
 
-export function LeaderboardEntry({ entry, valueLabel = 'XP', onPress }: LeaderboardEntryProps) {
+export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: LeaderboardEntryProps) {
   const router = useRouter();
 
   const handlePress = () => {

@@ -25,7 +25,7 @@ import {
   useJoinChallenge,
   useLeaveChallenge,
 } from '@/features/social/hooks';
-import { LeaderboardEntry } from '@/features/social/components';
+import { LeaderboardEntryRow } from '@/features/social/components';
 import { CHALLENGE_TYPE_LABELS, CHALLENGE_STATUS_COLORS, CHALLENGE_TYPE_UNITS } from '@/features/social/types';
 
 export default function ChallengeDetailScreen() {
@@ -155,7 +155,7 @@ export default function ChallengeDetailScreen() {
     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
       <ScreenHeader
         title="Challenge"
-        rightElement={
+        rightAction={
           challenge.is_participating && (
             <TouchableOpacity onPress={handleShare}>
               <ShareNetwork size={24} color="#2B2B32" weight="regular" />
@@ -288,7 +288,7 @@ export default function ChallengeDetailScreen() {
           {leaderboard && leaderboard.length > 0 ? (
             <YStack gap="$2">
               {leaderboard.map((participant) => (
-                <LeaderboardEntry
+                <LeaderboardEntryRow
                   key={participant.id}
                   entry={{
                     rank: participant.rank || 0,

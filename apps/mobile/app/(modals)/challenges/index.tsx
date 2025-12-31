@@ -89,7 +89,7 @@ export default function ChallengesScreen() {
       <ScreenHeader
         title="Challenges"
         showClose
-        rightElement={
+        rightAction={
           <XStack gap="$3">
             <TouchableOpacity onPress={handleJoinByCode}>
               <Ticket size={24} color="#2B2B32" weight="regular" />
