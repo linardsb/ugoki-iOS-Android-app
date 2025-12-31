@@ -207,10 +207,15 @@ export const useWorkoutPlayerStore = create<WorkoutPlayerState>()((set, get) => 
 
     const remaining = Math.max(0, phaseDuration - phaseElapsed);
 
-    // Update calories (rough estimate based on exercise)
+    // Update calories based on workout's total estimate
+    // calories_estimate is for the full workout, so calculate per-tick rate
     let newCalories = caloriesBurned;
-    if (phase === 'exercise' && currentExercise) {
-      newCalories = caloriesBurned + (currentExercise.calories_per_minute / 60);
+    if (phase === 'exercise' && workout) {
+      // Calculate calories per second based on workout total
+      const caloriesPerMinute = workout.calories_estimate / workout.duration_minutes;
+      // tick() is called every 100ms, so add 1/10th of per-second rate
+      const caloriesPerTick = caloriesPerMinute / 60 / 10;
+      newCalories = caloriesBurned + caloriesPerTick;
     }
 
     // Check if phase is complete

@@ -3,10 +3,11 @@
  */
 
 import { useState, useCallback } from 'react';
-import { FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import { FlatList, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { View, Text, YStack, XStack, Input } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { BookmarkSimple } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -53,7 +54,27 @@ export default function RecipeListScreen() {
 
   return (
     <View flex={1} backgroundColor="$background">
-      <ScreenHeader title="Recipes" showBack />
+      <ScreenHeader
+        title="Recipes"
+        showClose
+        rightAction={
+          <TouchableOpacity
+            onPress={() => router.push('/(modals)/saved-recipes')}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#f3f4f6',
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 20,
+              gap: 6,
+            }}
+          >
+            <BookmarkSimple size={18} color="#f97316" weight="fill" />
+            <Text fontSize={14} fontWeight="600" color="#2B2B32">Saved</Text>
+          </TouchableOpacity>
+        }
+      />
 
       {/* Search Bar */}
       <View paddingHorizontal="$4" paddingBottom="$2">

@@ -1,8 +1,10 @@
-import { Image, View } from 'react-native';
+import { Image, View, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useTheme } from '@tamagui/core';
 import { House, Timer, Barbell, Chat, User } from 'phosphor-react-native';
 import { useProfile } from '@/features/profile';
+import { ProfilePopupMenu } from '@/shared/components/ui';
+import { useUIStore } from '@/shared/stores/ui';
 
 function ProfileTabIcon({ color, size }: { color: string; size: number }) {
   const { data: profile } = useProfile();
@@ -29,67 +31,91 @@ function ProfileTabIcon({ color, size }: { color: string; size: number }) {
   return <User size={size} color={color} weight="thin" />;
 }
 
+// Custom Profile Tab Button that shows popup menu
+function ProfileTabButton(props: any) {
+  const { openProfileMenu } = useUIStore();
+  const { children, style, accessibilityState } = props;
+
+  return (
+    <TouchableOpacity
+      style={style}
+      onPress={openProfileMenu}
+      accessibilityRole="button"
+      accessibilityState={accessibilityState}
+      accessibilityLabel="Profile menu"
+    >
+      {children}
+    </TouchableOpacity>
+  );
+}
+
 export default function TabsLayout() {
   const theme = useTheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: theme.primary?.val || '#14b8a6',
-        tabBarInactiveTintColor: theme.colorHover?.val || '#9ca3af',
-        tabBarStyle: {
-          backgroundColor: theme.background?.val || '#ffffff',
-          borderTopColor: theme.borderColor?.val || '#e5e5e5',
-          borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 28,
-          height: 85,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 4,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <House size={size} color={color} weight="thin" />,
+    <View style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: theme.primary?.val || '#14b8a6',
+          tabBarInactiveTintColor: theme.colorHover?.val || '#9ca3af',
+          tabBarStyle: {
+            backgroundColor: theme.background?.val || '#ffffff',
+            borderTopColor: theme.borderColor?.val || '#e5e5e5',
+            borderTopWidth: 1,
+            paddingTop: 8,
+            paddingBottom: 28,
+            height: 85,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '600',
+            marginTop: 4,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="fasting"
-        options={{
-          title: 'Fast',
-          tabBarIcon: ({ color, size }) => <Timer size={size} color={color} weight="thin" />,
-        }}
-      />
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: 'Workouts',
-          tabBarIcon: ({ color, size }) => <Barbell size={size} color={color} weight="thin" />,
-        }}
-      />
-      <Tabs.Screen
-        name="coach"
-        options={{
-          title: 'Coach',
-          tabBarIcon: ({ color, size }) => <Chat size={size} color={color} weight="thin" />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <ProfileTabIcon color={color} size={size} />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color, size }) => <House size={size} color={color} weight="thin" />,
+          }}
+        />
+        <Tabs.Screen
+          name="fasting"
+          options={{
+            title: 'Fast',
+            tabBarIcon: ({ color, size }) => <Timer size={size} color={color} weight="thin" />,
+          }}
+        />
+        <Tabs.Screen
+          name="workouts"
+          options={{
+            title: 'Workouts',
+            tabBarIcon: ({ color, size }) => <Barbell size={size} color={color} weight="thin" />,
+          }}
+        />
+        <Tabs.Screen
+          name="coach"
+          options={{
+            title: 'Coach',
+            tabBarIcon: ({ color, size }) => <Chat size={size} color={color} weight="thin" />,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Profile',
+            tabBarIcon: ({ color, size }) => (
+              <ProfileTabIcon color={color} size={size} />
+            ),
+            tabBarButton: (props) => <ProfileTabButton {...props} />,
+          }}
+        />
+      </Tabs>
+
+      {/* Profile Popup Menu - rendered above tabs */}
+      <ProfilePopupMenu />
+    </View>
   );
 }

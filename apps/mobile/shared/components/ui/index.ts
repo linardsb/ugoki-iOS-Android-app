@@ -10,3 +10,4 @@ export { EmptyState } from './EmptyState';
 export { ScreenHeader } from './ScreenHeader';
 export { Avatar } from './Avatar';
 export { ThemeToggle } from './ThemeToggle';
+export { ProfilePopupMenu } from './ProfilePopupMenu';

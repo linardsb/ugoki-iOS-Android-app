@@ -317,11 +317,21 @@ class ContentService(ContentInterface):
             raise ValueError(f"Session is not active (status: {session.status})")
 
         now = datetime.now(UTC)
-        duration = int((now - session.started_at.replace(tzinfo=UTC)).total_seconds())
 
-        # Calculate calories if not provided
-        if calories_burned is None and session.workout:
-            calories_burned = session.workout.calories_estimate
+        # Use workout's expected duration (not wall-clock time which may be shorter if skipping)
+        if session.workout:
+            duration = session.workout.duration_minutes * 60
+        else:
+            duration = int((now - session.started_at.replace(tzinfo=UTC)).total_seconds())
+
+        # Use workout's calories estimate as minimum (mobile calculation may be lower if skipping)
+        if session.workout:
+            estimated_calories = session.workout.calories_estimate
+            # Use the higher of: mobile-calculated calories or workout estimate
+            if calories_burned is None or calories_burned < estimated_calories * 0.5:
+                calories_burned = estimated_calories
+        elif calories_burned is None:
+            calories_burned = 0
 
         # Award XP (75 base + duration bonus)
         xp_earned = 75 + min(duration // 60, 30)  # Up to 30 extra XP for longer workouts

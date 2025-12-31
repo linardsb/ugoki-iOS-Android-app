@@ -29,7 +29,7 @@ All data in UGOKI reduces to 5 primitive types:
 | `METRIC` | Numeric measurement with timestamp |
 | `PROGRESSION` | Position in ordered sequence (streaks, levels) |
 
-### Modules (9 total)
+### Modules (10 total)
 
 ```
 IDENTITY       → Authentication, authorization
@@ -37,10 +37,11 @@ TIME_KEEPER    → All timers (fasting, workout, eating windows)
 EVENT_JOURNAL  → Immutable event log, GDPR compliance
 METRICS        → Numeric data storage, trends, aggregations
 PROGRESSION    → Streaks, XP, levels, achievements
-CONTENT        → Workout library, recommendations
+CONTENT        → Workout library, recipes, recommendations
 NOTIFICATION   → Push, email, scheduling
 PROFILE        → User PII, preferences (GDPR isolated)
 AI_COACH       → Pydantic AI agents, Claude integration
+SOCIAL         → Friends, followers, leaderboards, challenges
 ```
 
 ---
@@ -107,7 +108,9 @@ ugoki/
 │   │   │   ├── fasting/           # Fasting hooks, components
 │   │   │   ├── workouts/          # Workout hooks, components
 │   │   │   ├── dashboard/         # Dashboard components
-│   │   │   └── coach/             # AI Coach UI
+│   │   │   ├── coach/             # AI Coach UI
+│   │   │   ├── recipes/           # Recipe browsing, saving
+│   │   │   └── social/            # Friends, leaderboards, challenges
 │   │   ├── shared/                # Shared utilities
 │   │   │   ├── api/               # API client, query keys
 │   │   │   ├── stores/            # Zustand stores, MMKV storage
@@ -127,10 +130,11 @@ ugoki/
 │       │   │   ├── content/
 │       │   │   ├── notification/
 │       │   │   ├── profile/
-│       │   │   └── ai_coach/
-│       │   │       ├── agents/
-│       │   │       ├── tools/
-│       │   │       └── prompts/
+│       │   │   ├── ai_coach/
+│       │   │   │   ├── agents/
+│       │   │   │   ├── tools/
+│       │   │   │   └── prompts/
+│       │   │   └── social/
 │       │   ├── db/
 │       │   ├── core/
 │       │   └── main.py
@@ -375,7 +379,6 @@ EXPO_PUBLIC_API_URL=http://localhost:8000
 - OAuth sign-in (Google, Apple) - currently anonymous only
 - Meal logging / nutrition
 - Wearable integration
-- Social features (friend codes ready in PROFILE)
 - Extended fasting protocols
 - Meditation
 
@@ -484,7 +487,7 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 
 **Phase:** MVP COMPLETE - Ready for Production Deployment 🎉
 
-### Backend (8/9 Modules Complete)
+### Backend (10/10 Modules Complete)
 
 | Module | Status | Key Features |
 |--------|--------|--------------|
@@ -492,11 +495,12 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 | TIME_KEEPER | ✅ Complete | Fasting/eating/workout timers, pause/resume |
 | METRICS | ✅ Complete | Weight tracking, body metrics, trends, biomarkers, bloodwork upload |
 | PROGRESSION | ✅ Complete | Streaks, XP, levels, 21 achievements seeded |
-| CONTENT | ✅ Complete | 16 workouts, 10 exercises, sessions, recommendations |
-| AI_COACH | ✅ Complete | Chat, context, insights, motivation, personality, bloodwork analysis |
+| CONTENT | ✅ Complete | 16 workouts, 30 recipes, sessions, recommendations |
+| AI_COACH | ✅ Complete | Chat, context, insights, motivation, personality, bloodwork analysis, safety filtering |
 | NOTIFICATION | ✅ Complete | Push tokens, preferences, scheduling, quiet hours |
 | PROFILE | ✅ Complete | Goals, health, dietary, social, GDPR compliance, bloodwork onboarding |
-| EVENT_JOURNAL | ⏳ Pending | Immutable event log (defer until needed) |
+| EVENT_JOURNAL | ✅ Complete | Immutable event log, activity tracking |
+| SOCIAL | ✅ Complete | Friends, followers, leaderboards, challenges |
 
 ### Mobile App Progress
 
@@ -507,18 +511,21 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 | Phase 2 | ✅ Complete | Fasting Timer (animated timer, controls, protocols, offline support) |
 | Phase 3 | ✅ Complete | Dashboard (level, streaks, weight, workout stats, quick actions) |
 | Phase 4 | ✅ Complete | Workouts (player, sessions, recommendations, exercise timer) |
-| Phase 5 | ✅ Complete | AI Coach (chat UI, message persistence, personality selection) |
+| Phase 5 | ✅ Complete | AI Coach (chat UI, message persistence, personality selection, safety) |
 | Phase 6 | ✅ Complete | Profile & Settings (profile editing, preferences, GDPR delete) |
 | Phase 7 | ✅ Complete | Polish (push notifications, weight logging, achievements, EAS builds) |
+| Phase 8 | ✅ Complete | Social (friends, followers, leaderboards, challenges) |
 
 ### Database Tables
 - `identities`, `capabilities` (IDENTITY)
 - `time_windows` (TIME_KEEPER)
 - `metrics` (METRICS)
 - `streaks`, `xp_transactions`, `user_levels`, `achievements`, `user_achievements` (PROGRESSION)
-- `workout_categories`, `workouts`, `exercises`, `workout_sessions` (CONTENT)
+- `workout_categories`, `workouts`, `exercises`, `workout_sessions`, `recipes`, `user_saved_recipes` (CONTENT)
 - `notifications`, `notification_preferences`, `device_tokens`, `scheduled_notifications` (NOTIFICATION)
 - `user_profiles`, `user_goals`, `health_profiles`, `dietary_profiles`, `workout_restrictions`, `social_profiles`, `user_preferences`, `onboarding_status` (PROFILE)
+- `activity_events` (EVENT_JOURNAL)
+- `friendships`, `follows`, `challenges`, `challenge_participants` (SOCIAL)
 
 ### Seeded Data
 - 21 achievements (streak, fasting, workout, weight, special categories)
@@ -2040,3 +2047,889 @@ progress_map = {orm.achievement_id: orm for orm in user_progress}
 
 **Repository:**
 - GitHub: https://github.com/linardsb/ugoki-iOS-Android-app
+
+### December 31, 2025 (Continued) - Social Networking Feature
+
+**Complete Social Feature Implemented (Backend + Mobile):**
+
+Added comprehensive social networking capabilities including friends, followers, leaderboards, and challenges.
+
+---
+
+#### Backend: SOCIAL Module (New)
+
+**New Files Created:**
+
+| File | Purpose |
+|------|---------|
+| `src/modules/social/__init__.py` | Module exports |
+| `src/modules/social/interface.py` | Abstract interface for social operations |
+| `src/modules/social/models.py` | Pydantic models for API request/response |
+| `src/modules/social/orm.py` | SQLAlchemy ORM models |
+| `src/modules/social/service.py` | Business logic implementation |
+| `src/modules/social/routes.py` | FastAPI endpoints |
+| `alembic/versions/d9e2f3a4b5c6_add_social_tables.py` | Database migration |
+
+**Database Tables Created:**
+
+```sql
+-- Friendships (bidirectional, always stored with id_a < id_b)
+friendships (
+  id, identity_id_a, identity_id_b,
+  status [pending|accepted|blocked],
+  requested_by, created_at, accepted_at
+)
+
+-- Follows (one-way)
+follows (
+  id, follower_id, following_id, created_at
+)
+
+-- Challenges (group competitions)
+challenges (
+  id, name, description, challenge_type,
+  goal_value, goal_unit, start_date, end_date,
+  created_by, join_code, is_public, max_participants
+)
+
+-- Challenge Participants
+challenge_participants (
+  id, challenge_id, identity_id,
+  joined_at, current_progress, completed, completed_at, rank
+)
+```
+
+**API Endpoints:**
+
+```
+# Friends
+POST   /social/friends/request              # Send friend request (by code or username)
+GET    /social/friends/requests/incoming    # Incoming requests
+GET    /social/friends/requests/outgoing    # Outgoing requests
+POST   /social/friends/requests/{id}/respond # Accept/decline
+GET    /social/friends                      # List friends
+DELETE /social/friends/{id}                 # Remove friend
+POST   /social/friends/{id}/block           # Block user
+DELETE /social/friends/{id}/block           # Unblock user
+
+# Follows
+POST   /social/follow/{user_id}             # Follow user
+DELETE /social/follow/{user_id}             # Unfollow user
+GET    /social/followers                    # Get followers
+GET    /social/following                    # Get following
+
+# Public Profiles
+GET    /social/users/{user_id}              # Get public profile
+GET    /social/users/search                 # Search users
+
+# Leaderboards
+GET    /social/leaderboards/{type}          # Get leaderboard (global_xp, global_streaks, friends_xp, friends_streaks)
+
+# Challenges
+POST   /social/challenges                   # Create challenge
+GET    /social/challenges                   # List challenges
+GET    /social/challenges/mine              # My challenges
+GET    /social/challenges/{id}              # Challenge detail
+POST   /social/challenges/{id}/join         # Join by ID
+POST   /social/challenges/join/{code}       # Join by code
+DELETE /social/challenges/{id}/leave        # Leave challenge
+GET    /social/challenges/{id}/leaderboard  # Challenge leaderboard
+POST   /social/challenges/update-progress   # Update progress
+
+# Sharing
+POST   /social/share/generate               # Generate share content
+```
+
+**Challenge Types:**
+| Type | Description | Unit |
+|------|-------------|------|
+| `fasting_streak` | Longest fasting streak | days |
+| `workout_count` | Most workouts completed | workouts |
+| `total_xp` | Most XP earned | XP |
+| `consistency` | Most days logged in | days |
+
+**Leaderboard Types:**
+| Type | Description |
+|------|-------------|
+| `global_xp` | All public profiles by total XP |
+| `global_streaks` | All public profiles by fasting streak |
+| `friends_xp` | Friends only by total XP |
+| `friends_streaks` | Friends only by fasting streak |
+
+**Leaderboard Periods:** `week`, `month`, `all_time`
+
+**Bug Fix Applied:**
+- **File:** `src/modules/social/service.py` (line 480)
+- **Issue:** `is_friend` variable was `None` instead of `False` when no friendship record exists
+- **Cause:** Python's `and` operator returns first falsy value, not `False`
+- **Fix:** Changed `friendship and friendship.status == ...` to `friendship is not None and friendship.status == ...`
+
+---
+
+#### Mobile: Social Feature Module (New)
+
+**Directory Structure:**
+```
+features/social/
+├── index.ts                    # Re-exports
+├── types.ts                    # TypeScript types matching backend
+├── hooks/
+│   ├── index.ts                # Hook exports
+│   ├── useFriends.ts           # Friend management
+│   ├── useFollows.ts           # Follow/unfollow
+│   ├── useLeaderboards.ts      # Leaderboard queries
+│   ├── useChallenges.ts        # Challenge CRUD
+│   └── useProfiles.ts          # Public profiles, search
+└── components/
+    ├── index.ts                # Component exports
+    ├── UserCard.tsx            # User display in lists
+    ├── LeaderboardEntry.tsx    # Leaderboard row with rank
+    ├── ChallengeCard.tsx       # Challenge card with progress
+    └── FriendRequestCard.tsx   # Friend request with actions
+```
+
+**TypeScript Types (`features/social/types.ts`):**
+
+```typescript
+// Enums
+type FriendshipStatus = 'pending' | 'accepted' | 'blocked';
+type ChallengeType = 'fasting_streak' | 'workout_count' | 'total_xp' | 'consistency';
+type ChallengeStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
+type LeaderboardType = 'global_xp' | 'global_streaks' | 'friends_xp' | 'friends_streaks' | 'challenge';
+type LeaderboardPeriod = 'week' | 'month' | 'all_time';
+
+// Models
+interface Friendship { id, friend_id, friend_username, friend_display_name, friend_avatar_url, status, created_at }
+interface FriendRequest { id, from_user, to_user, created_at }
+interface Follow { id, user_id, username, display_name, avatar_url, created_at }
+interface Challenge { id, name, description, challenge_type, goal_value, goal_unit, start_date, end_date, join_code, status, is_public, participant_count, max_participants, created_by_username, is_participating, my_progress, my_rank, days_remaining }
+interface ChallengeParticipant { id, challenge_id, identity_id, username, display_name, avatar_url, current_progress, completed, rank, joined_at }
+interface LeaderboardEntry { rank, identity_id, username, display_name, avatar_url, value, is_current_user }
+interface Leaderboard { type, period, entries[], user_rank, user_entry }
+interface PublicUserProfile { identity_id, username, display_name, avatar_url, bio, level, title, streaks, achievement_count, is_friend, is_following, is_followed_by, friendship_status }
+
+// UI Helpers
+const CHALLENGE_TYPE_LABELS: Record<ChallengeType, string>
+const CHALLENGE_TYPE_UNITS: Record<ChallengeType, string>
+const CHALLENGE_STATUS_COLORS: Record<ChallengeStatus, string>
+const LEADERBOARD_TYPE_LABELS: Record<LeaderboardType, string>
+```
+
+**Query Keys Added (`shared/api/query-client.ts`):**
+
+```typescript
+social: {
+  all: ['social'],
+  friends: () => [..., 'friends'],
+  incomingRequests: () => [..., 'incoming-requests'],
+  outgoingRequests: () => [..., 'outgoing-requests'],
+  followers: () => [..., 'followers'],
+  following: () => [..., 'following'],
+  userProfile: (userId) => [..., 'user', userId],
+  leaderboard: (type, period?) => [..., 'leaderboard', type, period],
+  challenges: (filters?) => [..., 'challenges', filters],
+  myChallenges: () => [..., 'my-challenges'],
+  challenge: (id) => [..., 'challenge', id],
+  challengeLeaderboard: (id) => [..., 'challenge-leaderboard', id],
+}
+```
+
+**React Query Hooks:**
+
+| Hook | Purpose |
+|------|---------|
+| `useFriends()` | Get friends list |
+| `useIncomingFriendRequests()` | Get pending incoming requests |
+| `useOutgoingFriendRequests()` | Get pending outgoing requests |
+| `useSendFriendRequest()` | Send request mutation |
+| `useRespondToFriendRequest()` | Accept/decline mutation |
+| `useRemoveFriend()` | Remove friend mutation |
+| `useBlockUser()` / `useUnblockUser()` | Block/unblock mutations |
+| `useFriendRequestCount()` | Get pending count |
+| `useFollowers()` / `useFollowing()` | Get follow lists |
+| `useFollowUser()` / `useUnfollowUser()` | Follow mutations |
+| `useToggleFollow()` | Toggle follow state |
+| `useLeaderboard(type, period, limit)` | Get leaderboard |
+| `useGlobalXPLeaderboard()` | Shorthand for global XP |
+| `useFriendsXPLeaderboard()` | Shorthand for friends XP |
+| `useChallenges(filters)` | List challenges |
+| `useMyChallenges()` | User's challenges |
+| `useChallenge(id)` | Single challenge |
+| `useChallengeLeaderboard(id)` | Challenge standings |
+| `useCreateChallenge()` | Create mutation |
+| `useJoinChallenge()` / `useJoinChallengeByCode()` | Join mutations |
+| `useLeaveChallenge()` | Leave mutation |
+| `usePublicProfile(userId)` | Get public profile |
+| `useSearchUsers(query)` | Search users |
+| `useGenerateShareContent()` | Generate share content |
+
+**UI Components:**
+
+| Component | Features |
+|-----------|----------|
+| `UserCard` | Avatar, name, username, level badge, optional action button |
+| `LeaderboardEntry` | Rank badge (gold/silver/bronze for top 3), avatar, name, value, highlight for current user |
+| `ChallengeCard` | Status badge, type icon, progress bar, participant count, days remaining |
+| `FriendRequestCard` | Avatar, name, Accept/Decline buttons with loading states |
+
+**Screen Modals:**
+
+| Screen | Path | Features |
+|--------|------|----------|
+| Friends | `/(modals)/friends` | Search, add by code, friends list |
+| Friend Requests | `/(modals)/friend-requests` | Tabs for incoming/outgoing |
+| Leaderboards | `/(modals)/leaderboards` | Scope toggle (global/friends), metric toggle (XP/streaks), period filter |
+| Challenges List | `/(modals)/challenges/index` | Tabs for browse/my challenges, join by code |
+| Challenge Detail | `/(modals)/challenges/[id]` | Progress, leaderboard, join/leave |
+| Create Challenge | `/(modals)/challenges/create` | Type selection, dates, goal, public toggle |
+| User Profile | `/(modals)/user/[id]` | Public profile with friend/follow/block actions |
+
+**Navigation Entry Points (Profile Screen):**
+
+Added "Social" section to `app/(tabs)/profile.tsx`:
+```tsx
+<SettingsSection title="Social">
+  <SettingsItem icon={<Users />} label="Friends" onPress={() => router.push('/(modals)/friends')} />
+  <SettingsItem icon={<Trophy />} label="Leaderboards" onPress={() => router.push('/(modals)/leaderboards')} />
+  <SettingsItem icon={<Flag />} label="Challenges" onPress={() => router.push('/(modals)/challenges')} />
+</SettingsSection>
+```
+
+**Dependencies Added:**
+```bash
+npx expo install expo-clipboard @react-native-community/datetimepicker
+```
+
+---
+
+**Files Created (Mobile):**
+- `features/social/types.ts`
+- `features/social/hooks/useFriends.ts`
+- `features/social/hooks/useFollows.ts`
+- `features/social/hooks/useLeaderboards.ts`
+- `features/social/hooks/useChallenges.ts`
+- `features/social/hooks/useProfiles.ts`
+- `features/social/hooks/index.ts`
+- `features/social/components/UserCard.tsx`
+- `features/social/components/LeaderboardEntry.tsx`
+- `features/social/components/ChallengeCard.tsx`
+- `features/social/components/FriendRequestCard.tsx`
+- `features/social/components/index.ts`
+- `features/social/index.ts`
+- `app/(modals)/friends.tsx`
+- `app/(modals)/friend-requests.tsx`
+- `app/(modals)/leaderboards.tsx`
+- `app/(modals)/challenges/index.tsx`
+- `app/(modals)/challenges/[id].tsx`
+- `app/(modals)/challenges/create.tsx`
+- `app/(modals)/user/[id].tsx`
+
+**Files Modified:**
+- `shared/api/query-client.ts` - Added social query keys
+- `app/(modals)/_layout.tsx` - Added all social screen routes
+- `app/(tabs)/profile.tsx` - Added Social section with navigation
+
+---
+
+## Current Status (December 31, 2025 - Updated)
+
+**Mobile App - FULLY FUNCTIONAL:**
+- ✅ Authentication (anonymous mode)
+- ✅ Onboarding flow (4 steps + required health disclaimer)
+- ✅ Fasting timer with protocols (16:8, 18:6, 20:4)
+- ✅ Fasting metrics - streak, weekly count, longest fast (live data)
+- ✅ Dashboard with level, streaks, weight, workout stats
+- ✅ Workouts browser and player
+- ✅ AI Coach chat with safety filtering + custom personality icons
+- ✅ Profile and settings with health disclaimer
+- ✅ Push notifications
+- ✅ Weight logging
+- ✅ Bloodwork upload and analysis
+- ✅ Avatar upload (Cloudflare R2)
+- ✅ Recipes feature - 30 curated recipes
+- ✅ Saved recipes functionality
+- ✅ Activity feed with click-to-navigate
+- ✅ Achievements gallery - 21 achievements with progress tracking
+- ✅ **Social networking** - Friends, followers, leaderboards, challenges
+
+**Backend API - ALL 10 MODULES COMPLETE:**
+- ✅ IDENTITY - JWT auth, anonymous mode
+- ✅ TIME_KEEPER - Fasting/workout timers, auto-updates progression
+- ✅ METRICS - Weight, body metrics, biomarkers
+- ✅ PROGRESSION - Streaks, XP, levels, achievements
+- ✅ CONTENT - Workouts (16) + Recipes (30)
+- ✅ AI_COACH - Chat, insights, bloodwork analysis, safety filtering
+- ✅ NOTIFICATION - Push tokens, preferences
+- ✅ PROFILE - User data, GDPR compliance
+- ✅ EVENT_JOURNAL - Activity logging
+- ✅ **SOCIAL** - Friends, followers, leaderboards, challenges
+
+**Database Tables (Updated):**
+- `identities`, `capabilities` (IDENTITY)
+- `time_windows` (TIME_KEEPER)
+- `metrics` (METRICS)
+- `streaks`, `xp_transactions`, `user_levels`, `achievements`, `user_achievements` (PROGRESSION)
+- `workout_categories`, `workouts`, `exercises`, `workout_sessions`, `recipes`, `user_saved_recipes` (CONTENT)
+- `notifications`, `notification_preferences`, `device_tokens`, `scheduled_notifications` (NOTIFICATION)
+- `user_profiles`, `user_goals`, `health_profiles`, `dietary_profiles`, `workout_restrictions`, `social_profiles`, `user_preferences`, `onboarding_status` (PROFILE)
+- `activity_events` (EVENT_JOURNAL)
+- **`friendships`, `follows`, `challenges`, `challenge_participants`** (SOCIAL)
+
+### December 31, 2025 (Continued) - Fasting Challenge Safety UI Improvements
+
+**Fasting Challenge Safety Warning Redesigned:**
+
+The safety warning for fasting challenges was redesigned to be less alarming while still prominent.
+
+- **File: `apps/mobile/app/(modals)/challenges/create.tsx`**
+
+**Visual Changes:**
+| Attribute | Before | After |
+|-----------|--------|-------|
+| Background | Red (`#fef2f2`) | Light yellow (`#fef9c3`) |
+| Border | Red (`#ef4444`, 2px) | Amber (`#eab308`, 1px) |
+| Icon color | Red (`#dc2626`) | Amber (`#ca8a04`) |
+| Text color | Dark red (`#991b1b`) | Dark amber (`#a16207`) |
+| Title | "Health Warning" | "Health Notice" |
+| Position | Below all challenge types | Inline after Fasting Streak |
+
+**New Compact Warning Component:**
+```tsx
+const FastingSafetyWarning = () => (
+  <XStack
+    backgroundColor="#fef9c3"
+    borderRadius="$3"
+    padding="$3"
+    borderWidth={1}
+    borderColor="#eab308"
+    gap="$2"
+    alignItems="flex-start"
+    marginTop="$2"
+  >
+    <Warning size={20} color="#ca8a04" weight="fill" />
+    <YStack flex={1} gap="$1">
+      <Text fontSize={13} fontWeight="600" color="#a16207">
+        Health Notice
+      </Text>
+      <Text fontSize={12} color="#a16207" lineHeight={16}>
+        For experienced fasters only. Not suitable if you have diabetes,
+        eating disorders, are pregnant/breastfeeding, or have medical
+        conditions. Consult your doctor first.
+      </Text>
+    </YStack>
+  </XStack>
+);
+```
+
+**Inline Positioning Logic:**
+- Warning now renders between "Fasting Streak" and "Workout Count" options
+- Uses `React.Fragment` with conditional rendering inside the map loop
+- Only shows when `fasting_streak` type is selected:
+```tsx
+{CHALLENGE_TYPES.map((type) => (
+  <React.Fragment key={type.value}>
+    <TouchableOpacity ...>
+      {/* Challenge type option */}
+    </TouchableOpacity>
+    {/* Show warning right after Fasting Streak when selected */}
+    {type.value === 'fasting_streak' && challengeType === 'fasting_streak' && (
+      <FastingSafetyWarning />
+    )}
+  </React.Fragment>
+))}
+```
+
+**Close Button Added to Create Challenge Screen:**
+
+- **Issue:** Users couldn't exit the Create Challenge modal without filling out the form
+- **Fix:** Added `showClose` prop to ScreenHeader:
+```tsx
+<ScreenHeader title="Create Challenge" showClose />
+```
+- Now displays X close button in top-left corner
+- Calls `router.back()` to dismiss modal
+
+**Files Modified:**
+- `apps/mobile/app/(modals)/challenges/create.tsx`
+  - Added `FastingSafetyWarning` component with softer amber/yellow colors
+  - Restructured challenge type list to use `React.Fragment` for inline warning
+  - Added `showClose` prop to ScreenHeader
+
+**UX Improvements:**
+1. Warning is less alarming (amber vs red) but still visible
+2. Warning appears contextually right below the selected fasting option
+3. Message is condensed to single paragraph for quicker reading
+4. Users can now dismiss the screen without completing the form
+
+### December 31, 2025 (Continued) - Fasting Challenge Safe Defaults
+
+**Safe Default Goal Values for Fasting Challenges:**
+
+- **File: `apps/mobile/app/(modals)/challenges/create.tsx`**
+
+Changed default goal values to be more conservative for safety:
+
+| Challenge Type | Default Goal |
+|----------------|--------------|
+| Fasting Streak | **3 days** (was 7) |
+| Workout Count | 7 workouts |
+| Total XP | 1000 XP |
+| Consistency | 7 days |
+
+**Implementation:**
+- Added `handleChallengeTypeChange()` function that auto-sets safe defaults when switching types
+- Initial state changed from `'7'` to `'3'` for fasting safety
+- Users can still manually enter higher values if desired
+
+```tsx
+const handleChallengeTypeChange = (type: ChallengeType) => {
+  setChallengeType(type);
+  if (type === 'fasting_streak') {
+    setGoalValue('3'); // Max 3 days default for fasting safety
+  } else if (type === 'workout_count') {
+    setGoalValue('7');
+  } else if (type === 'total_xp') {
+    setGoalValue('1000');
+  } else if (type === 'consistency') {
+    setGoalValue('7');
+  }
+};
+```
+
+### December 31, 2025 (Continued) - Social Tab Implementation
+
+**New Social Tab Added to Main Navigation:**
+
+Added dedicated Social tab for easier access to social features (friends, challenges, leaderboards).
+
+**Tab Bar Structure (Updated):**
+```
+Dashboard | Fasting | Workouts | Coach | Social | Profile
+```
+(6 tabs total)
+
+---
+
+#### New File: `app/(tabs)/social.tsx`
+
+Social hub screen with the following sections:
+
+**1. Stats Row:**
+- Friends count (with notification badge for pending requests)
+- Followers count
+- Active challenges count
+
+**2. Quick Actions:**
+- "Add Friend" button (teal)
+- "New Challenge" button (orange)
+
+**3. Active Challenges Section:**
+- Shows up to 3 active challenges user is participating in
+- Empty state with "Browse challenges" prompt
+- "See All" link to challenges modal
+
+**4. Leaderboard Preview:**
+- Top 5 players from global XP leaderboard
+- "Leaderboards" link to full leaderboards modal
+
+**5. Explore Menu:**
+- Friends - Manage friends list
+- Leaderboards - See rankings
+- Challenges - Compete with friends
+
+**Hooks Used:**
+```tsx
+useFriends()              // Friends list
+useFollowers()            // Followers count
+useMyChallenges()         // User's challenges
+useLeaderboard()          // Top players
+useFriendRequestCount()   // Pending request badge
+```
+
+**Components Used:**
+- `ChallengeCard` - Display challenge cards
+- `LeaderboardEntry` - Display leaderboard rows
+
+---
+
+#### Modified: `app/(tabs)/_layout.tsx`
+
+- Added `UsersThree` icon import
+- Added new Social tab between Coach and Profile:
+```tsx
+<Tabs.Screen
+  name="social"
+  options={{
+    title: 'Social',
+    tabBarIcon: ({ color, size }) => <UsersThree size={size} color={color} weight="thin" />,
+  }}
+/>
+```
+
+---
+
+#### Modified: `app/(tabs)/profile.tsx`
+
+- Removed Social section (Friends, Leaderboards, Challenges)
+- Removed unused imports: `Users`, `Trophy`, `Flag`, `CaretRight`
+- Social features now accessible via dedicated Social tab
+
+**Sections Remaining in Profile:**
+1. Account (Edit Profile, Goals, Log Weight, Activity History)
+2. Content (Browse Recipes, Saved Recipes)
+3. Preferences (Haptic, Sound, Notifications)
+4. Support (Help, Feedback, Privacy)
+5. Account Actions (Sign Out, Delete)
+
+---
+
+**Files Created:**
+- `apps/mobile/app/(tabs)/social.tsx` - Social hub screen
+
+**Files Modified:**
+- `apps/mobile/app/(tabs)/_layout.tsx` - Added Social tab
+- `apps/mobile/app/(tabs)/profile.tsx` - Removed Social section
+
+**Navigation Flow:**
+| From Social Tab | Destination |
+|-----------------|-------------|
+| Tap Friends stat | `/(modals)/friends` |
+| Tap Followers stat | `/(modals)/friends` |
+| Tap Challenges stat | `/(modals)/challenges` |
+| Tap "Add Friend" | `/(modals)/friends` |
+| Tap "New Challenge" | `/(modals)/challenges/create` |
+| Tap challenge card | `/(modals)/challenges/[id]` |
+| Tap leaderboard entry | `/(modals)/user/[id]` (future) |
+| Tap Explore items | Respective modals |
+
+### December 31, 2025 (Continued) - Profile Popup Menu
+
+**Replaced Social Tab with Profile Popup Menu:**
+
+Instead of a dedicated Social tab, social features are now accessed via a popup menu from the Profile tab icon.
+
+**Tab Bar (Final):**
+```
+Home | Fast | Workouts | Coach | Profile
+```
+(Back to 5 tabs)
+
+---
+
+#### New Files Created:
+
+**1. `shared/stores/ui.ts` - UI State Store**
+```typescript
+interface UIState {
+  isProfileMenuOpen: boolean;
+  openProfileMenu: () => void;
+  closeProfileMenu: () => void;
+  toggleProfileMenu: () => void;
+}
+```
+
+**2. `shared/components/ui/ProfilePopupMenu.tsx` - Popup Component**
+
+Floating vertical menu with:
+- **Social** (UsersThree icon, teal) → `/(modals)/social`
+- **Settings** (Gear icon, gray) → `/(modals)/settings`
+- **Profile** (User icon, purple) → `/profile` tab
+
+Features:
+- Semi-transparent backdrop (tap to close)
+- White bubble with shadow
+- Arrow pointing down to Profile tab
+- Spring animation on appear/disappear
+- Positioned above tab bar
+
+**3. `app/(modals)/social.tsx` - Social Hub Modal**
+
+Moved from `app/(tabs)/social.tsx` to modals:
+- Added `ScreenHeader` with close button
+- Same content: stats row, quick actions, challenges, leaderboards, explore menu
+- Accessible via popup menu
+
+---
+
+#### Files Modified:
+
+**`app/(tabs)/_layout.tsx`:**
+- Removed Social tab
+- Added custom `ProfileTabButton` component
+- Intercepts Profile tab press to show popup
+- Renders `ProfilePopupMenu` outside Tabs component
+
+```tsx
+function ProfileTabButton(props: any) {
+  const { openProfileMenu } = useUIStore();
+  return (
+    <TouchableOpacity onPress={openProfileMenu} ...>
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+// In Tabs.Screen for profile:
+tabBarButton: (props) => <ProfileTabButton {...props} />
+```
+
+**`app/(modals)/_layout.tsx`:**
+- Added `social` screen route with fullScreenModal presentation
+
+**`shared/components/ui/index.ts`:**
+- Exported `ProfilePopupMenu`
+
+---
+
+#### Files Deleted:
+
+- `app/(tabs)/social.tsx` - Replaced by modal version
+
+---
+
+#### Behavior Flow:
+
+```
+User taps Profile tab icon
+         ↓
+ProfileTabButton intercepts → openProfileMenu()
+         ↓
+ProfilePopupMenu renders with backdrop
+         ↓
+User sees vertical menu:
+   • Social → closes menu → opens /(modals)/social
+   • Settings → closes menu → opens /(modals)/settings
+   • Profile → closes menu → navigates to profile tab
+         ↓
+Tap backdrop → closeProfileMenu()
+```
+
+---
+
+#### Visual Design:
+
+```
+                 ┌────────────────────┐
+                 │ 👥  Social         │
+                 ├────────────────────┤
+                 │ ⚙️  Settings       │
+                 ├────────────────────┤
+                 │ 👤  Profile        │
+                 └────────────────────┘
+                          ▼
+    ───────────────────────────────────
+    Home    Fast    Workouts    Coach    Profile
+```
+
+---
+
+**Files Summary:**
+
+| File | Action |
+|------|--------|
+| `shared/stores/ui.ts` | **Created** - Popup state |
+| `shared/components/ui/ProfilePopupMenu.tsx` | **Created** - Popup menu |
+| `app/(modals)/social.tsx` | **Created** - Social hub modal |
+| `app/(tabs)/_layout.tsx` | **Modified** - Custom Profile button |
+| `app/(modals)/_layout.tsx` | **Modified** - Added social route |
+| `shared/components/ui/index.ts` | **Modified** - Export popup |
+| `app/(tabs)/social.tsx` | **Deleted** - Replaced by modal |
+
+### December 31, 2025 (Continued) - Featured Workout Card Color Update
+
+**WorkoutCard Background Color Changed:**
+
+Updated featured workout cards from brownish-orange to sophisticated dark slate for better visual appeal.
+
+- **File: `features/workouts/components/WorkoutCard.tsx`**
+
+**Changes:**
+| Attribute | Before | After |
+|-----------|--------|-------|
+| Background color | `$secondary` (orange #f97316) | `#1e293b` (dark slate) |
+| Overlay | Always `rgba(0,0,0,0.4)` | Conditional: transparent for solid bg, 40% for images |
+
+**Implementation:**
+```tsx
+// Background - now uses dark slate
+<YStack
+  position="absolute"
+  width="100%"
+  height="100%"
+  backgroundColor="#1e293b"
+/>
+
+// Overlay - only darkens when there's an actual image
+<YStack
+  position="absolute"
+  width="100%"
+  height="100%"
+  backgroundColor={workout.thumbnail_url ? "rgba(0,0,0,0.4)" : "transparent"}
+/>
+```
+
+**Visual Result:**
+- Clean, sophisticated dark background
+- White text and colored badges (Beginner/Intermediate/Advanced, Featured) pop nicely
+- Professional fitness app aesthetic
+- Consistent with modern UI trends
+
+### December 31, 2025 (Continued) - Modal Close Buttons & Calorie Fixes
+
+**Modal Exit Buttons Added:**
+
+Added close (X) buttons to modal screens that were missing exit functionality:
+
+| Screen | File | Change |
+|--------|------|--------|
+| Friends | `app/(modals)/friends.tsx` | Added `showClose` to ScreenHeader |
+| Challenges | `app/(modals)/challenges/index.tsx` | Added `showClose` to ScreenHeader |
+| Leaderboards | `app/(modals)/leaderboards.tsx` | Added `showClose` to ScreenHeader |
+
+---
+
+**Workout Calorie Calculation Fix:**
+
+**Problem:** Workout complete screen showed only 1 calorie for 15-minute workouts.
+
+**Root Cause:** `workoutPlayerStore.ts` was using `currentExercise.calories_per_minute` which wasn't seeded in the database for exercises.
+
+**Fix Applied in `features/workouts/stores/workoutPlayerStore.ts`:**
+```tsx
+// Update calories based on workout's total estimate
+// calories_estimate is for the full workout, so calculate per-tick rate
+let newCalories = caloriesBurned;
+if (phase === 'exercise' && workout) {
+  // Calculate calories per second based on workout total
+  const caloriesPerMinute = workout.calories_estimate / workout.duration_minutes;
+  // tick() is called every 100ms, so add 1/10th of per-second rate
+  const caloriesPerTick = caloriesPerMinute / 60 / 10;
+  newCalories = caloriesBurned + caloriesPerTick;
+}
+```
+
+---
+
+**Backend Workout Session Fix:**
+
+**Problem:** Dashboard showed incorrect totals (1 min, 31 calories for 6 workouts) because old sessions stored bad data from the broken mobile calculation.
+
+**Fix Applied in `apps/api/src/modules/content/service.py`:**
+```python
+now = datetime.now(UTC)
+
+# Use workout's expected duration (not wall-clock time which may be shorter if skipping)
+if session.workout:
+    duration = session.workout.duration_minutes * 60
+else:
+    duration = int((now - session.started_at.replace(tzinfo=UTC)).total_seconds())
+
+# Use workout's calories estimate as minimum (mobile calculation may be lower if skipping)
+if session.workout:
+    estimated_calories = session.workout.calories_estimate
+    # Use the higher of: mobile-calculated calories or workout estimate
+    if calories_burned is None or calories_burned < estimated_calories * 0.5:
+        calories_burned = estimated_calories
+elif calories_burned is None:
+    calories_burned = 0
+```
+
+**Repair Script Created:** `apps/api/scripts/fix_workout_sessions.py`
+- Fixes historical workout sessions with incorrect duration/calories
+- Updates sessions where stored values are less than 50% of workout's expected values
+- Run with: `uv run python scripts/fix_workout_sessions.py`
+
+**Script Execution Results:**
+```
+Fixed session 8c862573... (Quick HIIT Blast): Duration: 28s -> 600s, Calories: 9 -> 120
+Fixed session c185600d... (Foam Rolling Session): Duration: 6s -> 900s, Calories: 2 -> 25
+Fixed session 66c228c7... (Cardio Kickstart): Duration: 12s -> 720s, Calories: 3 -> 90
+Fixed session e01da493... (Meditation & Breathwork): Duration: 5s -> 600s, Calories: 15 -> 15
+Fixed session 0ecdfc79... (Tabata Torch): Duration: 45s -> 900s, Calories: 1 -> 180
+Fixed session f28e05e1... (Tabata Torch): Duration: 9s -> 900s, Calories: 1 -> 180
+
+Successfully fixed 6 workout sessions!
+```
+
+---
+
+**Recipes Added to Profile Popup Menu:**
+
+- **File: `shared/components/ui/ProfilePopupMenu.tsx`**
+- Added `CookingPot` icon import from phosphor-react-native
+- Added new menu item between Social and Settings:
+
+```tsx
+<MenuItem
+  icon={<CookingPot size={22} color="#f97316" weight="regular" />}
+  label="Recipes"
+  onPress={() => handleNavigate('/(modals)/recipes')}
+/>
+```
+
+**Updated Popup Menu Order:**
+1. Social (teal)
+2. **Recipes** (orange) - NEW
+3. Settings (gray)
+4. Profile (purple)
+
+---
+
+**Saved Recipes Button Added to Recipes Screen:**
+
+- **File: `app/(modals)/recipes/index.tsx`**
+- Added `BookmarkSimple` icon import
+- Added `rightAction` prop to ScreenHeader with styled button:
+
+```tsx
+<ScreenHeader
+  title="Recipes"
+  showClose
+  rightAction={
+    <TouchableOpacity
+      onPress={() => router.push('/(modals)/saved-recipes')}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f3f4f6',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        gap: 6,
+      }}
+    >
+      <BookmarkSimple size={18} color="#f97316" weight="fill" />
+      <Text fontSize={14} fontWeight="600" color="#2B2B32">Saved</Text>
+    </TouchableOpacity>
+  }
+/>
+```
+
+---
+
+**Content Section Removed from Profile:**
+
+- **File: `app/(tabs)/profile.tsx`**
+- Removed imports: `CookingPot`, `Bookmark` from phosphor-react-native
+- Removed `useSavedRecipes` hook (no longer needed)
+- Removed entire "Content" SettingsSection containing:
+  - Browse Recipes item
+  - Saved Recipes item with count badge
+
+**Reason:** Recipes now accessible via Profile popup menu, eliminating redundancy.
+
+---
+
+**Files Modified Summary:**
+
+| File | Changes |
+|------|---------|
+| `app/(modals)/friends.tsx` | Added `showClose` |
+| `app/(modals)/challenges/index.tsx` | Added `showClose` |
+| `app/(modals)/leaderboards.tsx` | Added `showClose` |
+| `features/workouts/stores/workoutPlayerStore.ts` | Fixed calorie calculation |
+| `apps/api/src/modules/content/service.py` | Fixed workout completion logic |
+| `apps/api/scripts/fix_workout_sessions.py` | **Created** - Repair script |
+| `shared/components/ui/ProfilePopupMenu.tsx` | Added Recipes menu item |
+| `app/(modals)/recipes/index.tsx` | Added Saved button in header |
+| `app/(tabs)/profile.tsx` | Removed Content section |

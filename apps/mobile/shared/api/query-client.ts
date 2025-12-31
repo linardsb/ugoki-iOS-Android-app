@@ -91,4 +91,20 @@ export const queryKeys = {
     all: ['dashboard'] as const,
     summary: () => [...queryKeys.dashboard.all, 'summary'] as const,
   },
+
+  // Social
+  social: {
+    all: ['social'] as const,
+    friends: () => [...queryKeys.social.all, 'friends'] as const,
+    incomingRequests: () => [...queryKeys.social.all, 'incoming-requests'] as const,
+    outgoingRequests: () => [...queryKeys.social.all, 'outgoing-requests'] as const,
+    followers: () => [...queryKeys.social.all, 'followers'] as const,
+    following: () => [...queryKeys.social.all, 'following'] as const,
+    userProfile: (userId: string) => [...queryKeys.social.all, 'user', userId] as const,
+    leaderboard: (type: string, period?: string) => [...queryKeys.social.all, 'leaderboard', type, period] as const,
+    challenges: (filters?: object) => [...queryKeys.social.all, 'challenges', filters] as const,
+    myChallenges: () => [...queryKeys.social.all, 'my-challenges'] as const,
+    challenge: (id: string) => [...queryKeys.social.all, 'challenge', id] as const,
+    challengeLeaderboard: (id: string) => [...queryKeys.social.all, 'challenge-leaderboard', id] as const,
+  },
 } as const;

@@ -16,9 +16,6 @@ import {
   Shield,
   SignOut,
   Trash,
-  CaretRight,
-  CookingPot,
-  Bookmark,
   ClockCounterClockwise,
 } from 'phosphor-react-native';
 import {
@@ -31,7 +28,6 @@ import {
   SettingsSection,
 } from '@/features/profile';
 import { useProgression } from '@/features/dashboard';
-import { useSavedRecipes } from '@/features/recipes';
 import { useAuthStore } from '@/shared/stores/auth';
 import { ThemeToggle } from '@/shared/components/ui';
 
@@ -46,7 +42,6 @@ export default function ProfileScreen() {
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: preferences, isLoading: preferencesLoading } = usePreferences();
   const { data: progression } = useProgression();
-  const { data: savedRecipes } = useSavedRecipes();
 
   const updatePreferences = useUpdatePreferences();
   const deleteAccount = useDeleteAccount({
@@ -167,21 +162,6 @@ export default function ProfileScreen() {
                 icon={<ClockCounterClockwise size={20} color="#6366f1" weight="thin" />}
                 label="Activity History"
                 onPress={() => router.push('/(modals)/activity')}
-              />
-            </SettingsSection>
-
-            {/* Content Section */}
-            <SettingsSection title="Content">
-              <SettingsItem
-                icon={<CookingPot size={20} color="#ec4899" weight="thin" />}
-                label="Browse Recipes"
-                onPress={() => router.push('/(modals)/recipes')}
-              />
-              <SettingsItem
-                icon={<Bookmark size={20} color="#14b8a6" weight="thin" />}
-                label="Saved Recipes"
-                value={savedRecipes?.length ? `${savedRecipes.length} saved` : undefined}
-                onPress={() => router.push('/(modals)/saved-recipes')}
               />
             </SettingsSection>
 

@@ -33,8 +33,10 @@ export function useEndFast(options?: UseEndFastOptions) {
     onSuccess: (data) => {
       // Invalidate all time keeper queries
       queryClient.invalidateQueries({ queryKey: queryKeys.timeKeeper.all });
-      // Also invalidate progression (streaks may update)
-      queryClient.invalidateQueries({ queryKey: queryKeys.progression.streaks() });
+      // Invalidate ALL progression data (XP, level, streaks, achievements update on completion)
+      queryClient.invalidateQueries({ queryKey: queryKeys.progression.all });
+      // Also invalidate dashboard summary which shows level/XP
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       options?.onSuccess?.(data);
     },
     onError: (error) => {

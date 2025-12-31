@@ -135,16 +135,16 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             position="absolute"
             width="100%"
             height="100%"
-            backgroundColor="$secondary"
+            backgroundColor="#1e293b"
           />
         )}
 
-        {/* Gradient overlay */}
+        {/* Gradient overlay - lighter for solid color backgrounds */}
         <YStack
           position="absolute"
           width="100%"
           height="100%"
-          backgroundColor="rgba(0,0,0,0.4)"
+          backgroundColor={workout.thumbnail_url ? "rgba(0,0,0,0.4)" : "transparent"}
         />
 
         {/* Content */}

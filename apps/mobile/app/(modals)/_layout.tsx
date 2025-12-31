@@ -61,6 +61,55 @@ export default function ModalsLayout() {
           presentation: 'fullScreenModal',
         }}
       />
+      {/* Social Screens */}
+      <Stack.Screen
+        name="social"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="friends"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="friend-requests"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="leaderboards"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="challenges/index"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="challenges/[id]"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="challenges/create"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="user/[id]"
+        options={{
+          presentation: 'card',
+        }}
+      />
     </Stack>
   );
 }

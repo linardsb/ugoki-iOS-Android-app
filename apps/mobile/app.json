@@ -65,7 +65,8 @@
         {
           "microphonePermission": "UGOKI needs microphone access for workout audio cues."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true

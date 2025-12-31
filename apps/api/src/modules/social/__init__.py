@@ -1,0 +1,35 @@
+from src.modules.social.interface import SocialInterface
+from src.modules.social.models import (
+    FriendshipStatus,
+    ChallengeType,
+    ChallengeStatus,
+    LeaderboardType,
+    LeaderboardPeriod,
+    Friendship,
+    FriendRequest,
+    Follow,
+    Challenge,
+    ChallengeParticipant,
+    LeaderboardEntry,
+    Leaderboard,
+    PublicUserProfile,
+    ShareContent,
+)
+
+__all__ = [
+    "SocialInterface",
+    "FriendshipStatus",
+    "ChallengeType",
+    "ChallengeStatus",
+    "LeaderboardType",
+    "LeaderboardPeriod",
+    "Friendship",
+    "FriendRequest",
+    "Follow",
+    "Challenge",
+    "ChallengeParticipant",
+    "LeaderboardEntry",
+    "Leaderboard",
+    "PublicUserProfile",
+    "ShareContent",
+]

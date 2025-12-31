@@ -20,6 +20,7 @@ class EventCategory(str, Enum):
     METRICS = "metrics"
     COACH = "coach"
     CONTENT = "content"
+    SOCIAL = "social"
 
 
 class EventType(str, Enum):
@@ -72,6 +73,21 @@ class EventType(str, Enum):
     RECIPE_SAVED = "recipe_saved"
     RECIPE_UNSAVED = "recipe_unsaved"
 
+    # Social events
+    FRIEND_REQUEST_SENT = "friend_request_sent"
+    FRIEND_REQUEST_ACCEPTED = "friend_request_accepted"
+    FRIEND_REQUEST_DECLINED = "friend_request_declined"
+    FRIEND_REMOVED = "friend_removed"
+    USER_BLOCKED = "user_blocked"
+    USER_UNBLOCKED = "user_unblocked"
+    FOLLOW_STARTED = "follow_started"
+    FOLLOW_ENDED = "follow_ended"
+    CHALLENGE_CREATED = "challenge_created"
+    CHALLENGE_JOINED = "challenge_joined"
+    CHALLENGE_LEFT = "challenge_left"
+    CHALLENGE_COMPLETED = "challenge_completed"
+    SHARE_CREATED = "share_created"
+
 
 class EventSource(str, Enum):
     """Where the event originated from."""
@@ -120,6 +136,20 @@ EVENT_CATEGORY_MAP: dict[EventType, EventCategory] = {
     # Content
     EventType.RECIPE_SAVED: EventCategory.CONTENT,
     EventType.RECIPE_UNSAVED: EventCategory.CONTENT,
+    # Social
+    EventType.FRIEND_REQUEST_SENT: EventCategory.SOCIAL,
+    EventType.FRIEND_REQUEST_ACCEPTED: EventCategory.SOCIAL,
+    EventType.FRIEND_REQUEST_DECLINED: EventCategory.SOCIAL,
+    EventType.FRIEND_REMOVED: EventCategory.SOCIAL,
+    EventType.USER_BLOCKED: EventCategory.SOCIAL,
+    EventType.USER_UNBLOCKED: EventCategory.SOCIAL,
+    EventType.FOLLOW_STARTED: EventCategory.SOCIAL,
+    EventType.FOLLOW_ENDED: EventCategory.SOCIAL,
+    EventType.CHALLENGE_CREATED: EventCategory.SOCIAL,
+    EventType.CHALLENGE_JOINED: EventCategory.SOCIAL,
+    EventType.CHALLENGE_LEFT: EventCategory.SOCIAL,
+    EventType.CHALLENGE_COMPLETED: EventCategory.SOCIAL,
+    EventType.SHARE_CREATED: EventCategory.SOCIAL,
 }
 
 
@@ -203,6 +233,19 @@ EVENT_TITLES: dict[EventType, str] = {
     EventType.COACH_INSIGHT_VIEWED: "Insight Viewed",
     EventType.RECIPE_SAVED: "Recipe Saved",
     EventType.RECIPE_UNSAVED: "Recipe Removed",
+    EventType.FRIEND_REQUEST_SENT: "Friend Request Sent",
+    EventType.FRIEND_REQUEST_ACCEPTED: "Friend Request Accepted",
+    EventType.FRIEND_REQUEST_DECLINED: "Friend Request Declined",
+    EventType.FRIEND_REMOVED: "Friend Removed",
+    EventType.USER_BLOCKED: "User Blocked",
+    EventType.USER_UNBLOCKED: "User Unblocked",
+    EventType.FOLLOW_STARTED: "Started Following",
+    EventType.FOLLOW_ENDED: "Stopped Following",
+    EventType.CHALLENGE_CREATED: "Challenge Created",
+    EventType.CHALLENGE_JOINED: "Joined Challenge",
+    EventType.CHALLENGE_LEFT: "Left Challenge",
+    EventType.CHALLENGE_COMPLETED: "Challenge Completed!",
+    EventType.SHARE_CREATED: "Progress Shared",
 }
 
 # Icon identifiers for mobile app
@@ -235,6 +278,19 @@ EVENT_ICONS: dict[EventType, str] = {
     EventType.COACH_INSIGHT_VIEWED: "lightbulb",
     EventType.RECIPE_SAVED: "bookmark",
     EventType.RECIPE_UNSAVED: "bookmark-minus",
+    EventType.FRIEND_REQUEST_SENT: "user-plus",
+    EventType.FRIEND_REQUEST_ACCEPTED: "users",
+    EventType.FRIEND_REQUEST_DECLINED: "user-x",
+    EventType.FRIEND_REMOVED: "user-minus",
+    EventType.USER_BLOCKED: "shield-off",
+    EventType.USER_UNBLOCKED: "shield",
+    EventType.FOLLOW_STARTED: "eye",
+    EventType.FOLLOW_ENDED: "eye-off",
+    EventType.CHALLENGE_CREATED: "flag",
+    EventType.CHALLENGE_JOINED: "users",
+    EventType.CHALLENGE_LEFT: "log-out",
+    EventType.CHALLENGE_COMPLETED: "trophy",
+    EventType.SHARE_CREATED: "share-2",
 }
 
 
