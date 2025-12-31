@@ -1893,17 +1893,112 @@ Made all icons theme-aware so they display correctly in both light and dark mode
     | Female | `GenderFemale` (♀) |
   - Icons: 20px size, `weight="regular"`, white when selected, gray (#6b7280) when not
 
+### December 31, 2025 - Coach Personality Icons & Fasting Metrics Integration
+
+**Coach Personality Icons Update:**
+
+Replaced generic emojis with unique Phosphor icons for AI coach personalities:
+
+- **File: `features/coach/types.ts`**
+  - Changed `emoji` field to `iconName` in PersonalityInfo interface
+  - Updated PERSONALITIES array with icon names
+
+- **File: `app/(modals)/settings.tsx`**
+  - Added icon imports: `Sparkle`, `Mountains`, `Anchor`, `SmileyWink`
+  - Created `PERSONALITY_ICONS` map for rendering
+  - Updated personality buttons to display icons
+
+- **File: `app/(tabs)/coach.tsx`**
+  - Added icon imports and rendering in header
+
+| Personality | New Icon | Meaning |
+|-------------|----------|---------|
+| Motivational | `Sparkle` | Energetic and encouraging |
+| Calm | `Mountains` | Zen and mindful approach |
+| Tough | `Anchor` | Drill sergeant style |
+| Friendly | `SmileyWink` | Casual supportive friend |
+
+**Fasting Metrics Integration (Backend → Mobile):**
+
+Previously, fasting stats (Current Streak, This Week, Longest Fast) were hardcoded. Now they fetch real data.
+
+- **Backend: `apps/api/src/modules/time_keeper/routes.py`**
+  - Added ProgressionService integration
+  - When fast/workout is **completed**, calls `progression.record_activity()`
+  - Awards XP: 50 for fast, 75 for workout
+  - Updates streak count and checks for milestone bonuses
+
+- **Mobile: `apps/mobile/app/(tabs)/fasting.tsx`**
+  - Added imports: `useFastingHistory`, `useStreaks`
+  - Added `useMemo` calculations for metrics:
+    - **Current Streak**: `fastingStreak?.current_count` from progression API
+    - **This Week**: Count completed fasts in last 7 days from fasting history
+    - **Longest Fast**: Max duration (HH:MM:SS) from completed fasts
+  - Combined `handleRefresh()` for pull-to-refresh updates all metrics
+  - StatCards display real values with proper singular/plural grammar
+
+**Data Flow:**
+```
+Complete Fast → Backend closes window → progression.record_activity()
+                                     ↓
+                              Updates streak + awards XP
+                                     ↓
+Mobile pull-to-refresh → useStreaks() + useFastingHistory()
+                                     ↓
+                    Calculate & display real metrics
+```
+
+**Tab Navigation with Swipe Gestures:**
+
+Replaced Expo Router's default Tabs with Material Top Tabs for swipe navigation:
+
+- **Dependencies Added:**
+  - `@react-navigation/material-top-tabs@7.4.11`
+  - `react-native-pager-view@6.5.1`
+
+- **File: `apps/mobile/app/(tabs)/_layout.tsx`**
+  - Used `withLayoutContext` to integrate Material Top Tabs with Expo Router
+  - Set `tabBarPosition: 'bottom'` to keep tabs at bottom
+  - Enabled `swipeEnabled: true` for swipe between tabs
+  - Enabled `animationEnabled: true` for slide transitions
+  - Added teal indicator at top of tab bar
+  - Preserved all existing icons (House, Timer, Barbell, Chat, User/Avatar)
+
+- **Features:**
+  - Swipe left/right between tabs
+  - Smooth slide animation on tab press
+  - Same visual design as before
+
+- **Performance Optimizations:**
+  - `lazy: false` - All screens pre-loaded for instant switching
+  - `initialLayout: { width }` - Prevents layout jump on first render
+  - `tabBarBounces: false` - No bounce on tab bar
+  - `tabBarPressColor: 'transparent'` - Clean press effect
+
+**Coach Disclaimer Font Fix:**
+
+- **File: `features/coach/components/WelcomeMessage.tsx`**
+  - Increased disclaimer font from `fontSize="$1"` to `fontSize="$3"`
+  - Increased opacity from 0.7 to 0.8 for better readability
+
+**Gender Dropdown Update:**
+
+- **File: `app/(modals)/settings.tsx`**
+  - Replaced generic icons with Phosphor gender symbols (GenderMale, GenderFemale)
+  - Removed "Other" and "Prefer not to say" options
+
 ---
 
-## Current Status (December 30, 2025)
+## Current Status (December 31, 2025)
 
 **Mobile App - FULLY FUNCTIONAL:**
 - ✅ Authentication (anonymous mode)
 - ✅ Onboarding flow (4 steps + required health disclaimer)
 - ✅ Fasting timer with protocols (16:8, 18:6, 20:4)
+- ✅ **Fasting metrics** - streak, weekly count, longest fast (live data)
 - ✅ Dashboard with level, streaks, weight, workout stats
 - ✅ Workouts browser and player
-- ✅ AI Coach chat with safety filtering
+- ✅ AI Coach chat with safety filtering + **custom personality icons**
 - ✅ Profile and settings with health disclaimer
 - ✅ Push notifications
 - ✅ Weight logging
@@ -1912,10 +2007,11 @@ Made all icons theme-aware so they display correctly in both light and dark mode
 - ✅ Recipes feature - 30 curated recipes
 - ✅ Saved recipes functionality
 - ✅ Activity feed with click-to-navigate
+- ✅ **Swipeable tab navigation** - slide between tabs with gestures
 
 **Backend API - ALL MODULES COMPLETE:**
 - ✅ IDENTITY - JWT auth, anonymous mode
-- ✅ TIME_KEEPER - Fasting/workout timers
+- ✅ TIME_KEEPER - Fasting/workout timers, **auto-updates progression on completion**
 - ✅ METRICS - Weight, body metrics, biomarkers
 - ✅ PROGRESSION - Streaks, XP, levels, achievements
 - ✅ CONTENT - Workouts (16) + Recipes (30)

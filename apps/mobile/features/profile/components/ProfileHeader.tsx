@@ -87,11 +87,11 @@ export function ProfileHeader({ profile, level = 1, xp = 0, editable = true }: P
             paddingVertical="$1"
             borderRadius="$2"
           >
-            <Text fontSize="$2" fontWeight="bold" color="white">
+            <Text fontSize="$3" fontWeight="bold" color="white">
               Level {level}
             </Text>
           </XStack>
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             {xp.toLocaleString()} XP
           </Text>
         </XStack>

@@ -23,7 +23,7 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
         <YStack gap="$2" alignItems="center">
           <Scales size={32} color="$colorMuted" weight="thin" />
           <Text color="$colorMuted">No weight logged yet</Text>
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             Track your progress by logging your weight
           </Text>
         </YStack>
@@ -63,7 +63,7 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
           {trend && (
             <XStack gap="$1" alignItems="center">
               {getTrendIcon()}
-              <Text fontSize="$2" color={getTrendColor()}>
+              <Text fontSize="$3" color={getTrendColor()}>
                 {trend.change_absolute > 0 ? '+' : ''}
                 {trend.change_absolute.toFixed(1)} kg
               </Text>
@@ -77,14 +77,14 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
             {formatWeight(latestWeight.value)}
           </Text>
           {trend && (
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {trend.period_days}-day trend
             </Text>
           )}
         </XStack>
 
         {/* Last updated */}
-        <Text fontSize="$2" color="$colorMuted">
+        <Text fontSize="$3" color="$colorMuted">
           Last updated: {new Date(latestWeight.timestamp).toLocaleDateString()}
         </Text>
       </YStack>

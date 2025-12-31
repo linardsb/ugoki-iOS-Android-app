@@ -118,7 +118,7 @@ export default function RecipeListScreen() {
               <Text fontSize="$4" color="$colorSubtle" marginTop="$3">
                 No recipes found
               </Text>
-              <Text fontSize="$2" color="$colorSubtle" marginTop="$1">
+              <Text fontSize="$3" color="$colorSubtle" marginTop="$1">
                 Try adjusting your filters
               </Text>
             </YStack>

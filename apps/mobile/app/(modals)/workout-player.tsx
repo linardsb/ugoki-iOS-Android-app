@@ -202,7 +202,7 @@ export default function WorkoutPlayerScreen() {
                     {workout.duration_minutes}
                   </Text>
                 </XStack>
-                <Text fontSize="$2" color="$colorMuted">minutes</Text>
+                <Text fontSize="$3" color="$colorMuted">minutes</Text>
               </YStack>
 
               <YStack alignItems="center" gap="$1">
@@ -212,7 +212,7 @@ export default function WorkoutPlayerScreen() {
                     {Math.round(caloriesBurned)}
                   </Text>
                 </XStack>
-                <Text fontSize="$2" color="$colorMuted">calories</Text>
+                <Text fontSize="$3" color="$colorMuted">calories</Text>
               </YStack>
 
               <YStack alignItems="center" gap="$1">
@@ -222,7 +222,7 @@ export default function WorkoutPlayerScreen() {
                     {workout.exercises.length}
                   </Text>
                 </XStack>
-                <Text fontSize="$2" color="$colorMuted">exercises</Text>
+                <Text fontSize="$3" color="$colorMuted">exercises</Text>
               </YStack>
             </XStack>
           </YStack>
@@ -272,7 +272,7 @@ export default function WorkoutPlayerScreen() {
             <Text fontSize="$3" color="$colorMuted">
               {workout.name}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               Exercise {progress.current} of {progress.total}
             </Text>
           </YStack>
@@ -352,7 +352,7 @@ export default function WorkoutPlayerScreen() {
               borderRadius="$3"
               alignItems="center"
             >
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Next Up
               </Text>
               <Text fontSize="$4" fontWeight="600" color="$color">
@@ -396,10 +396,10 @@ export default function WorkoutPlayerScreen() {
           {/* Progress Bar - below button */}
           <YStack gap="$2" width="100%">
             <XStack justifyContent="space-between">
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Progress
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 {Math.round(progress.percent)}%
               </Text>
             </XStack>

@@ -10,7 +10,7 @@ export function SettingsSection({ title, children }: SettingsSectionProps) {
     <YStack gap="$1">
       {title && (
         <Text
-          fontSize="$2"
+          fontSize="$3"
           fontWeight="600"
           color="$colorMuted"
           textTransform="uppercase"

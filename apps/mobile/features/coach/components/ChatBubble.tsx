@@ -92,7 +92,7 @@ export function ChatBubble({ message, userGender }: ChatBubbleProps) {
             {message.content}
           </Text>
           <Text
-            fontSize="$1"
+            fontSize="$3"
             color={isUser ? 'rgba(255,255,255,0.7)' : '$colorMuted'}
             alignSelf={isUser ? 'flex-start' : 'flex-end'}
           >

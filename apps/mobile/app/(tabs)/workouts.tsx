@@ -142,7 +142,7 @@ export default function WorkoutsScreen() {
                       variant="compact"
                       showEmpty={false}
                     />
-                    <Text fontSize="$2" color="$colorMuted" paddingLeft="$2">
+                    <Text fontSize="$3" color="$colorMuted" paddingLeft="$2">
                       {reason}
                     </Text>
                   </YStack>

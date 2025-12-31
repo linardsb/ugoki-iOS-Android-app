@@ -77,7 +77,7 @@ function BiomarkerRow({ biomarker }: { biomarker: ParsedBiomarker }) {
           {displayName}
         </Text>
         {refRange && (
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             Ref: {refRange} {biomarker.unit}
           </Text>
         )}
@@ -88,7 +88,7 @@ function BiomarkerRow({ biomarker }: { biomarker: ParsedBiomarker }) {
         <Text fontSize="$4" fontWeight="600" color={flagColor}>
           {biomarker.value_text}
         </Text>
-        <Text fontSize="$2" color="$colorMuted">
+        <Text fontSize="$3" color="$colorMuted">
           {biomarker.unit}
         </Text>
       </YStack>
@@ -113,7 +113,7 @@ function CategorySection({ title, biomarkers }: { title: string; biomarkers: Par
         <Text fontSize="$3" fontWeight="600" color="$color">
           {title}
         </Text>
-        <Text fontSize="$2" color="$colorMuted">
+        <Text fontSize="$3" color="$colorMuted">
           ({biomarkers.length})
         </Text>
       </XStack>
@@ -166,19 +166,19 @@ export function BloodworkResults({ biomarkers, testDate }: BloodworkResultsProps
             <Text fontSize="$6" fontWeight="bold" color="#22c55e">
               {normalCount}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">Normal</Text>
+            <Text fontSize="$3" color="$colorMuted">Normal</Text>
           </YStack>
           <YStack flex={1} alignItems="center" padding="$2" backgroundColor="$backgroundHover" borderRadius="$2">
             <Text fontSize="$6" fontWeight="bold" color={abnormalCount > 0 ? '#f59e0b' : '$colorMuted'}>
               {abnormalCount}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">Attention</Text>
+            <Text fontSize="$3" color="$colorMuted">Attention</Text>
           </YStack>
           <YStack flex={1} alignItems="center" padding="$2" backgroundColor="$backgroundHover" borderRadius="$2">
             <Text fontSize="$6" fontWeight="bold" color="$primary">
               {biomarkers.length}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">Total</Text>
+            <Text fontSize="$3" color="$colorMuted">Total</Text>
           </YStack>
         </XStack>
       </YStack>

@@ -73,7 +73,7 @@ export default function SavedRecipesScreen() {
               <Text fontSize="$4" color="$colorSubtle" marginTop="$3">
                 No saved recipes yet
               </Text>
-              <Text fontSize="$2" color="$colorSubtle" marginTop="$1" textAlign="center">
+              <Text fontSize="$3" color="$colorSubtle" marginTop="$1" textAlign="center">
                 Browse recipes and tap the bookmark icon to save them here
               </Text>
             </YStack>

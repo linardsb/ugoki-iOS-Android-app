@@ -76,7 +76,7 @@ export function QuickActions() {
         >
           <action.icon size={22} color={action.color} weight="thin" />
         </XStack>
-        <Text fontSize="$2" color="$color" fontWeight="500">
+        <Text fontSize="$3" color="$color" fontWeight="500">
           {action.label}
         </Text>
       </YStack>

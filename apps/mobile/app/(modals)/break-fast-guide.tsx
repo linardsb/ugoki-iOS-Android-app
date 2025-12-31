@@ -45,7 +45,7 @@ export default function BreakFastGuideScreen() {
               <Text fontSize="$5" fontWeight="bold" color="$color">
                 Break Your Fast Safely
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 What to eat after fasting
               </Text>
             </YStack>

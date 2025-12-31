@@ -22,7 +22,7 @@ export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
         <YStack gap="$2" alignItems="center">
           <Barbell size={32} color="$colorMuted" weight="thin" />
           <Text color="$colorMuted">No workouts yet</Text>
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             Start your first workout to see stats
           </Text>
         </YStack>
@@ -82,7 +82,7 @@ export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
           alignItems="center"
           overflow="hidden"
         >
-          <Text fontSize="$2" color="$colorMuted" flexShrink={0}>
+          <Text fontSize="$3" color="$colorMuted" flexShrink={0}>
             This Week:
           </Text>
           <Text fontSize="$3" fontWeight="600" color="$color" flexShrink={0}>
@@ -111,7 +111,7 @@ function StatItem({
       <Text fontSize="$5" fontWeight="bold" color="$color">
         {value}
       </Text>
-      <Text fontSize="$1" color="$colorMuted" textAlign="center">
+      <Text fontSize="$3" color="$colorMuted" textAlign="center">
         {label}
       </Text>
     </YStack>

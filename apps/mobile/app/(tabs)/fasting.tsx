@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { YStack, XStack, Text, Card } from 'tamagui';
 import { useTheme } from '@tamagui/core';
@@ -11,7 +11,9 @@ import {
   useActiveFast,
   useFastingStore,
   useHasActiveFast,
+  useFastingHistory,
 } from '@/features/fasting';
+import { useStreaks } from '@/features/dashboard';
 import { ThemeToggle } from '@/shared/components/ui';
 
 export default function FastingScreen() {
@@ -21,12 +23,64 @@ export default function FastingScreen() {
   const { syncFromServer, activeWindow } = useFastingStore();
   const hasActiveFast = useHasActiveFast();
 
+  // Fetch streaks and fasting history
+  const { data: streaks, refetch: refetchStreaks } = useStreaks();
+  const { data: fastingHistory, refetch: refetchHistory } = useFastingHistory({ limit: 100 });
+
+  // Get fasting streak
+  const fastingStreak = streaks?.find((s) => s.streak_type === 'fasting');
+  const currentStreak = fastingStreak?.current_count ?? 0;
+
+  // Calculate fasts this week (completed fasts in last 7 days)
+  const fastsThisWeek = useMemo(() => {
+    if (!fastingHistory) return 0;
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    return fastingHistory.filter((fast) => {
+      if (fast.state !== 'completed') return false;
+      const startTime = new Date(fast.start_time);
+      return startTime >= sevenDaysAgo;
+    }).length;
+  }, [fastingHistory]);
+
+  // Calculate longest fast duration
+  const longestFast = useMemo(() => {
+    if (!fastingHistory) return null;
+
+    let maxDurationMs = 0;
+    fastingHistory.forEach((fast) => {
+      if (fast.state !== 'completed' || !fast.end_time) return;
+      const start = new Date(fast.start_time).getTime();
+      const end = new Date(fast.end_time).getTime();
+      const duration = end - start;
+      if (duration > maxDurationMs) {
+        maxDurationMs = duration;
+      }
+    });
+
+    if (maxDurationMs === 0) return null;
+
+    // Format as HH:MM:SS
+    const hours = Math.floor(maxDurationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((maxDurationMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((maxDurationMs % (1000 * 60)) / 1000);
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, [fastingHistory]);
+
   // Sync server state to local store
   useEffect(() => {
     if (!isLoading) {
       syncFromServer(serverFast ?? null);
     }
   }, [serverFast, isLoading]);
+
+  // Combined refetch for pull-to-refresh
+  const handleRefresh = () => {
+    refetch();
+    refetchStreaks();
+    refetchHistory();
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
@@ -40,7 +94,7 @@ export default function FastingScreen() {
         keyboardDismissMode="on-drag"
         scrollEventThrottle={16}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl refreshing={isRefetching} onRefresh={handleRefresh} />
         }
       >
       <YStack gap="$6">
@@ -73,15 +127,15 @@ export default function FastingScreen() {
 
               <XStack gap="$3">
                 <StatCard
-                  icon={<Fire size={20} color="$primary" weight="thin" />}
+                  icon={<Fire size={20} color="#f97316" weight="thin" />}
                   label="Current Streak"
-                  value="0 days"
+                  value={`${currentStreak} ${currentStreak === 1 ? 'day' : 'days'}`}
                   flex={1}
                 />
                 <StatCard
-                  icon={<Clock size={20} color="$secondary" weight="thin" />}
+                  icon={<Clock size={20} color="#14b8a6" weight="thin" />}
                   label="This Week"
-                  value="0 fasts"
+                  value={`${fastsThisWeek} ${fastsThisWeek === 1 ? 'fast' : 'fasts'}`}
                   flex={1}
                 />
               </XStack>
@@ -89,7 +143,7 @@ export default function FastingScreen() {
               <StatCard
                 icon={<Trophy size={20} color="#f59e0b" weight="thin" />}
                 label="Longest Fast"
-                value="--:--:--"
+                value={longestFast ?? '--:--:--'}
               />
             </YStack>
 
@@ -151,7 +205,7 @@ function StatCard({
       <YStack gap="$2">
         <XStack gap="$2" alignItems="center">
           {icon}
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             {label}
           </Text>
         </XStack>

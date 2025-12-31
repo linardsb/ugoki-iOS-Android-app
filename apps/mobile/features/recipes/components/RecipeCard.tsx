@@ -44,19 +44,19 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                   {recipe.name}
                 </Text>
                 <XStack gap="$2" marginTop="$1">
-                  <Text fontSize="$2" color="$colorSubtle">
+                  <Text fontSize="$3" color="$colorSubtle">
                     {recipe.calories} cal
                   </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
+                  <Text fontSize="$3" color="$colorSubtle">
                     •
                   </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
+                  <Text fontSize="$3" color="$colorSubtle">
                     {recipe.protein_g}g protein
                   </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
+                  <Text fontSize="$3" color="$colorSubtle">
                     •
                   </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
+                  <Text fontSize="$3" color="$colorSubtle">
                     {recipe.prep_time_minutes} min
                   </Text>
                 </XStack>

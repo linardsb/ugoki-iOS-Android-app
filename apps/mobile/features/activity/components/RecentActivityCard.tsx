@@ -70,13 +70,13 @@ function ActivityItem({ item, router }: { item: ActivityFeedItem; router: Return
           {item.title}
         </Text>
         {item.description && (
-          <Text fontSize="$2" color="$colorSubtle" numberOfLines={1}>
+          <Text fontSize="$3" color="$colorSubtle" numberOfLines={1}>
             {item.description}
           </Text>
         )}
       </YStack>
       <XStack alignItems="center" gap="$1">
-        <Text fontSize="$2" color="$colorSubtle">
+        <Text fontSize="$3" color="$colorSubtle">
           {time}
         </Text>
         {isNavigable && (

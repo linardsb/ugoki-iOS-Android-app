@@ -114,7 +114,7 @@ export default function AvatarPickerScreen() {
                 <Text fontSize="$4" fontWeight="600" color="$color">
                   Take Photo
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">
                   Use your camera to take a new photo
                 </Text>
               </YStack>
@@ -144,7 +144,7 @@ export default function AvatarPickerScreen() {
                 <Text fontSize="$4" fontWeight="600" color="$color">
                   Choose from Library
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">
                   Select an existing photo from your library
                 </Text>
               </YStack>
@@ -175,7 +175,7 @@ export default function AvatarPickerScreen() {
                   <Text fontSize="$4" fontWeight="600" color="#ef4444">
                     Remove Photo
                   </Text>
-                  <Text fontSize="$2" color="$colorMuted">
+                  <Text fontSize="$3" color="$colorMuted">
                     Delete your current profile photo
                   </Text>
                 </YStack>

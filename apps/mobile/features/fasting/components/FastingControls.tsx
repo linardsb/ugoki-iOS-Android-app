@@ -206,7 +206,7 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
           <YStack alignItems="center" gap="$1">
             <Stop size={22} color={isComplete ? 'white' : '$color'} weight="thin" />
             <Text
-              fontSize="$2"
+              fontSize="$3"
               fontWeight="600"
               color={isComplete ? 'white' : '$color'}
             >
@@ -241,7 +241,7 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
           >
             <YStack alignItems="center" gap="$1">
               <Plus size={22} color="$secondary" weight="thin" />
-              <Text fontSize="$2" fontWeight="600" color="$secondary">
+              <Text fontSize="$3" fontWeight="600" color="$secondary">
                 {extendFast.isPending ? 'Adding...' : '+2 Hours'}
               </Text>
             </YStack>
@@ -274,14 +274,14 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
               {isPaused ? (
                 <>
                   <Play size={22} color="white" weight="fill" />
-                  <Text fontSize="$2" fontWeight="600" color="white">
+                  <Text fontSize="$3" fontWeight="600" color="white">
                     Resume
                   </Text>
                 </>
               ) : (
                 <>
                   <Pause size={22} color="$color" weight="thin" />
-                  <Text fontSize="$2" fontWeight="600" color="$color">
+                  <Text fontSize="$3" fontWeight="600" color="$color">
                     Pause
                   </Text>
                 </>

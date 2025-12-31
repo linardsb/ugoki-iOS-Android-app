@@ -164,7 +164,7 @@ export function ActivityFeedItem({
           >
             {item.title}
           </Text>
-          <Text fontSize="$2" color="$colorSubtle" marginLeft="$2">
+          <Text fontSize="$3" color="$colorSubtle" marginLeft="$2">
             {time}
           </Text>
         </XStack>
@@ -188,7 +188,7 @@ export function ActivityFeedItem({
               borderRadius={4}
               backgroundColor={categoryColor}
             />
-            <Text fontSize="$2" color="$colorSubtle">
+            <Text fontSize="$3" color="$colorSubtle">
               {CATEGORY_LABELS[item.category]}
             </Text>
           </XStack>

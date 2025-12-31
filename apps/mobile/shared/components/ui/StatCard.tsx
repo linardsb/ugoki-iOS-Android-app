@@ -48,7 +48,7 @@ export function StatCard({
       </XStack>
 
       {subtitle && (
-        <Text color="$colorMuted" fontSize="$2">
+        <Text color="$colorMuted" fontSize="$3">
           {subtitle}
         </Text>
       )}

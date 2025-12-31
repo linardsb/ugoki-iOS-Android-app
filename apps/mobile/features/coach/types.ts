@@ -67,7 +67,7 @@ export interface PersonalityInfo {
   id: CoachPersonality;
   name: string;
   description: string;
-  emoji: string;
+  iconName: 'Sparkle' | 'Mountains' | 'Anchor' | 'SmileyWink';
 }
 
 export const PERSONALITIES: PersonalityInfo[] = [
@@ -75,24 +75,24 @@ export const PERSONALITIES: PersonalityInfo[] = [
     id: 'motivational',
     name: 'Motivational',
     description: 'Energetic and encouraging',
-    emoji: '🔥',
+    iconName: 'Sparkle',
   },
   {
     id: 'calm',
     name: 'Calm',
     description: 'Zen and mindful approach',
-    emoji: '🧘',
+    iconName: 'Mountains',
   },
   {
     id: 'tough',
     name: 'Tough',
     description: 'Drill sergeant style',
-    emoji: '💪',
+    iconName: 'Anchor',
   },
   {
     id: 'friendly',
     name: 'Friendly',
     description: 'Casual supportive friend',
-    emoji: '😊',
+    iconName: 'SmileyWink',
   },
 ];

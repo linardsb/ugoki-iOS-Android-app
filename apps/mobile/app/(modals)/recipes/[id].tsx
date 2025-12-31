@@ -50,7 +50,7 @@ export default function RecipeDetailScreen() {
           <Text fontSize="$4" color="$color" marginTop="$3" textAlign="center">
             Failed to load recipe
           </Text>
-          <Text fontSize="$2" color="$colorSubtle" marginTop="$2" textAlign="center">
+          <Text fontSize="$3" color="$colorSubtle" marginTop="$2" textAlign="center">
             Please try again later
           </Text>
         </View>
@@ -121,7 +121,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$primary">
                 {recipe.nutrition.calories}
               </Text>
-              <Text fontSize="$2" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorSubtle">
                 Calories
               </Text>
             </YStack>
@@ -129,7 +129,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$primary">
                 {recipe.nutrition.protein_g}g
               </Text>
-              <Text fontSize="$2" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorSubtle">
                 Protein
               </Text>
             </YStack>
@@ -137,7 +137,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$color">
                 {recipe.nutrition.carbs_g}g
               </Text>
-              <Text fontSize="$2" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorSubtle">
                 Carbs
               </Text>
             </YStack>
@@ -145,7 +145,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$color">
                 {recipe.nutrition.fat_g}g
               </Text>
-              <Text fontSize="$2" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorSubtle">
                 Fat
               </Text>
             </YStack>
@@ -226,7 +226,7 @@ export default function RecipeDetailScreen() {
                     </Text>
                   </XStack>
                   {ingredient.notes && (
-                    <Text fontSize="$2" color="$colorSubtle" fontStyle="italic">
+                    <Text fontSize="$3" color="$colorSubtle" fontStyle="italic">
                       {ingredient.notes}
                     </Text>
                   )}

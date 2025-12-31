@@ -82,12 +82,12 @@ function StreakItem({
           {count}
         </Text>
 
-        <Text fontSize="$2" color="$colorMuted">
+        <Text fontSize="$3" color="$colorMuted">
           {config.label} Streak
         </Text>
 
         {longest > 0 && (
-          <Text fontSize="$1" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             Best: {longest} days
           </Text>
         )}

@@ -89,10 +89,10 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
             />
           </View>
           <XStack justifyContent="space-between">
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {level.current_xp.toLocaleString()} XP
             </Text>
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {level.xp_for_next_level.toLocaleString()} to next level
             </Text>
           </XStack>

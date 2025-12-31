@@ -175,7 +175,7 @@ export default function AchievementsScreen() {
             <Text fontSize="$5" fontWeight="bold" color="$color" marginTop="$1">
               {stats.unlocked}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               Unlocked
             </Text>
           </YStack>
@@ -190,7 +190,7 @@ export default function AchievementsScreen() {
             <Text fontSize="$5" fontWeight="bold" color="$color" marginTop="$1">
               {stats.xpEarned.toLocaleString()}
             </Text>
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               XP Earned
             </Text>
           </YStack>
@@ -347,7 +347,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
             borderRadius="$2"
           >
             <Text
-              fontSize="$2"
+              fontSize="$3"
               fontWeight="600"
               color={is_unlocked ? '#f59e0b' : '$colorMuted'}
             >
@@ -371,7 +371,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
                 width={`${progressPercent}%`}
               />
             </YStack>
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {progress} / {achievement.requirement_value}
             </Text>
           </YStack>
@@ -379,7 +379,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
 
         {/* Unlocked date */}
         {is_unlocked && unlocked_at && (
-          <Text fontSize="$2" color="$colorMuted">
+          <Text fontSize="$3" color="$colorMuted">
             Unlocked {new Date(unlocked_at).toLocaleDateString()}
           </Text>
         )}

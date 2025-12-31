@@ -84,7 +84,7 @@ export default function SignupScreen() {
               color="$color"
               focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
             />
-            <Text color="$colorMuted" fontSize="$2">
+            <Text color="$colorMuted" fontSize="$3">
               At least 8 characters
             </Text>
           </YStack>

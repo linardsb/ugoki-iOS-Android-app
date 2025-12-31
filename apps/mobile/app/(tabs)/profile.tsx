@@ -244,10 +244,10 @@ export default function ProfileScreen() {
 
             {/* App Info */}
             <YStack alignItems="center" paddingTop="$4">
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 UGOKI v1.0.0
               </Text>
-              <Text fontSize="$1" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Made with love for your wellness journey
               </Text>
             </YStack>

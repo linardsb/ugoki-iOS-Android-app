@@ -6,18 +6,28 @@ from src.db import get_db
 from src.modules.time_keeper.models import (
     TimeWindow,
     WindowType,
+    WindowState,
     OpenWindowRequest,
     CloseWindowRequest,
     ExtendWindowRequest,
 )
 from src.modules.time_keeper.service import TimeKeeperService
 from src.modules.event_journal.service import EventJournalService
+from src.modules.progression.service import ProgressionService
+from src.modules.progression.models import StreakType
 
 router = APIRouter(tags=["time_keeper"])
 
 
 def get_event_journal_service(db: AsyncSession = Depends(get_db)) -> EventJournalService:
     return EventJournalService(db)
+
+
+def get_progression_service(
+    db: AsyncSession = Depends(get_db),
+    event_journal: EventJournalService = Depends(get_event_journal_service),
+) -> ProgressionService:
+    return ProgressionService(db, event_journal=event_journal)
 
 
 def get_time_keeper_service(
@@ -50,14 +60,37 @@ async def close_window(
     window_id: str,
     request: CloseWindowRequest,
     service: TimeKeeperService = Depends(get_time_keeper_service),
+    progression: ProgressionService = Depends(get_progression_service),
 ) -> TimeWindow:
     """Close an active window."""
     try:
-        return await service.close_window(
+        # Get window info before closing (for identity_id and type)
+        window_info = await service.get_window(window_id)
+        if not window_info:
+            raise ValueError("Window not found")
+
+        # Close the window
+        window = await service.close_window(
             window_id=window_id,
             end_state=request.end_state,
             metadata=request.metadata,
         )
+
+        # Update streak if window was completed (not abandoned)
+        if request.end_state == WindowState.COMPLETED:
+            # Map window type to streak type
+            streak_type_map = {
+                WindowType.FAST: StreakType.FASTING,
+                WindowType.WORKOUT: StreakType.WORKOUT,
+            }
+            streak_type = streak_type_map.get(window.window_type)
+            if streak_type:
+                await progression.record_activity(
+                    identity_id=window.identity_id,
+                    streak_type=streak_type,
+                )
+
+        return window
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

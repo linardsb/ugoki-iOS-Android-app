@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Gear } from 'phosphor-react-native';
+import { Gear, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
 import {
   useSendMessage,
   useChatStore,
@@ -91,6 +91,15 @@ export default function CoachScreen() {
 
   const currentPersonality = PERSONALITIES.find((p) => p.id === personality);
 
+  const PERSONALITY_ICONS = {
+    Sparkle,
+    Mountains,
+    Anchor,
+    SmileyWink,
+  } as const;
+
+  const PersonalityIcon = currentPersonality ? PERSONALITY_ICONS[currentPersonality.iconName] : null;
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
       <KeyboardAvoidingView
@@ -115,9 +124,10 @@ export default function CoachScreen() {
                 <Text fontSize="$5" fontWeight="bold" color="$color">
                   AI Coach
                 </Text>
-                <XStack gap="$1" alignItems="center">
-                  <Text fontSize="$2" color="$colorMuted">
-                    {currentPersonality?.emoji} {currentPersonality?.name}
+                <XStack gap="$1.5" alignItems="center">
+                  {PersonalityIcon && <PersonalityIcon size={14} color="#6b7280" weight="fill" />}
+                  <Text fontSize="$3" color="$colorMuted">
+                    {currentPersonality?.name}
                   </Text>
                 </XStack>
               </YStack>

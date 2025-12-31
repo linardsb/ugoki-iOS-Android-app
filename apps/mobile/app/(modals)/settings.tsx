@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, Input } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 import {
   useProfile,
@@ -23,6 +23,13 @@ const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[
   { value: 'male', label: 'Male', Icon: GenderMale },
   { value: 'female', label: 'Female', Icon: GenderFemale },
 ];
+
+const PERSONALITY_ICONS = {
+  Sparkle,
+  Mountains,
+  Anchor,
+  SmileyWink,
+} as const;
 
 const GOALS: { value: GoalType; label: string }[] = [
   { value: 'weight_loss', label: 'Lose Weight' },
@@ -176,7 +183,7 @@ export default function SettingsScreen() {
           <SettingsSection title="Profile">
             <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$3">
               <YStack gap="$1">
-                <Text fontSize="$2" color="$colorMuted">Display Name</Text>
+                <Text fontSize="$3" color="$colorMuted">Display Name</Text>
                 <XStack gap="$2" alignItems="center">
                   <Input
                     flex={1}
@@ -206,7 +213,7 @@ export default function SettingsScreen() {
 
               {/* Gender Selection */}
               <YStack gap="$2">
-                <Text fontSize="$2" color="$colorMuted">Gender (for Coach Avatar)</Text>
+                <Text fontSize="$3" color="$colorMuted">Gender (for Coach Avatar)</Text>
                 <Button
                   size="$4"
                   height={48}
@@ -348,7 +355,7 @@ export default function SettingsScreen() {
                     <XStack justifyContent="space-between" alignItems="center">
                       <YStack>
                         <Text fontSize="$3" fontWeight="500" color="$color">Quiet Hours</Text>
-                        <Text fontSize="$2" color="$colorMuted">10 PM - 7 AM</Text>
+                        <Text fontSize="$3" color="$colorMuted">10 PM - 7 AM</Text>
                       </YStack>
                       <AppSwitch
                         checked={notificationPrefs?.quiet_hours_enabled ?? false}
@@ -396,7 +403,7 @@ export default function SettingsScreen() {
                   </XStack>
                   <YStack>
                     <Text fontSize="$4" fontWeight="500" color="$color">Bloodwork</Text>
-                    <Text fontSize="$2" color="$colorMuted">Upload lab results for AI analysis</Text>
+                    <Text fontSize="$3" color="$colorMuted">Upload lab results for AI analysis</Text>
                   </YStack>
                 </XStack>
                 <CaretRight size={18} color={mutedIconColor} weight="regular" />
@@ -408,7 +415,7 @@ export default function SettingsScreen() {
           <SettingsSection title="Goals">
             <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
               <YStack gap="$2">
-                <Text fontSize="$2" color="$colorMuted">Primary Goal</Text>
+                <Text fontSize="$3" color="$colorMuted">Primary Goal</Text>
                 <Button
                   size="$4"
                   height={48}
@@ -454,7 +461,7 @@ export default function SettingsScreen() {
           <SettingsSection title="Fasting">
             <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
               <YStack gap="$2">
-                <Text fontSize="$2" color="$colorMuted">Default Protocol</Text>
+                <Text fontSize="$3" color="$colorMuted">Default Protocol</Text>
                 <Button
                   size="$4"
                   height={48}
@@ -539,51 +546,65 @@ export default function SettingsScreen() {
           {/* Coach Personality */}
           <SettingsSection title="AI Coach">
             <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
-              <Text fontSize="$2" color="$colorMuted">Coach Personality</Text>
+              <Text fontSize="$3" color="$colorMuted">Coach Personality</Text>
               <YStack gap="$2">
                 <XStack gap="$2">
-                  {PERSONALITIES.slice(0, 2).map((p) => (
-                    <Button
-                      key={p.id}
-                      flex={1}
-                      size="$5"
-                      height={48}
-                      backgroundColor={coachPersonality === p.id ? '$primary' : '$backgroundHover'}
-                      borderRadius="$3"
-                      pressStyle={{ scale: 0.98 }}
-                      onPress={() => setCoachPersonality(p.id)}
-                    >
-                      <Text
-                        fontSize="$4"
-                        color={coachPersonality === p.id ? 'white' : '$color'}
-                        fontWeight={coachPersonality === p.id ? '600' : '400'}
+                  {PERSONALITIES.slice(0, 2).map((p) => {
+                    const Icon = PERSONALITY_ICONS[p.iconName];
+                    const isSelected = coachPersonality === p.id;
+                    return (
+                      <Button
+                        key={p.id}
+                        flex={1}
+                        size="$5"
+                        height={48}
+                        backgroundColor={isSelected ? '$primary' : '$backgroundHover'}
+                        borderRadius="$3"
+                        pressStyle={{ scale: 0.98 }}
+                        onPress={() => setCoachPersonality(p.id)}
                       >
-                        {p.emoji} {p.name}
-                      </Text>
-                    </Button>
-                  ))}
+                        <XStack gap="$2" alignItems="center">
+                          <Icon size={20} color={isSelected ? 'white' : '#6b7280'} weight="fill" />
+                          <Text
+                            fontSize="$4"
+                            color={isSelected ? 'white' : '$color'}
+                            fontWeight={isSelected ? '600' : '400'}
+                          >
+                            {p.name}
+                          </Text>
+                        </XStack>
+                      </Button>
+                    );
+                  })}
                 </XStack>
                 <XStack gap="$2">
-                  {PERSONALITIES.slice(2, 4).map((p) => (
-                    <Button
-                      key={p.id}
-                      flex={1}
-                      size="$5"
-                      height={48}
-                      backgroundColor={coachPersonality === p.id ? '$primary' : '$backgroundHover'}
-                      borderRadius="$3"
-                      pressStyle={{ scale: 0.98 }}
-                      onPress={() => setCoachPersonality(p.id)}
-                    >
-                      <Text
-                        fontSize="$4"
-                        color={coachPersonality === p.id ? 'white' : '$color'}
-                        fontWeight={coachPersonality === p.id ? '600' : '400'}
+                  {PERSONALITIES.slice(2, 4).map((p) => {
+                    const Icon = PERSONALITY_ICONS[p.iconName];
+                    const isSelected = coachPersonality === p.id;
+                    return (
+                      <Button
+                        key={p.id}
+                        flex={1}
+                        size="$5"
+                        height={48}
+                        backgroundColor={isSelected ? '$primary' : '$backgroundHover'}
+                        borderRadius="$3"
+                        pressStyle={{ scale: 0.98 }}
+                        onPress={() => setCoachPersonality(p.id)}
                       >
-                        {p.emoji} {p.name}
-                      </Text>
-                    </Button>
-                  ))}
+                        <XStack gap="$2" alignItems="center">
+                          <Icon size={20} color={isSelected ? 'white' : '#6b7280'} weight="fill" />
+                          <Text
+                            fontSize="$4"
+                            color={isSelected ? 'white' : '$color'}
+                            fontWeight={isSelected ? '600' : '400'}
+                          >
+                            {p.name}
+                          </Text>
+                        </XStack>
+                      </Button>
+                    );
+                  })}
                 </XStack>
               </YStack>
               <Text fontSize="$3" color="$colorMuted">
@@ -626,7 +647,7 @@ export default function SettingsScreen() {
                   </XStack>
                   <YStack>
                     <Text fontSize="$4" fontWeight="500" color="$color">Health Disclaimer</Text>
-                    <Text fontSize="$2" color="$colorMuted">Important safety information</Text>
+                    <Text fontSize="$3" color="$colorMuted">Important safety information</Text>
                   </YStack>
                 </XStack>
                 {showHealthDisclaimer ? (
@@ -651,10 +672,10 @@ export default function SettingsScreen() {
                       UGOKI is NOT:
                     </Text>
                     <YStack gap="$1">
-                      <Text fontSize="$2" color="$colorMuted">• A medical device</Text>
-                      <Text fontSize="$2" color="$colorMuted">• A substitute for professional medical advice</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Intended to diagnose, treat, cure, or prevent any disease</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Suitable for individuals with certain health conditions without medical supervision</Text>
+                      <Text fontSize="$3" color="$colorMuted">• A medical device</Text>
+                      <Text fontSize="$3" color="$colorMuted">• A substitute for professional medical advice</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Intended to diagnose, treat, cure, or prevent any disease</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Suitable for individuals with certain health conditions without medical supervision</Text>
                     </YStack>
                   </YStack>
 
@@ -670,13 +691,13 @@ export default function SettingsScreen() {
                       Consult a healthcare provider before use if you:
                     </Text>
                     <YStack gap="$1">
-                      <Text fontSize="$2" color="$colorMuted">• Have diabetes or blood sugar regulation issues</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Have or have had an eating disorder</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Are pregnant, breastfeeding, or planning to become pregnant</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Have cardiovascular disease or other chronic conditions</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Take medications that may be affected by fasting</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Are under 18 or over 70 years of age</Text>
-                      <Text fontSize="$2" color="$colorMuted">• Have a BMI under 18.5</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Have diabetes or blood sugar regulation issues</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Have or have had an eating disorder</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Are pregnant, breastfeeding, or planning to become pregnant</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Have cardiovascular disease or other chronic conditions</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Take medications that may be affected by fasting</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Are under 18 or over 70 years of age</Text>
+                      <Text fontSize="$3" color="$colorMuted">• Have a BMI under 18.5</Text>
                     </YStack>
                   </YStack>
 
@@ -691,7 +712,7 @@ export default function SettingsScreen() {
                     <Text fontWeight="700" fontSize="$3" color="$color" marginBottom="$2">
                       AI Coach Limitations
                     </Text>
-                    <Text fontSize="$2" color="$colorMuted" lineHeight={18}>
+                    <Text fontSize="$3" color="$colorMuted" lineHeight={18}>
                       The AI Coach feature provides general wellness information only. It cannot and does not provide medical advice. Any information provided by the AI Coach should not be relied upon for medical decisions.
                     </Text>
                   </YStack>
@@ -708,7 +729,7 @@ export default function SettingsScreen() {
                         Important
                       </Text>
                     </XStack>
-                    <Text fontSize="$2" color="#78350f" lineHeight={18}>
+                    <Text fontSize="$3" color="#78350f" lineHeight={18}>
                       If you experience any adverse health effects while using this app, discontinue use and consult a healthcare professional immediately.
                     </Text>
                   </YStack>

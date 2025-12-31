@@ -66,7 +66,7 @@ export function Badge({ children, variant, ...props }: BadgeProps) {
   return (
     <BadgeContainer variant={variant} {...props}>
       {typeof children === 'string' ? (
-        <Text color={textColor} fontSize="$2" fontWeight="600">
+        <Text color={textColor} fontSize="$3" fontWeight="600">
           {children}
         </Text>
       ) : (

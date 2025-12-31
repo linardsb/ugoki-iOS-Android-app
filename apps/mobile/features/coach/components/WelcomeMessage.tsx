@@ -129,10 +129,10 @@ export function WelcomeMessage({ onSuggestionPress, userGender }: WelcomeMessage
 
       {/* Disclaimer */}
       <Text
-        fontSize="$1"
+        fontSize="$3"
         color="$colorMuted"
         textAlign="center"
-        opacity={0.7}
+        opacity={0.8}
         maxWidth={300}
       >
         For general wellness guidance only. Not medical advice.

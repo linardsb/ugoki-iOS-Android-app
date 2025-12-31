@@ -214,7 +214,7 @@ export default function BloodworkScreen() {
               <Text fontSize="$4" fontWeight="600" color="$color">
                 Upload PDF
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Select a PDF file of your blood test results
               </Text>
             </YStack>
@@ -254,7 +254,7 @@ export default function BloodworkScreen() {
               <Text fontSize="$4" fontWeight="600" color="$color">
                 Photo Library
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Select a photo or screenshot of your results
               </Text>
             </YStack>
@@ -294,7 +294,7 @@ export default function BloodworkScreen() {
               <Text fontSize="$4" fontWeight="600" color="$color">
                 Take Photo
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Capture your results with camera
               </Text>
             </YStack>

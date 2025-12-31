@@ -117,7 +117,7 @@ export default function LogWeightScreen() {
               >
                 <XStack gap="$2" alignItems="center">
                   <Scales size={16} color="$primary" weight="thin" />
-                  <Text fontSize="$2" color="$colorMuted">Current</Text>
+                  <Text fontSize="$3" color="$colorMuted">Current</Text>
                 </XStack>
                 <Text fontSize="$5" fontWeight="bold" color="$color">
                   {formatWeight(latestWeight?.value)} {unit}
@@ -133,7 +133,7 @@ export default function LogWeightScreen() {
               >
                 <XStack gap="$2" alignItems="center">
                   {getTrendIcon()}
-                  <Text fontSize="$2" color="$colorMuted">Trend</Text>
+                  <Text fontSize="$3" color="$colorMuted">Trend</Text>
                 </XStack>
                 <Text fontSize="$3" fontWeight="600" color="$color">
                   {getTrendText()}
@@ -201,7 +201,7 @@ export default function LogWeightScreen() {
             {/* Quick Suggestions */}
             {latestWeight && (
               <YStack gap="$2">
-                <Text fontSize="$2" color="$colorMuted">Quick entry</Text>
+                <Text fontSize="$3" color="$colorMuted">Quick entry</Text>
                 <XStack gap="$2" flexWrap="wrap">
                   {[-0.5, 0, 0.5].map((diff) => {
                     const baseValue = isImperial

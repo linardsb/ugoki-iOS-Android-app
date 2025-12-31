@@ -163,7 +163,7 @@ export default function WorkoutDetailScreen() {
                   borderRadius="$2"
                 >
                   <Text
-                    fontSize="$2"
+                    fontSize="$3"
                     color={difficultyColor}
                     fontWeight="600"
                     textTransform="capitalize"
@@ -177,7 +177,7 @@ export default function WorkoutDetailScreen() {
                   paddingVertical="$1"
                   borderRadius="$2"
                 >
-                  <Text fontSize="$2" color="$colorMuted">
+                  <Text fontSize="$3" color="$colorMuted">
                     {workoutTypeLabels[workout.workout_type]}
                   </Text>
                 </XStack>
@@ -188,7 +188,7 @@ export default function WorkoutDetailScreen() {
                     paddingVertical="$1"
                     borderRadius="$2"
                   >
-                    <Text fontSize="$2" color="white" fontWeight="600">
+                    <Text fontSize="$3" color="white" fontWeight="600">
                       Featured
                     </Text>
                   </XStack>
@@ -212,7 +212,7 @@ export default function WorkoutDetailScreen() {
                 <Text fontSize="$4" fontWeight="bold" color="$color">
                   {workout.duration_minutes}
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">minutes</Text>
+                <Text fontSize="$3" color="$colorMuted">minutes</Text>
               </YStack>
 
               <YStack alignItems="center" gap="$1">
@@ -229,7 +229,7 @@ export default function WorkoutDetailScreen() {
                 <Text fontSize="$4" fontWeight="bold" color="$color">
                   {workout.calories_estimate}
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">calories</Text>
+                <Text fontSize="$3" color="$colorMuted">calories</Text>
               </YStack>
 
               <YStack alignItems="center" gap="$1">
@@ -246,7 +246,7 @@ export default function WorkoutDetailScreen() {
                 <Text fontSize="$4" fontWeight="bold" color="$color">
                   {workout.exercises.length}
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">exercises</Text>
+                <Text fontSize="$3" color="$colorMuted">exercises</Text>
               </YStack>
             </XStack>
 
@@ -382,14 +382,14 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
         <XStack gap="$2" alignItems="center">
           <XStack gap="$1" alignItems="center">
             <Clock size={12} color="$primary" weight="thin" />
-            <Text fontSize="$2" color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {formatTime(exercise.duration_seconds)}
             </Text>
           </XStack>
           {exercise.rest_seconds > 0 && (
             <>
               <Text color="$colorMuted">·</Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 {formatTime(exercise.rest_seconds)} rest
               </Text>
             </>
