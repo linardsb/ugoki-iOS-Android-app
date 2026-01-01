@@ -167,7 +167,7 @@ export default function CreateChallengeScreen() {
         <YStack paddingHorizontal="$4" paddingTop="$4" gap="$4">
           {/* Name */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">
+            <Text fontSize={14} fontWeight="600" color="$color">
               Challenge Name
             </Text>
             <TextInput
@@ -182,7 +182,7 @@ export default function CreateChallengeScreen() {
 
           {/* Description */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">
+            <Text fontSize={14} fontWeight="600" color="$color">
               Description (optional)
             </Text>
             <TextInput
@@ -199,7 +199,7 @@ export default function CreateChallengeScreen() {
 
           {/* Challenge Type */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">
+            <Text fontSize={14} fontWeight="600" color="$color">
               Challenge Type
             </Text>
             <YStack gap="$2">
@@ -218,7 +218,7 @@ export default function CreateChallengeScreen() {
                       alignItems="center"
                     >
                       <YStack flex={1}>
-                        <Text fontSize={15} fontWeight="600" color="#2B2B32">
+                        <Text fontSize={15} fontWeight="600" color="$color">
                           {type.label}
                         </Text>
                         <Text fontSize={13} color="#6b7280">
@@ -238,7 +238,7 @@ export default function CreateChallengeScreen() {
 
           {/* Goal Value */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">
+            <Text fontSize={14} fontWeight="600" color="$color">
               Goal ({unit})
             </Text>
             <TextInput
@@ -254,28 +254,28 @@ export default function CreateChallengeScreen() {
           {/* Dates */}
           <XStack gap="$3">
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color="#2B2B32">
+              <Text fontSize={14} fontWeight="600" color="$color">
                 Start Date
               </Text>
               <TouchableOpacity
                 onPress={() => setShowStartPicker(true)}
                 style={styles.dateButton}
               >
-                <Text fontSize={15} color="#2B2B32">
+                <Text fontSize={15} color="$color">
                   {formatDate(startDate)}
                 </Text>
               </TouchableOpacity>
             </YStack>
 
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color="#2B2B32">
+              <Text fontSize={14} fontWeight="600" color="$color">
                 End Date
               </Text>
               <TouchableOpacity
                 onPress={() => setShowEndPicker(true)}
                 style={styles.dateButton}
               >
-                <Text fontSize={15} color="#2B2B32">
+                <Text fontSize={15} color="$color">
                   {formatDate(endDate)}
                 </Text>
               </TouchableOpacity>
@@ -310,7 +310,7 @@ export default function CreateChallengeScreen() {
 
           {/* Max Participants */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">
+            <Text fontSize={14} fontWeight="600" color="$color">
               Max Participants
             </Text>
             <TextInput
@@ -333,7 +333,7 @@ export default function CreateChallengeScreen() {
               alignItems="center"
             >
               <YStack flex={1}>
-                <Text fontSize={15} fontWeight="600" color="#2B2B32">
+                <Text fontSize={15} fontWeight="600" color="$color">
                   Public Challenge
                 </Text>
                 <Text fontSize={13} color="#6b7280">

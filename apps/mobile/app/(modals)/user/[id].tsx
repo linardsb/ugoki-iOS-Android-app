@@ -170,7 +170,7 @@ export default function UserProfileModal() {
           )}
 
           <YStack alignItems="center" gap="$1">
-            <Text fontSize={24} fontWeight="700" color="#2B2B32">
+            <Text fontSize={24} fontWeight="700" color="$color">
               {name}
             </Text>
             {profile.username && (
@@ -216,7 +216,7 @@ export default function UserProfileModal() {
           {profile.level && (
             <YStack alignItems="center" gap="$1">
               <Star size={24} color="#14b8a6" weight="fill" />
-              <Text fontSize={20} fontWeight="700" color="#2B2B32">
+              <Text fontSize={20} fontWeight="700" color="$color">
                 {profile.level}
               </Text>
               <Text fontSize={12} color="#6b7280">
@@ -230,7 +230,7 @@ export default function UserProfileModal() {
               {profile.streaks.fasting !== undefined && (
                 <YStack alignItems="center" gap="$1">
                   <Flame size={24} color="#f97316" weight="fill" />
-                  <Text fontSize={20} fontWeight="700" color="#2B2B32">
+                  <Text fontSize={20} fontWeight="700" color="$color">
                     {profile.streaks.fasting}
                   </Text>
                   <Text fontSize={12} color="#6b7280">
@@ -241,7 +241,7 @@ export default function UserProfileModal() {
               {profile.streaks.workout !== undefined && (
                 <YStack alignItems="center" gap="$1">
                   <Trophy size={24} color="#eab308" weight="fill" />
-                  <Text fontSize={20} fontWeight="700" color="#2B2B32">
+                  <Text fontSize={20} fontWeight="700" color="$color">
                     {profile.streaks.workout}
                   </Text>
                   <Text fontSize={12} color="#6b7280">
@@ -255,7 +255,7 @@ export default function UserProfileModal() {
           {profile.achievement_count !== null && (
             <YStack alignItems="center" gap="$1">
               <Medal size={24} color="#8b5cf6" weight="fill" />
-              <Text fontSize={20} fontWeight="700" color="#2B2B32">
+              <Text fontSize={20} fontWeight="700" color="$color">
                 {profile.achievement_count}
               </Text>
               <Text fontSize={12} color="#6b7280">

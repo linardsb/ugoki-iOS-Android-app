@@ -96,7 +96,7 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
       {/* User Info */}
       <TouchableOpacity onPress={handleViewProfile} style={{ flex: 1 }} activeOpacity={0.7}>
         <YStack gap="$1">
-          <Text fontSize={16} fontWeight="600" color="#2B2B32">
+          <Text fontSize={16} fontWeight="600" color="$color">
             {name}
           </Text>
           <XStack gap="$2" alignItems="center">

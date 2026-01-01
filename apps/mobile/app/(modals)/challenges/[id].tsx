@@ -158,7 +158,7 @@ export default function ChallengeDetailScreen() {
         rightAction={
           challenge.is_participating && (
             <TouchableOpacity onPress={handleShare}>
-              <ShareNetwork size={24} color="#2B2B32" weight="regular" />
+              <ShareNetwork size={24} color="$color" weight="regular" />
             </TouchableOpacity>
           )
         }
@@ -173,7 +173,7 @@ export default function ChallengeDetailScreen() {
         <YStack paddingHorizontal="$4" paddingTop="$4" gap="$3">
           <XStack justifyContent="space-between" alignItems="flex-start">
             <YStack flex={1} gap="$1">
-              <Text fontSize={22} fontWeight="700" color="#2B2B32">
+              <Text fontSize={22} fontWeight="700" color="$color">
                 {challenge.name}
               </Text>
               <Text fontSize={14} color="#6b7280">
@@ -226,7 +226,7 @@ export default function ChallengeDetailScreen() {
                 Join Code
               </Text>
               <XStack alignItems="center" gap="$2">
-                <Text fontSize={16} fontWeight="700" color="#2B2B32">
+                <Text fontSize={16} fontWeight="700" color="$color">
                   {challenge.join_code}
                 </Text>
                 <Copy size={18} color="#6b7280" />
@@ -281,7 +281,7 @@ export default function ChallengeDetailScreen() {
 
         {/* Leaderboard */}
         <YStack paddingHorizontal="$4" paddingTop="$4" gap="$3">
-          <Text fontSize={16} fontWeight="700" color="#2B2B32">
+          <Text fontSize={16} fontWeight="700" color="$color">
             Leaderboard
           </Text>
 

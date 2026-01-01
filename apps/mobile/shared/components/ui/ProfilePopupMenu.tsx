@@ -42,7 +42,7 @@ function MenuItem({ icon, label, onPress, isLast }: MenuItemProps) {
       activeOpacity={0.7}
     >
       <View style={styles.menuItemIcon}>{icon}</View>
-      <Text fontSize={16} fontWeight="600" color="#2B2B32">
+      <Text fontSize={16} fontWeight="600" color="$color">
         {label}
       </Text>
     </TouchableOpacity>

@@ -71,7 +71,7 @@ export default function RecipeListScreen() {
             }}
           >
             <BookmarkSimple size={18} color="#f97316" weight="fill" />
-            <Text fontSize={14} fontWeight="600" color="#2B2B32">Saved</Text>
+            <Text fontSize={14} fontWeight="600" color="$color">Saved</Text>
           </TouchableOpacity>
         }
       />

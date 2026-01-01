@@ -67,7 +67,7 @@ export function UserCard({
 
         {/* User Info */}
         <YStack flex={1} gap="$1">
-          <Text fontSize={16} fontWeight="600" color="#2B2B32">
+          <Text fontSize={16} fontWeight="600" color="$color">
             {name}
           </Text>
           {username && displayName && (

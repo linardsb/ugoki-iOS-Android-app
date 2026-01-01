@@ -92,10 +92,10 @@ export default function ChallengesScreen() {
         rightAction={
           <XStack gap="$3">
             <TouchableOpacity onPress={handleJoinByCode}>
-              <Ticket size={24} color="#2B2B32" weight="regular" />
+              <Ticket size={24} color="$color" weight="regular" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/challenges/create')}>
-              <Plus size={24} color="#2B2B32" weight="regular" />
+              <Plus size={24} color="$color" weight="regular" />
             </TouchableOpacity>
           </XStack>
         }
