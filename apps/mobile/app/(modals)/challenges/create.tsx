@@ -218,7 +218,7 @@ export default function CreateChallengeScreen() {
                       alignItems="center"
                     >
                       <YStack flex={1}>
-                        <Text fontSize={15} fontWeight="600" color="$color">
+                        <Text fontSize={15} fontWeight="600" color="#1f2937">
                           {type.label}
                         </Text>
                         <Text fontSize={13} color="#6b7280">
@@ -261,7 +261,7 @@ export default function CreateChallengeScreen() {
                 onPress={() => setShowStartPicker(true)}
                 style={styles.dateButton}
               >
-                <Text fontSize={15} color="$color">
+                <Text fontSize={15} color="#1f2937">
                   {formatDate(startDate)}
                 </Text>
               </TouchableOpacity>
@@ -275,7 +275,7 @@ export default function CreateChallengeScreen() {
                 onPress={() => setShowEndPicker(true)}
                 style={styles.dateButton}
               >
-                <Text fontSize={15} color="$color">
+                <Text fontSize={15} color="#1f2937">
                   {formatDate(endDate)}
                 </Text>
               </TouchableOpacity>
@@ -333,7 +333,7 @@ export default function CreateChallengeScreen() {
               alignItems="center"
             >
               <YStack flex={1}>
-                <Text fontSize={15} fontWeight="600" color="$color">
+                <Text fontSize={15} fontWeight="600" color="#1f2937">
                   Public Challenge
                 </Text>
                 <Text fontSize={13} color="#6b7280">
