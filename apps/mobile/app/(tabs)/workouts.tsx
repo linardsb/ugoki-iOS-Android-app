@@ -17,6 +17,7 @@ import { ThemeToggle } from '@/shared/components/ui';
 
 export default function WorkoutsScreen() {
   const theme = useTheme();
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [selectedCategory, setSelectedCategory] = useState<WorkoutType | null>(null);
@@ -90,7 +91,7 @@ export default function WorkoutsScreen() {
                 alignItems="center"
                 gap="$2"
               >
-                <MagnifyingGlass size={20} color="$colorMuted" weight="thin" />
+                <MagnifyingGlass size={20} color={mutedColor} weight="regular" />
                 <Input
                   flex={1}
                   placeholder="Search workouts..."

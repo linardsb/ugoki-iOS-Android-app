@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Card } from 'tamagui';
+import { YStack, XStack, Text, Card, useTheme } from 'tamagui';
 import { Barbell, Clock, Fire } from 'phosphor-react-native';
 import type { WorkoutStats } from '../types';
 
@@ -8,6 +8,11 @@ interface WorkoutStatsCardProps {
 }
 
 export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
+  const theme = useTheme();
+  const primaryColor = theme.primary?.val || '#14b8a6';
+  const secondaryColor = theme.secondary?.val || '#f97316';
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+
   if (isLoading) {
     return (
       <Card backgroundColor="$cardBackground" padding="$4" borderRadius="$4">
@@ -20,7 +25,7 @@ export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
     return (
       <Card backgroundColor="$cardBackground" padding="$4" borderRadius="$4">
         <YStack gap="$2" alignItems="center">
-          <Barbell size={32} color="$colorMuted" weight="thin" />
+          <Barbell size={32} color={mutedColor} weight="regular" />
           <Text color="$colorMuted">No workouts yet</Text>
           <Text fontSize="$3" color="$colorMuted">
             Start your first workout to see stats
@@ -44,7 +49,7 @@ export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
       <YStack gap="$4">
         {/* Header */}
         <XStack gap="$2" alignItems="center">
-          <Barbell size={20} color="$secondary" weight="thin" />
+          <Barbell size={20} color={secondaryColor} weight="regular" />
           <Text fontSize="$4" fontWeight="600" color="$color">
             Workout Stats
           </Text>
@@ -53,19 +58,19 @@ export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
         {/* Stats grid */}
         <XStack gap="$4">
           <StatItem
-            icon={<Barbell size={16} color="$secondary" weight="thin" />}
+            icon={<Barbell size={16} color={secondaryColor} weight="regular" />}
             value={stats.total_workouts.toString()}
             label="Total Workouts"
             flex={1}
           />
           <StatItem
-            icon={<Clock size={16} color="$primary" weight="thin" />}
+            icon={<Clock size={16} color={primaryColor} weight="regular" />}
             value={formatDuration(stats.total_duration_minutes)}
             label="Total Time"
             flex={1}
           />
           <StatItem
-            icon={<Fire size={16} color="#ef4444" weight="thin" />}
+            icon={<Fire size={16} color="#ef4444" weight="regular" />}
             value={stats.total_calories_burned.toLocaleString()}
             label="Calories"
             flex={1}

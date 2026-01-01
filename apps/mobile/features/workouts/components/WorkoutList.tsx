@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Spinner, useTheme } from 'tamagui';
 import { FlatList, ListRenderItem, ScrollView } from 'react-native';
 import { Barbell } from 'phosphor-react-native';
 import { WorkoutCard } from './WorkoutCard';
@@ -21,6 +21,9 @@ export function WorkoutList({
   horizontal = false,
   showEmpty = true,
 }: WorkoutListProps) {
+  const theme = useTheme();
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+
   if (isLoading) {
     return (
       <YStack padding="$4" alignItems="center" justifyContent="center" minHeight={100}>
@@ -37,7 +40,7 @@ export function WorkoutList({
 
     return (
       <YStack padding="$4" alignItems="center" justifyContent="center" gap="$2">
-        <Barbell size={48} color="$colorMuted" weight="thin" />
+        <Barbell size={48} color={mutedColor} weight="regular" />
         <Text color="$colorMuted" textAlign="center">
           {emptyMessage}
         </Text>

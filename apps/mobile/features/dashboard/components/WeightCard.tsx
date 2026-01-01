@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Card } from 'tamagui';
+import { YStack, XStack, Text, Card, useTheme } from 'tamagui';
 import { Scales, TrendDown, TrendUp, Minus } from 'phosphor-react-native';
 import type { Metric, MetricTrend } from '../types';
 
@@ -9,6 +9,10 @@ interface WeightCardProps {
 }
 
 export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) {
+  const theme = useTheme();
+  const primaryColor = theme.primary?.val || '#14b8a6';
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+
   if (isLoading) {
     return (
       <Card backgroundColor="$cardBackground" padding="$4" borderRadius="$4">
@@ -21,7 +25,7 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
     return (
       <Card backgroundColor="$cardBackground" padding="$4" borderRadius="$4">
         <YStack gap="$2" alignItems="center">
-          <Scales size={32} color="$colorMuted" weight="thin" />
+          <Scales size={32} color={mutedColor} weight="regular" />
           <Text color="$colorMuted">No weight logged yet</Text>
           <Text fontSize="$3" color="$colorMuted">
             Track your progress by logging your weight
@@ -32,10 +36,10 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
   }
 
   const getTrendIcon = () => {
-    if (!trend) return <Minus size={16} color="$colorMuted" weight="thin" />;
-    if (trend.direction === 'down') return <TrendDown size={16} color="#22c55e" weight="thin" />;
-    if (trend.direction === 'up') return <TrendUp size={16} color="#ef4444" weight="thin" />;
-    return <Minus size={16} color="$colorMuted" weight="thin" />;
+    if (!trend) return <Minus size={16} color={mutedColor} weight="regular" />;
+    if (trend.direction === 'down') return <TrendDown size={16} color="#22c55e" weight="regular" />;
+    if (trend.direction === 'up') return <TrendUp size={16} color="#ef4444" weight="regular" />;
+    return <Minus size={16} color={mutedColor} weight="regular" />;
   };
 
   const getTrendColor = () => {
@@ -55,7 +59,7 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
         {/* Header */}
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
-            <Scales size={20} color="$primary" weight="thin" />
+            <Scales size={20} color={primaryColor} weight="regular" />
             <Text fontSize="$3" color="$colorMuted">
               Current Weight
             </Text>
