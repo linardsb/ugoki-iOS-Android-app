@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 import { FlatList, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { View, Text, YStack, XStack, Input } from 'tamagui';
+import { View, Text, YStack, XStack, Input, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BookmarkSimple } from 'phosphor-react-native';
@@ -22,6 +22,7 @@ import {
 export default function RecipeListScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -63,7 +64,7 @@ export default function RecipeListScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: '#f3f4f6',
+              backgroundColor: theme.cardBackground.val,
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderRadius: 20,
@@ -71,7 +72,7 @@ export default function RecipeListScreen() {
             }}
           >
             <BookmarkSimple size={18} color="#f97316" weight="fill" />
-            <Text fontSize={14} fontWeight="600" color="$color">Saved</Text>
+            <Text fontSize={14} fontWeight="600" color={theme.color.val}>Saved</Text>
           </TouchableOpacity>
         }
       />
