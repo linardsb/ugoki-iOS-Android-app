@@ -155,6 +155,7 @@ export default function ChallengeDetailScreen() {
     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
       <ScreenHeader
         title="Challenge"
+        showClose
         rightAction={
           challenge.is_participating && (
             <TouchableOpacity onPress={handleShare}>
