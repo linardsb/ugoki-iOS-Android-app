@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { XStack, Input, Button } from 'tamagui';
+import { XStack, Input, Button, useTheme } from 'tamagui';
 import { PaperPlaneRight } from 'phosphor-react-native';
 
 interface ChatInputProps {
@@ -13,6 +13,8 @@ export function ChatInput({
   disabled = false,
   placeholder = 'Message your coach...',
 }: ChatInputProps) {
+  const theme = useTheme();
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
   const [message, setMessage] = useState('');
 
   const handleSend = () => {
@@ -57,8 +59,8 @@ export function ChatInput({
       >
         <PaperPlaneRight
           size={20}
-          color={message.trim() ? 'white' : '$colorMuted'}
-          weight="thin"
+          color={message.trim() ? 'white' : mutedColor}
+          weight="regular"
         />
       </Button>
     </XStack>
