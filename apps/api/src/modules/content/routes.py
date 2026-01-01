@@ -25,12 +25,21 @@ from src.modules.content.models import (
 )
 from src.modules.content.service import ContentService
 from src.modules.event_journal.service import EventJournalService
+from src.modules.progression.service import ProgressionService
+from src.modules.progression.models import StreakType
 
 router = APIRouter(tags=["content"])
 
 
 def get_event_journal_service(db: AsyncSession = Depends(get_db)) -> EventJournalService:
     return EventJournalService(db)
+
+
+def get_progression_service(
+    db: AsyncSession = Depends(get_db),
+    event_journal: EventJournalService = Depends(get_event_journal_service),
+) -> ProgressionService:
+    return ProgressionService(db, event_journal=event_journal)
 
 
 def get_content_service(
@@ -156,16 +165,26 @@ async def complete_workout(
     session_id: str,
     request: CompleteWorkoutRequest | None = None,
     service: ContentService = Depends(get_content_service),
+    progression: ProgressionService = Depends(get_progression_service),
 ) -> WorkoutSession:
     """
     Complete a workout session.
-    
+
     Optionally provide actual calories burned.
     Returns the completed session with XP earned.
+    Also updates the user's workout streak.
     """
     try:
         calories = request.calories_burned if request else None
-        return await service.complete_workout(session_id, calories)
+        session = await service.complete_workout(session_id, calories)
+
+        # Update workout streak
+        await progression.record_activity(
+            identity_id=session.identity_id,
+            streak_type=StreakType.WORKOUT,
+        )
+
+        return session
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
