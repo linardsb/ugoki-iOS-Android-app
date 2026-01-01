@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { YStack, XStack, Text, Button } from 'tamagui';
+import { YStack, XStack, Text, Button, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, ScrollView, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -25,6 +25,8 @@ type UploadState = 'idle' | 'selected' | 'uploading' | 'success';
 
 export default function BloodworkScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
 
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [selectedFile, setSelectedFile] = useState<{
@@ -505,7 +507,7 @@ export default function BloodworkScreen() {
               backgroundColor="$cardBackground"
               onPress={handleClose}
             >
-              <X size={20} color="$color" weight="thin" />
+              <X size={20} color={iconColor} weight="regular" />
             </Button>
           </XStack>
         </XStack>

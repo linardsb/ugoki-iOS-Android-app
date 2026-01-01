@@ -30,6 +30,7 @@ import { CHALLENGE_TYPE_LABELS, CHALLENGE_STATUS_COLORS, CHALLENGE_TYPE_UNITS } 
 
 export default function ChallengeDetailScreen() {
   const theme = useTheme();
+  const iconColor = theme.color.val;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
@@ -159,7 +160,7 @@ export default function ChallengeDetailScreen() {
         rightAction={
           challenge.is_participating && (
             <TouchableOpacity onPress={handleShare}>
-              <ShareNetwork size={24} color="$color" weight="regular" />
+              <ShareNetwork size={24} color={iconColor} weight="regular" />
             </TouchableOpacity>
           )
         }

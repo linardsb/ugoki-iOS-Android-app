@@ -1,5 +1,5 @@
 import { Alert, Pressable } from 'react-native';
-import { YStack, XStack, Text, Button } from 'tamagui';
+import { YStack, XStack, Text, Button, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X, Camera, Image, Trash } from 'phosphor-react-native';
@@ -13,6 +13,8 @@ import {
 
 export default function AvatarPickerScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
   const { data: profile } = useProfile();
 
   const uploadAvatar = useUploadAvatar({
@@ -85,7 +87,7 @@ export default function AvatarPickerScreen() {
             onPress={() => router.back()}
             disabled={isLoading}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
         </XStack>
 

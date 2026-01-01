@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Button, ScrollView } from 'tamagui';
+import { YStack, XStack, Text, Button, ScrollView, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Check, WarningCircle, ForkKnife } from 'phosphor-react-native';
@@ -27,6 +27,9 @@ const BREAK_FAST_GUIDE = {
 
 export default function BreakFastGuideScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const primaryColor = theme.primary.val;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
@@ -40,7 +43,7 @@ export default function BreakFastGuideScreen() {
           borderBottomColor="$borderColor"
         >
           <XStack gap="$2" alignItems="center">
-            <ForkKnife size={24} color="$primary" weight="thin" />
+            <ForkKnife size={24} color={primaryColor} weight="regular" />
             <YStack>
               <Text fontSize="$5" fontWeight="bold" color="$color">
                 Break Your Fast Safely
@@ -56,7 +59,7 @@ export default function BreakFastGuideScreen() {
             backgroundColor="$cardBackground"
             onPress={() => router.back()}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
         </XStack>
 

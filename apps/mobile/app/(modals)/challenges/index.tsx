@@ -29,6 +29,7 @@ type Tab = 'browse' | 'mine';
 
 export default function ChallengesScreen() {
   const theme = useTheme();
+  const iconColor = theme.color.val;
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('browse');
@@ -92,10 +93,10 @@ export default function ChallengesScreen() {
         rightAction={
           <XStack gap="$3">
             <TouchableOpacity onPress={handleJoinByCode}>
-              <Ticket size={24} color="$color" weight="regular" />
+              <Ticket size={24} color={iconColor} weight="regular" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/challenges/create')}>
-              <Plus size={24} color="$color" weight="regular" />
+              <Plus size={24} color={iconColor} weight="regular" />
             </TouchableOpacity>
           </XStack>
         }

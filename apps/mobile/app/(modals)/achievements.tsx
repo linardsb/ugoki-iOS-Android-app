@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { YStack, XStack, Text, ScrollView, Button, Spinner } from 'tamagui';
+import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -70,6 +70,10 @@ function getIconComponent(iconName: string | undefined, size: number, color: str
 
 export default function AchievementsScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const primaryColor = theme.primary.val;
+  const mutedColor = theme.colorMuted.val;
   const [filter, setFilter] = useState<FilterType>('all');
   const { data: achievements, isLoading } = useAchievements(false);
 
@@ -158,7 +162,7 @@ export default function AchievementsScreen() {
             backgroundColor="$cardBackground"
             onPress={handleClose}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
         </XStack>
 
@@ -171,7 +175,7 @@ export default function AchievementsScreen() {
             borderRadius="$3"
             alignItems="center"
           >
-            <Trophy size={24} color="$primary" weight="thin" />
+            <Trophy size={24} color={primaryColor} weight="regular" />
             <Text fontSize="$5" fontWeight="bold" color="$color" marginTop="$1">
               {stats.unlocked}
             </Text>
@@ -258,7 +262,7 @@ export default function AchievementsScreen() {
 
             {filteredAchievements.length === 0 && (
               <YStack alignItems="center" padding="$6">
-                <Trophy size={48} color="$colorMuted" weight="thin" />
+                <Trophy size={48} color={mutedColor} weight="regular" />
                 <Text fontSize="$4" color="$colorMuted" marginTop="$3">
                   No achievements in this category
                 </Text>

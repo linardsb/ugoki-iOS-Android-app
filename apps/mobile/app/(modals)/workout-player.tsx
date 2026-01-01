@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import { YStack, XStack, Text, Button, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Button, Spinner, useTheme } from 'tamagui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, Vibration } from 'react-native';
@@ -32,6 +32,8 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export default function WorkoutPlayerScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
   const insets = useSafeAreaInsets();
   const { sessionId, workoutId } = useLocalSearchParams<{
     sessionId: string;
@@ -265,7 +267,7 @@ export default function WorkoutPlayerScreen() {
             backgroundColor="$cardBackground"
             onPress={handleClose}
           >
-            <X size={20} color="$color" weight="thin" />
+            <X size={20} color={iconColor} weight="regular" />
           </Button>
 
           <YStack alignItems="center">
@@ -283,7 +285,7 @@ export default function WorkoutPlayerScreen() {
             backgroundColor="$cardBackground"
             onPress={skip}
           >
-            <SkipForward size={20} color="$color" weight="thin" />
+            <SkipForward size={20} color={iconColor} weight="regular" />
           </Button>
         </XStack>
 

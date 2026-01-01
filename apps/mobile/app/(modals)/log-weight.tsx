@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { YStack, XStack, Text, Button, Input } from 'tamagui';
+import { YStack, XStack, Text, Button, Input, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,10 @@ import { usePreferences } from '@/features/profile';
 
 export default function LogWeightScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const primaryColor = theme.primary.val;
+  const mutedColor = theme.colorMuted.val;
   const [weight, setWeight] = useState('');
   const [note, setNote] = useState('');
 
@@ -64,10 +68,10 @@ export default function LogWeightScreen() {
 
   // Get trend icon
   const getTrendIcon = () => {
-    if (!weightTrend) return <Minus size={16} color="$colorMuted" weight="thin" />;
-    if (weightTrend.direction === 'down') return <TrendDown size={16} color="#22c55e" weight="thin" />;
-    if (weightTrend.direction === 'up') return <TrendUp size={16} color="#ef4444" weight="thin" />;
-    return <Minus size={16} color="$colorMuted" weight="thin" />;
+    if (!weightTrend) return <Minus size={16} color={mutedColor} weight="regular" />;
+    if (weightTrend.direction === 'down') return <TrendDown size={16} color="#22c55e" weight="regular" />;
+    if (weightTrend.direction === 'up') return <TrendUp size={16} color="#ef4444" weight="regular" />;
+    return <Minus size={16} color={mutedColor} weight="regular" />;
   };
 
   const getTrendText = () => {
@@ -101,7 +105,7 @@ export default function LogWeightScreen() {
               backgroundColor="$cardBackground"
               onPress={handleClose}
             >
-              <X size={20} color="$color" weight="thin" />
+              <X size={20} color={iconColor} weight="regular" />
             </Button>
           </XStack>
 
@@ -116,7 +120,7 @@ export default function LogWeightScreen() {
                 gap="$1"
               >
                 <XStack gap="$2" alignItems="center">
-                  <Scales size={16} color="$primary" weight="thin" />
+                  <Scales size={16} color={primaryColor} weight="regular" />
                   <Text fontSize="$3" color="$colorMuted">Current</Text>
                 </XStack>
                 <Text fontSize="$5" fontWeight="bold" color="$color">

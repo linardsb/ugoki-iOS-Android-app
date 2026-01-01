@@ -94,7 +94,7 @@ export default function FriendsScreen() {
           <XStack gap="$3">
             <TouchableOpacity onPress={() => router.push('/friend-requests')}>
               <View>
-                <Bell size={24} color="$color" weight="regular" />
+                <Bell size={24} color={theme.color.val} weight="regular" />
                 {requestCount > 0 && (
                   <View style={styles.badge}>
                     <Text fontSize={10} color="white" fontWeight="700">
@@ -105,7 +105,7 @@ export default function FriendsScreen() {
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleAddByCode}>
-              <UserPlus size={24} color="$color" weight="regular" />
+              <UserPlus size={24} color={theme.color.val} weight="regular" />
             </TouchableOpacity>
           </XStack>
         }
