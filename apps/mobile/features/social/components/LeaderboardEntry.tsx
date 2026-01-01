@@ -23,7 +23,7 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
     if (onPress) {
       onPress();
     } else {
-      router.push(`/user/${entry.identity_id}`);
+      router.push(`/(modals)/user/${entry.identity_id}`);
     }
   };
 

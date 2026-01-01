@@ -92,7 +92,7 @@ export default function FriendsScreen() {
         showClose
         rightAction={
           <XStack gap="$3">
-            <TouchableOpacity onPress={() => router.push('/friend-requests')}>
+            <TouchableOpacity onPress={() => router.push('/(modals)/friend-requests')}>
               <View>
                 <Bell size={24} color={theme.color.val} weight="regular" />
                 {requestCount > 0 && (
