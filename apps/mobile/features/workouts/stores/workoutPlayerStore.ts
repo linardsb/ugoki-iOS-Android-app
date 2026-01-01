@@ -257,7 +257,7 @@ export const useWorkoutPlayerStore = create<WorkoutPlayerState>()((set, get) => 
         // Move to next exercise
         const nextIndex = currentExerciseIndex + 1;
         if (nextIndex >= exercises.length) {
-          set({ phase: 'complete' });
+          set({ phase: 'complete', caloriesBurned: newCalories });
         } else {
           set({
             currentExerciseIndex: nextIndex,
@@ -265,6 +265,7 @@ export const useWorkoutPlayerStore = create<WorkoutPlayerState>()((set, get) => 
             exerciseTimeRemaining: exercises[nextIndex].duration_seconds,
             phaseStartTime: Date.now(),
             totalPausedMs: 0,
+            caloriesBurned: newCalories,
           });
         }
       }

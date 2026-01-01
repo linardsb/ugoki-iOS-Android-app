@@ -81,12 +81,15 @@ export default function WorkoutPlayerScreen() {
     },
   });
 
-  // Initialize workout
+  // Get current sessionId from store to prevent re-initialization
+  const storeSessionId = useWorkoutPlayerStore((state) => state.sessionId);
+
+  // Initialize workout - only if not already initialized with this session
   useEffect(() => {
-    if (workout && sessionId) {
+    if (workout && sessionId && storeSessionId !== sessionId) {
       initialize(sessionId, workout);
     }
-  }, [workout, sessionId]);
+  }, [workout, sessionId, storeSessionId, initialize]);
 
   // Timer tick
   useEffect(() => {
