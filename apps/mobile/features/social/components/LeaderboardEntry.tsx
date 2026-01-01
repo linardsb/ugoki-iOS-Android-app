@@ -74,7 +74,7 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* User Info */}
         <YStack flex={1}>
-          <Text fontSize={15} fontWeight="600" color="$color">
+          <Text fontSize={15} fontWeight="600" color="#1f2937">
             {name}
             {entry.is_current_user && ' (You)'}
           </Text>
@@ -87,7 +87,7 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* Value */}
         <YStack alignItems="flex-end">
-          <Text fontSize={18} fontWeight="700" color="$color">
+          <Text fontSize={18} fontWeight="700" color="#1f2937">
             {Math.round(entry.value).toLocaleString()}
           </Text>
           <Text fontSize={11} color="#6b7280">

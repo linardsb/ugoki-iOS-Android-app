@@ -81,7 +81,7 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/friends')}
             >
               <Users size={24} color="#14b8a6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="$color">
+              <Text fontSize={24} fontWeight="700" color="#1f2937">
                 {friends?.length || 0}
               </Text>
               <Text fontSize={12} color="#6b7280">Friends</Text>
@@ -99,7 +99,7 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/friends')}
             >
               <UserPlus size={24} color="#8b5cf6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="$color">
+              <Text fontSize={24} fontWeight="700" color="#1f2937">
                 {followers?.length || 0}
               </Text>
               <Text fontSize={12} color="#6b7280">Followers</Text>
@@ -110,7 +110,7 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/challenges')}
             >
               <Flag size={24} color="#f97316" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="$color">
+              <Text fontSize={24} fontWeight="700" color="#1f2937">
                 {activeChallenges.length}
               </Text>
               <Text fontSize={12} color="#6b7280">Challenges</Text>
@@ -232,7 +232,7 @@ export default function SocialScreen() {
                   <Users size={20} color="#14b8a6" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="$color">Friends</Text>
+                  <Text fontSize={15} fontWeight="600" color="#1f2937">Friends</Text>
                   <Text fontSize={13} color="#6b7280">Manage your friends list</Text>
                 </YStack>
               </XStack>
@@ -248,7 +248,7 @@ export default function SocialScreen() {
                   <Trophy size={20} color="#f59e0b" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="$color">Leaderboards</Text>
+                  <Text fontSize={15} fontWeight="600" color="#1f2937">Leaderboards</Text>
                   <Text fontSize={13} color="#6b7280">See global and friends rankings</Text>
                 </YStack>
               </XStack>
@@ -264,7 +264,7 @@ export default function SocialScreen() {
                   <Flag size={20} color="#f97316" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="$color">Challenges</Text>
+                  <Text fontSize={15} fontWeight="600" color="#1f2937">Challenges</Text>
                   <Text fontSize={13} color="#6b7280">Compete with friends</Text>
                 </YStack>
               </XStack>

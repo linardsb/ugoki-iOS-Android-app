@@ -49,7 +49,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
             <Flag size={20} color={statusColor} weight="fill" />
           </RNView>
           <YStack flex={1}>
-            <Text fontSize={15} fontWeight="600" color="$color" numberOfLines={1}>
+            <Text fontSize={15} fontWeight="600" color="#1f2937" numberOfLines={1}>
               {challenge.name}
             </Text>
             <Text fontSize={12} color="#6b7280">
@@ -74,7 +74,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
         {/* Header */}
         <XStack justifyContent="space-between" alignItems="flex-start">
           <YStack flex={1} gap="$1">
-            <Text fontSize={17} fontWeight="700" color="$color">
+            <Text fontSize={17} fontWeight="700" color="#1f2937">
               {challenge.name}
             </Text>
             <Text fontSize={13} color="#6b7280">
@@ -130,7 +130,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
               <Text fontSize={12} color="#6b7280">
                 Your Progress
               </Text>
-              <Text fontSize={12} fontWeight="600" color="$color">
+              <Text fontSize={12} fontWeight="600" color="#1f2937">
                 {Math.round(challenge.my_progress || 0)} / {challenge.goal_value}{' '}
                 {challenge.goal_unit || ''}
               </Text>
@@ -151,7 +151,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
           >
             <Text fontSize={12} color="#6b7280">
               Join Code:{' '}
-              <Text fontWeight="700" color="$color">
+              <Text fontWeight="700" color="#1f2937">
                 {challenge.join_code}
               </Text>
             </Text>
