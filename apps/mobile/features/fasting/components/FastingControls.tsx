@@ -1,4 +1,4 @@
-import { YStack, XStack, Button, Text, AlertDialog } from 'tamagui';
+import { YStack, XStack, Button, Text, AlertDialog, useTheme } from 'tamagui';
 import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import { Play, Pause, Stop, Plus } from 'phosphor-react-native';
@@ -14,6 +14,9 @@ interface FastingControlsProps {
 }
 
 export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsProps) {
+  const theme = useTheme();
+  const iconColor = theme.color.val;
+  const secondaryColor = theme.secondary.val;
   const { activeWindow, isPaused, pause, resume, reset, getProgress, syncFromServer } = useFastingStore();
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [showProtocolSelect, setShowProtocolSelect] = useState(false);
@@ -240,7 +243,7 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
             elevation={3}
           >
             <YStack alignItems="center" gap="$1">
-              <Plus size={22} color="$secondary" weight="thin" />
+              <Plus size={22} color={secondaryColor} weight="regular" />
               <Text fontSize="$3" fontWeight="600" color="$secondary">
                 {extendFast.isPending ? 'Adding...' : '+2 Hours'}
               </Text>
@@ -280,7 +283,7 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
                 </>
               ) : (
                 <>
-                  <Pause size={22} color="$color" weight="thin" />
+                  <Pause size={22} color={iconColor} weight="regular" />
                   <Text fontSize="$3" fontWeight="600" color="$color">
                     Pause
                   </Text>

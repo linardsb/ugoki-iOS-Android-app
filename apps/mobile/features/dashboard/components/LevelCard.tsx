@@ -13,6 +13,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
   const router = useRouter();
   const theme = useTheme();
   const progressBarBg = theme.backgroundHover.val;
+  const primaryColor = theme.primary.val;
 
   const handlePress = () => {
     router.push('/(modals)/achievements');
@@ -40,7 +41,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
         onPress={handlePress}
       >
         <YStack gap="$3" alignItems="center">
-          <Star size={32} color="$primary" weight="thin" />
+          <Star size={32} color={primaryColor} weight="regular" />
           <Text color="$colorMuted">Start your journey to level up!</Text>
         </YStack>
       </Card>

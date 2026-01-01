@@ -41,6 +41,8 @@ export default function WorkoutPlayerScreen() {
   }>();
 
   const { data: workout, isLoading } = useWorkout(workoutId || '');
+  const primaryColor = theme.primary.val;
+  const secondaryColor = theme.secondary.val;
 
   const {
     phase,
@@ -199,7 +201,7 @@ export default function WorkoutPlayerScreen() {
             <XStack gap="$6">
               <YStack alignItems="center" gap="$1">
                 <XStack gap="$1" alignItems="center">
-                  <Clock size={20} color="$primary" weight="thin" />
+                  <Clock size={20} color={primaryColor} weight="regular" />
                   <Text fontSize="$6" fontWeight="bold" color="$color">
                     {workout.duration_minutes}
                   </Text>
@@ -219,7 +221,7 @@ export default function WorkoutPlayerScreen() {
 
               <YStack alignItems="center" gap="$1">
                 <XStack gap="$1" alignItems="center">
-                  <Barbell size={20} color="$secondary" weight="thin" />
+                  <Barbell size={20} color={secondaryColor} weight="regular" />
                   <Text fontSize="$6" fontWeight="bold" color="$color">
                     {workout.exercises.length}
                   </Text>

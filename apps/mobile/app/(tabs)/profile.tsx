@@ -38,6 +38,8 @@ export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const mutedIconColor = theme.colorMuted.val;
+  const primaryColor = theme.primary.val;
+  const secondaryColor = theme.secondary.val;
 
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useProfile();
   const { data: preferences, isLoading: preferencesLoading } = usePreferences();
@@ -143,12 +145,12 @@ export default function ProfileScreen() {
             {/* Account Section */}
             <SettingsSection title="Account">
               <SettingsItem
-                icon={<User size={20} color="$primary" weight="thin" />}
+                icon={<User size={20} color={primaryColor} weight="regular" />}
                 label="Edit Profile"
                 onPress={() => router.push('/(modals)/settings')}
               />
               <SettingsItem
-                icon={<Target size={20} color="$secondary" weight="thin" />}
+                icon={<Target size={20} color={secondaryColor} weight="regular" />}
                 label="Goals"
                 value={progression?.level?.current_level ? `Level ${progression.level.current_level}` : undefined}
                 onPress={() => router.push('/(modals)/settings')}

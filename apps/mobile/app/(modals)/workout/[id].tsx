@@ -342,6 +342,7 @@ export default function WorkoutDetailScreen() {
 
 function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }) {
   const theme = useTheme();
+  const primaryColor = theme.primary.val;
   const mutedIconColor = theme.colorMuted.val;
   const formatTime = (seconds: number) => {
     if (seconds >= 60) {
@@ -381,7 +382,7 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
         </Text>
         <XStack gap="$2" alignItems="center">
           <XStack gap="$1" alignItems="center">
-            <Clock size={12} color="$primary" weight="thin" />
+            <Clock size={12} color={primaryColor} weight="regular" />
             <Text fontSize="$3" color="$colorMuted">
               {formatTime(exercise.duration_seconds)}
             </Text>

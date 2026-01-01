@@ -57,6 +57,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const iconColor = theme.color.val;
   const mutedIconColor = theme.colorMuted.val;
+  const primaryColor = theme.primary.val;
 
   const { data: profile } = useProfile();
   const { data: preferences } = usePreferences();
@@ -404,7 +405,7 @@ export default function SettingsScreen() {
                     justifyContent="center"
                     alignItems="center"
                   >
-                    <FileText size={18} color="$primary" weight="thin" />
+                    <FileText size={18} color={primaryColor} weight="regular" />
                   </XStack>
                   <YStack>
                     <Text fontSize="$4" fontWeight="500" color="$color">Bloodwork</Text>

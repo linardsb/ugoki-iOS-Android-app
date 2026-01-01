@@ -279,6 +279,8 @@ export default function AchievementsScreen() {
 }
 
 function AchievementCard({ userAchievement }: { userAchievement: UserAchievement }) {
+  const theme = useTheme();
+  const mutedColor = theme.colorMuted.val;
   const { achievement, is_unlocked, progress, unlocked_at } = userAchievement;
   const categoryColor = CATEGORY_COLORS[achievement.achievement_type];
   const progressPercent = Math.min(100, (progress / achievement.requirement_value) * 100);
@@ -302,7 +304,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
           justifyContent="center"
           alignItems="center"
         >
-          <Lock size={24} color="$colorMuted" weight="thin" />
+          <Lock size={24} color={mutedColor} weight="regular" />
         </XStack>
         <YStack flex={1}>
           <Text fontSize="$4" fontWeight="600" color="$colorMuted">
