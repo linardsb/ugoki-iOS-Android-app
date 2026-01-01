@@ -3312,3 +3312,105 @@ These issues are documented for future improvement but don't affect core functio
 | Login/Signup UI | Manual | ✅ Proper feedback |
 
 **GitHub:** All changes pushed to `main` branch
+
+### January 1, 2026 - Dark Mode Text Visibility Fixes
+
+**Issue:** Multiple screens had unreadable text in dark mode due to incorrect color usage.
+
+**Root Cause:** Text inside white/light background containers was using `$color` (theme-aware token), which becomes light in dark mode - making it invisible on white backgrounds.
+
+**Fix Pattern Established:**
+- **Theme backgrounds** → use `$color` (adapts to light/dark)
+- **White/light backgrounds** → use hardcoded `#1f2937` (dark gray)
+
+---
+
+**Social Screen Text Rendering Fix:**
+
+**Problem:** `{requestCount && requestCount > 0 && (...)}` returned `0` when requestCount was 0, causing "Text strings must be rendered within a <Text> component" error.
+
+**Fix:** Changed to ternary operator:
+```tsx
+// BEFORE (broken):
+{requestCount && requestCount > 0 && (<View>...</View>)}
+
+// AFTER (fixed):
+{requestCount > 0 ? (<View>...</View>) : null}
+```
+
+---
+
+**Files Fixed for Dark Mode Text Visibility:**
+
+| File | Changes |
+|------|---------|
+| `shared/components/ui/ProfilePopupMenu.tsx` | Menu labels: `$color` → `#1f2937` |
+| `app/(modals)/social.tsx` | Stat cards & menu items: `$color` → `#1f2937` |
+| `features/social/components/ChallengeCard.tsx` | Card text: `$color` → `#1f2937` |
+| `features/social/components/LeaderboardEntry.tsx` | Entry text: `$color` → `#1f2937` |
+| `features/social/components/UserCard.tsx` | Card text: `$color` → `#1f2937` |
+| `features/social/components/FriendRequestCard.tsx` | Card text: `$color` → `#1f2937` |
+| `app/(modals)/challenges/create.tsx` | Type labels, date buttons, toggle: `$color` → `#1f2937` |
+| `app/(modals)/challenges/[id].tsx` | Join code text: `$color` → `#1f2937` |
+
+---
+
+**Challenge Detail Screen UX Fix:**
+
+Added close button (X) to Challenge detail screen header so users can dismiss the modal without having to leave the challenge.
+
+```tsx
+<ScreenHeader
+  title="Challenge"
+  showClose  // <-- Added
+  rightAction={...}
+/>
+```
+
+---
+
+**Batch Color Replacement Commands Used:**
+
+```bash
+# First pass: Change hardcoded dark to theme-aware (for theme backgrounds)
+sed -i '' 's/color="#2B2B32"/color="$color"/g' <file>
+
+# Second pass: Revert for white card components
+sed -i '' 's/color="\$color"/color="#1f2937"/g' <component-files>
+```
+
+---
+
+**Theme Token Reference:**
+
+From `shared/theme/tamagui.config.ts`:
+
+| Token | Light Mode | Dark Mode |
+|-------|------------|-----------|
+| `$color` | `#2B2B32` | `#fafafa` |
+| `$colorMuted` | `#71717a` | `#a1a1aa` |
+| `$colorSubtle` | `#a1a1aa` | `#71717a` |
+| `$background` | `#fafafa` | `#09090b` |
+
+---
+
+**Commits:**
+
+| Hash | Description |
+|------|-------------|
+| `458ff84d` | Fix text rendering error in Social screen |
+| `5ff15ef5` | Fix dark theme text visibility across all screens |
+| `98fb5605` | Fix text colors for white card backgrounds |
+| `1274cf58` | Fix dark mode text visibility in Create Challenge screen |
+| `8878218b` | Fix join code text visibility in Challenge detail screen |
+| `0886c5df` | Add close button to Challenge detail screen |
+
+---
+
+**Key Learnings:**
+
+1. **React Native conditional rendering gotcha**: `{0 && something}` returns `0`, not `false`. Always use ternary for number-based conditions.
+
+2. **Theme tokens on fixed backgrounds**: Never use `$color` on elements with `backgroundColor="white"` - the text becomes invisible in dark mode.
+
+3. **Consistent pattern**: Establish a rule early - theme backgrounds get theme colors, fixed backgrounds get fixed colors.
