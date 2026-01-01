@@ -226,7 +226,7 @@ export default function ChallengeDetailScreen() {
                 Join Code
               </Text>
               <XStack alignItems="center" gap="$2">
-                <Text fontSize={16} fontWeight="700" color="$color">
+                <Text fontSize={16} fontWeight="700" color="#1f2937">
                   {challenge.join_code}
                 </Text>
                 <Copy size={18} color="#6b7280" />
