@@ -207,7 +207,7 @@ export function ResearchCard({
         {/* Key benefits */}
         {digest?.key_benefits && digest.key_benefits.length > 0 && (
           <YStack gap="$2">
-            <Text fontSize={12} fontWeight="600" color={mutedColor}>
+            <Text fontSize={12} fontWeight="600" color={textColor} opacity={0.7}>
               KEY TAKEAWAYS
             </Text>
             {digest.key_benefits.slice(0, 3).map((benefit, index) => (

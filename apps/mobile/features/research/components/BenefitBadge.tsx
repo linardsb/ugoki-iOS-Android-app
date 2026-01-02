@@ -50,7 +50,8 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
   const theme = useTheme();
   const isDark = theme.name === 'dark';
   const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  // Use lighter description color for better readability in dark mode
+  const descriptionColor = isDark ? '#d4d4d8' : '#4b5563';
   const badgeBackground = isDark ? '#2c2c2e' : '#f9fafb';
   const iconBackground = isDark ? '#3c3c3e' : '#f3f4f6';
 
@@ -100,7 +101,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         <Text fontSize={14} fontWeight="600" color={textColor}>
           {benefit.title}
         </Text>
-        <Text fontSize={13} color={mutedColor} lineHeight={18}>
+        <Text fontSize={13} color={descriptionColor} lineHeight={18}>
           {benefit.description}
         </Text>
       </YStack>
