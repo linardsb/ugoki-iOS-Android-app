@@ -3,10 +3,11 @@
  * Hub for social features: friends, challenges, leaderboards
  */
 
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import {
   Users,
   UserPlus,
@@ -31,6 +32,19 @@ export default function SocialScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors matching dashboard cards
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
 
   const { data: friends, isLoading: friendsLoading, refetch: refetchFriends } = useFriends();
   const { data: followers, refetch: refetchFollowers } = useFollowers();
@@ -57,9 +71,9 @@ export default function SocialScreen() {
         rightAction={
           <TouchableOpacity
             onPress={() => router.push('/(modals)/friends')}
-            style={styles.searchButton}
+            style={[styles.searchButton, { backgroundColor: subtleBackground }]}
           >
-            <MagnifyingGlass size={20} color="#6b7280" weight="regular" />
+            <MagnifyingGlass size={20} color={mutedColor} weight="regular" />
           </TouchableOpacity>
         }
       />
@@ -77,14 +91,14 @@ export default function SocialScreen() {
           {/* Stats Row */}
           <XStack gap="$3">
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1 }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <Users size={24} color="#14b8a6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="#1f2937">
+              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
                 {friends?.length || 0}
               </Text>
-              <Text fontSize={12} color="#6b7280">Friends</Text>
+              <Text fontSize={12} style={{ color: mutedColor }}>Friends</Text>
               {requestCount > 0 ? (
                 <View style={styles.badge}>
                   <Text fontSize={10} fontWeight="700" color="white">
@@ -95,25 +109,25 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1 }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <UserPlus size={24} color="#8b5cf6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="#1f2937">
+              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
                 {followers?.length || 0}
               </Text>
-              <Text fontSize={12} color="#6b7280">Followers</Text>
+              <Text fontSize={12} style={{ color: mutedColor }}>Followers</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1 }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/challenges')}
             >
               <Flag size={24} color="#f97316" weight="regular" />
-              <Text fontSize={24} fontWeight="700" color="#1f2937">
+              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
                 {activeChallenges.length}
               </Text>
-              <Text fontSize={12} color="#6b7280">Challenges</Text>
+              <Text fontSize={12} style={{ color: mutedColor }}>Challenges</Text>
             </TouchableOpacity>
           </XStack>
 
@@ -163,11 +177,11 @@ export default function SocialScreen() {
               </YStack>
             ) : (
               <TouchableOpacity
-                style={styles.emptyCard}
+                style={[styles.emptyCard, { backgroundColor: cardBackground }]}
                 onPress={() => router.push('/(modals)/challenges')}
               >
-                <Flag size={32} color="#d1d5db" weight="regular" />
-                <Text fontSize={14} color="#6b7280" textAlign="center">
+                <Flag size={32} color={mutedColor} weight="regular" />
+                <Text fontSize={14} style={{ color: mutedColor }} textAlign="center">
                   No active challenges
                 </Text>
                 <Text fontSize={13} color="#14b8a6" fontWeight="600">
@@ -193,7 +207,7 @@ export default function SocialScreen() {
             </XStack>
 
             <YStack
-              backgroundColor="white"
+              backgroundColor={cardBackground}
               borderRadius="$4"
               padding="$3"
               gap="$2"
@@ -208,8 +222,8 @@ export default function SocialScreen() {
                 ))
               ) : (
                 <YStack alignItems="center" padding="$4">
-                  <Trophy size={32} color="#d1d5db" weight="regular" />
-                  <Text fontSize={14} color="#6b7280" marginTop="$2">
+                  <Trophy size={32} color={mutedColor} weight="regular" />
+                  <Text fontSize={14} style={{ color: mutedColor }} marginTop="$2">
                     No leaderboard data yet
                   </Text>
                 </YStack>
@@ -224,51 +238,51 @@ export default function SocialScreen() {
             </Text>
 
             <TouchableOpacity
-              style={styles.menuItem}
+              style={[styles.menuItem, { backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: '#d1fae5' }]}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#14b8a620' : '#d1fae5' }]}>
                   <Users size={20} color="#14b8a6" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="#1f2937">Friends</Text>
-                  <Text fontSize={13} color="#6b7280">Manage your friends list</Text>
+                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Friends</Text>
+                  <Text fontSize={13} style={{ color: mutedColor }}>Manage your friends list</Text>
                 </YStack>
               </XStack>
-              <CaretRight size={20} color="#6b7280" weight="regular" />
+              <CaretRight size={20} color={mutedColor} weight="regular" />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.menuItem}
+              style={[styles.menuItem, { backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/leaderboards')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: '#fef3c7' }]}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#f59e0b20' : '#fef3c7' }]}>
                   <Trophy size={20} color="#f59e0b" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="#1f2937">Leaderboards</Text>
-                  <Text fontSize={13} color="#6b7280">See global and friends rankings</Text>
+                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Leaderboards</Text>
+                  <Text fontSize={13} style={{ color: mutedColor }}>See global and friends rankings</Text>
                 </YStack>
               </XStack>
-              <CaretRight size={20} color="#6b7280" weight="regular" />
+              <CaretRight size={20} color={mutedColor} weight="regular" />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.menuItem}
+              style={[styles.menuItem, { backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/challenges')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: '#ffedd5' }]}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#f9731620' : '#ffedd5' }]}>
                   <Flag size={20} color="#f97316" weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" color="#1f2937">Challenges</Text>
-                  <Text fontSize={13} color="#6b7280">Compete with friends</Text>
+                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Challenges</Text>
+                  <Text fontSize={13} style={{ color: mutedColor }}>Compete with friends</Text>
                 </YStack>
               </XStack>
-              <CaretRight size={20} color="#6b7280" weight="regular" />
+              <CaretRight size={20} color={mutedColor} weight="regular" />
             </TouchableOpacity>
           </YStack>
         </YStack>
@@ -288,12 +302,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   statCard: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -327,7 +339,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   emptyCard: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -336,7 +347,6 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 16,
   },

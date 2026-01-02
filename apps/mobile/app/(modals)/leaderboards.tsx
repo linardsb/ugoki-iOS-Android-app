@@ -4,9 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeStore } from '@/shared/stores/theme';
 import { Trophy, Users, Flame, Star } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import { useLeaderboard } from '@/features/social/hooks';
@@ -22,6 +23,21 @@ export default function LeaderboardsScreen() {
   const [scope, setScope] = useState<ScopeType>('global');
   const [metric, setMetric] = useState<MetricType>('xp');
   const [period, setPeriod] = useState<LeaderboardPeriod>('week');
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const subtleColor = isDark ? '#71717a' : '#9ca3af';
+  const borderColor = isDark ? '#2c2c2e' : '#e4e4e7';
+  const myRankBg = isDark ? '#14b8a620' : '#d1fae5';
 
   const leaderboardType: LeaderboardType = `${scope}_${metric}` as LeaderboardType;
   const valueLabel = metric === 'xp' ? 'XP' : 'days';
@@ -44,28 +60,28 @@ export default function LeaderboardsScreen() {
       {/* Scope Toggle */}
       <XStack paddingHorizontal="$4" paddingVertical="$3" gap="$3">
         <TouchableOpacity
-          style={[styles.scopeButton, scope === 'global' && styles.scopeButtonActive]}
+          style={[styles.scopeButton, { backgroundColor: cardBackground }, scope === 'global' && styles.scopeButtonActive]}
           onPress={() => setScope('global')}
         >
-          <Trophy size={18} color={scope === 'global' ? 'white' : '#6b7280'} weight="fill" />
+          <Trophy size={18} color={scope === 'global' ? 'white' : mutedColor} weight="fill" />
           <Text
             fontSize={14}
             fontWeight="600"
-            color={scope === 'global' ? 'white' : '#6b7280'}
+            style={{ color: scope === 'global' ? 'white' : mutedColor }}
           >
             Global
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.scopeButton, scope === 'friends' && styles.scopeButtonActive]}
+          style={[styles.scopeButton, { backgroundColor: cardBackground }, scope === 'friends' && styles.scopeButtonActive]}
           onPress={() => setScope('friends')}
         >
-          <Users size={18} color={scope === 'friends' ? 'white' : '#6b7280'} weight="fill" />
+          <Users size={18} color={scope === 'friends' ? 'white' : mutedColor} weight="fill" />
           <Text
             fontSize={14}
             fontWeight="600"
-            color={scope === 'friends' ? 'white' : '#6b7280'}
+            style={{ color: scope === 'friends' ? 'white' : mutedColor }}
           >
             Friends
           </Text>
@@ -75,28 +91,28 @@ export default function LeaderboardsScreen() {
       {/* Metric Toggle */}
       <XStack paddingHorizontal="$4" gap="$3">
         <TouchableOpacity
-          style={[styles.metricButton, metric === 'xp' && styles.metricButtonActive]}
+          style={[styles.metricButton, { backgroundColor: cardBackground, borderColor: borderColor }, metric === 'xp' && styles.metricButtonActive]}
           onPress={() => setMetric('xp')}
         >
-          <Star size={16} color={metric === 'xp' ? '#14b8a6' : '#6b7280'} weight="fill" />
+          <Star size={16} color={metric === 'xp' ? '#14b8a6' : mutedColor} weight="fill" />
           <Text
             fontSize={13}
             fontWeight="500"
-            color={metric === 'xp' ? '#14b8a6' : '#6b7280'}
+            style={{ color: metric === 'xp' ? '#14b8a6' : mutedColor }}
           >
             XP
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.metricButton, metric === 'streaks' && styles.metricButtonActive]}
+          style={[styles.metricButton, { backgroundColor: cardBackground, borderColor: borderColor }, metric === 'streaks' && styles.metricButtonActive]}
           onPress={() => setMetric('streaks')}
         >
-          <Flame size={16} color={metric === 'streaks' ? '#14b8a6' : '#6b7280'} weight="fill" />
+          <Flame size={16} color={metric === 'streaks' ? '#14b8a6' : mutedColor} weight="fill" />
           <Text
             fontSize={13}
             fontWeight="500"
-            color={metric === 'streaks' ? '#14b8a6' : '#6b7280'}
+            style={{ color: metric === 'streaks' ? '#14b8a6' : mutedColor }}
           >
             Streaks
           </Text>
@@ -112,13 +128,13 @@ export default function LeaderboardsScreen() {
         {periods.map((p) => (
           <TouchableOpacity
             key={p.value}
-            style={[styles.periodButton, period === p.value && styles.periodButtonActive]}
+            style={[styles.periodButton, { backgroundColor: cardBackground }, period === p.value && styles.periodButtonActive]}
             onPress={() => setPeriod(p.value)}
           >
             <Text
               fontSize={13}
               fontWeight="500"
-              color={period === p.value ? 'white' : '#6b7280'}
+              style={{ color: period === p.value ? 'white' : mutedColor }}
             >
               {p.label}
             </Text>
@@ -131,7 +147,7 @@ export default function LeaderboardsScreen() {
         <XStack
           marginHorizontal="$4"
           marginTop="$3"
-          backgroundColor="#d1fae5"
+          backgroundColor={myRankBg}
           borderRadius="$3"
           padding="$3"
           justifyContent="space-between"
@@ -161,7 +177,7 @@ export default function LeaderboardsScreen() {
       >
         <YStack paddingHorizontal="$4" paddingTop="$3" gap="$2">
           {isLoading ? (
-            <Text fontSize={14} color="#6b7280" textAlign="center" paddingVertical="$4">
+            <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">
               Loading...
             </Text>
           ) : leaderboard && leaderboard.entries.length > 0 ? (
@@ -174,12 +190,12 @@ export default function LeaderboardsScreen() {
             ))
           ) : (
             <YStack alignItems="center" paddingVertical="$6" gap="$2">
-              <Text fontSize={16} color="#6b7280" textAlign="center">
+              <Text fontSize={16} style={{ color: mutedColor }} textAlign="center">
                 {scope === 'friends'
                   ? 'Add friends to see how you compare!'
                   : 'No entries yet'}
               </Text>
-              <Text fontSize={14} color="#9ca3af" textAlign="center">
+              <Text fontSize={14} style={{ color: subtleColor }} textAlign="center">
                 {scope === 'friends'
                   ? 'Your friends will appear here once you connect'
                   : 'Be the first to top the leaderboard!'}
@@ -205,7 +221,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'white',
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -216,12 +231,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'white',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e4e4e7',
   },
   metricButtonActive: {
     borderColor: '#14b8a6',
@@ -236,7 +249,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: 'white',
     marginRight: 8,
   },
   periodButtonActive: {

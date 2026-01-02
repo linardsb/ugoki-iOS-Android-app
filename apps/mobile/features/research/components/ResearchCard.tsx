@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
+import { useThemeStore } from '@/shared/stores/theme';
 import {
   BookmarkSimple,
   ArrowSquareOut,
@@ -36,9 +37,12 @@ export function ResearchCard({
   variant = 'default',
   onPress,
 }: ResearchCardProps) {
-  // Use useColorScheme for reliable dark mode detection
+  // Theme - compute effective theme same as root layout
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
   const cardBackground = isDark ? '#1c1c1e' : 'white';
   // Use VERY BRIGHT colors for dark mode readability - MUST be explicit for visibility
   const textColor = isDark ? '#ffffff' : '#1f2937';

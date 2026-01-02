@@ -4,9 +4,10 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Image, View as RNView } from 'react-native';
+import { TouchableOpacity, StyleSheet, Image, View as RNView, useColorScheme } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
 import { useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import { Trophy, Medal } from 'phosphor-react-native';
 import type { LeaderboardEntry as LeaderboardEntryType } from '../types';
 
@@ -18,6 +19,20 @@ interface LeaderboardEntryProps {
 
 export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: LeaderboardEntryProps) {
   const router = useRouter();
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors matching dashboard cards
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const highlightBg = isDark ? '#14b8a630' : '#d1fae5';
+  const highlightBorder = '#14b8a6';
 
   const handlePress = () => {
     if (onPress) {
@@ -41,7 +56,7 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
       return <Medal size={24} color="#d97706" weight="fill" />;
     }
     return (
-      <Text fontSize={16} fontWeight="600" color="#6b7280" width={24} textAlign="center">
+      <Text fontSize={16} fontWeight="600" style={{ color: mutedColor }} width={24} textAlign="center">
         {entry.rank}
       </Text>
     );
@@ -50,13 +65,13 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
       <XStack
-        backgroundColor={entry.is_current_user ? '#d1fae5' : 'white'}
+        backgroundColor={entry.is_current_user ? highlightBg : cardBackground}
         borderRadius="$3"
         padding="$3"
         alignItems="center"
         gap="$3"
         borderWidth={entry.is_current_user ? 2 : 0}
-        borderColor={entry.is_current_user ? '#14b8a6' : 'transparent'}
+        borderColor={entry.is_current_user ? highlightBorder : 'transparent'}
       >
         {/* Rank */}
         <RNView style={styles.rankContainer}>{getRankDisplay()}</RNView>
@@ -74,12 +89,12 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* User Info */}
         <YStack flex={1}>
-          <Text fontSize={15} fontWeight="600" color="#1f2937">
+          <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>
             {name}
             {entry.is_current_user && ' (You)'}
           </Text>
           {entry.username && entry.display_name && (
-            <Text fontSize={12} color="#6b7280">
+            <Text fontSize={12} style={{ color: mutedColor }}>
               @{entry.username}
             </Text>
           )}
@@ -87,10 +102,10 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* Value */}
         <YStack alignItems="flex-end">
-          <Text fontSize={18} fontWeight="700" color="#1f2937">
+          <Text fontSize={18} fontWeight="700" style={{ color: textColor }}>
             {Math.round(entry.value).toLocaleString()}
           </Text>
-          <Text fontSize={11} color="#6b7280">
+          <Text fontSize={11} style={{ color: mutedColor }}>
             {valueLabel}
           </Text>
         </YStack>

@@ -3621,3 +3621,81 @@ Icons now display in circular backgrounds (40x40px) for better visual consistenc
 - `app/(modals)/research/[id].tsx` - Collapsible abstract, renamed labels, removed AI Summary box
 
 **Commit:** `3deb9d7c` - Improve Research Hub UI with better icons and collapsible abstract
+
+### January 2, 2026 (Continued) - Dark Mode Fixes for Social & Challenge Screens
+
+**Global Dark Theme Background Color Update:**
+
+Changed the global dark theme background from `#09090b` to `#121216` for a softer appearance.
+
+**Files Updated:**
+- `shared/theme/tamagui.config.ts` - Updated `gray950` color
+- `app/(modals)/research/*.tsx` - Updated hardcoded backgrounds
+- `features/research/colors.ts` - Updated `BACKGROUNDS.dark.page`
+
+---
+
+**Dashboard Layout Update:**
+
+Moved Fasting Streak and Workout Streak cards to their own row below the Level card (still displayed side by side).
+
+**File Modified:** `app/(tabs)/index.tsx`
+
+---
+
+**Dark Mode Theme-Aware Styling for Social & Challenge Screens:**
+
+Updated all Social and Challenge screens to use theme-aware colors matching the Dashboard styling.
+
+**Theme Detection Pattern Used:**
+```tsx
+const colorScheme = useColorScheme();
+const { mode: themeMode } = useThemeStore();
+const systemTheme = colorScheme || 'light';
+const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+const isDark = effectiveTheme === 'dark';
+
+// Theme-aware colors
+const cardBackground = isDark ? '#1c1c1e' : 'white';
+const textColor = isDark ? '#ffffff' : '#1f2937';
+const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
+```
+
+**Components Updated:**
+
+| Component | Changes |
+|-----------|---------|
+| `BenefitBadge.tsx` | Card and icon backgrounds, text colors |
+| `ChallengeCard.tsx` | Card background, text, progress bar colors |
+| `LeaderboardEntry.tsx` | Card background, text, highlight colors |
+| `UserCard.tsx` | Card background, text colors |
+| `FriendRequestCard.tsx` | Card background, text colors |
+
+**Screens Updated:**
+
+| Screen | Changes |
+|--------|---------|
+| `app/(modals)/social.tsx` | Stat cards, empty states, menu items, leaderboard wrapper |
+| `app/(modals)/challenges/[id].tsx` | Join code section, progress card, stats, bottom action bar |
+| `app/(modals)/challenges/index.tsx` | Tab toggles, empty states, buttons |
+| `app/(modals)/challenges/create.tsx` | Type labels, date buttons, toggle |
+| `app/(modals)/friends.tsx` | Search bar, text labels, empty states |
+| `app/(modals)/leaderboards.tsx` | Scope/metric/period toggles, my rank card, empty states |
+
+**Dark Mode Color Palette Reference:**
+
+| Element | Dark Mode | Light Mode |
+|---------|-----------|------------|
+| Page background | `#121216` | `#fafafa` |
+| Card background | `#1c1c1e` | `white` |
+| Subtle background | `#2c2c2e` | `#f3f4f6` |
+| Primary text | `#ffffff` | `#1f2937` |
+| Muted text | `#a1a1aa` | `#6b7280` |
+| Subtle text | `#71717a` | `#9ca3af` |
+| Border color | `#2c2c2e` | `#e4e4e7` |
+| Highlight (teal) | `#14b8a620` | `#d1fae5` |
+
+**Key Rule Established:**
+- **Theme backgrounds** → use `$color` or computed theme colors
+- **White/light card backgrounds** → use hardcoded colors (`#1f2937` for text on white cards)

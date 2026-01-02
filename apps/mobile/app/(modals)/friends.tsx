@@ -12,10 +12,12 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import { MagnifyingGlass, UserPlus, Bell, X } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -32,6 +34,21 @@ export default function FriendsScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const subtleColor = isDark ? '#71717a' : '#9ca3af';
+  const inputBackground = isDark ? '#2c2c2e' : 'white';
+  const inputTextColor = isDark ? '#ffffff' : '#2B2B32';
 
   const { data: friends, isLoading, refetch, isRefetching } = useFriends();
   const { data: searchResults } = useSearchUsers(searchQuery, 20);
@@ -115,17 +132,17 @@ export default function FriendsScreen() {
       <XStack paddingHorizontal="$4" paddingVertical="$3">
         <XStack
           flex={1}
-          backgroundColor="white"
+          backgroundColor={inputBackground}
           borderRadius="$3"
           paddingHorizontal="$3"
           alignItems="center"
           gap="$2"
         >
-          <MagnifyingGlass size={20} color="#6b7280" />
+          <MagnifyingGlass size={20} color={mutedColor} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: inputTextColor }]}
             placeholder="Search users..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={subtleColor}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onFocus={() => setIsSearching(true)}
@@ -137,7 +154,7 @@ export default function FriendsScreen() {
                 setIsSearching(false);
               }}
             >
-              <X size={20} color="#6b7280" />
+              <X size={20} color={mutedColor} />
             </TouchableOpacity>
           )}
         </XStack>
@@ -151,7 +168,7 @@ export default function FriendsScreen() {
         {/* Search Results */}
         {isSearching && searchQuery.length >= 2 && (
           <YStack paddingHorizontal="$4" gap="$3">
-            <Text fontSize={14} fontWeight="600" color="#6b7280">
+            <Text fontSize={14} fontWeight="600" style={{ color: mutedColor }}>
               Search Results
             </Text>
             {searchResults && searchResults.length > 0 ? (
@@ -178,7 +195,7 @@ export default function FriendsScreen() {
                 />
               ))
             ) : (
-              <Text fontSize={14} color="#6b7280" textAlign="center" paddingVertical="$4">
+              <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">
                 No users found
               </Text>
             )}
@@ -189,16 +206,16 @@ export default function FriendsScreen() {
         {!isSearching && (
           <YStack paddingHorizontal="$4" gap="$3">
             <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize={14} fontWeight="600" color="#6b7280">
+              <Text fontSize={14} fontWeight="600" style={{ color: mutedColor }}>
                 Your Friends
               </Text>
-              <Text fontSize={13} color="#9ca3af">
+              <Text fontSize={13} style={{ color: subtleColor }}>
                 {friends?.length || 0} friends
               </Text>
             </XStack>
 
             {isLoading ? (
-              <Text fontSize={14} color="#6b7280" textAlign="center" paddingVertical="$4">
+              <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">
                 Loading...
               </Text>
             ) : friends && friends.length > 0 ? (
@@ -214,10 +231,10 @@ export default function FriendsScreen() {
               ))
             ) : (
               <YStack alignItems="center" paddingVertical="$6" gap="$3">
-                <Text fontSize={16} color="#6b7280" textAlign="center">
+                <Text fontSize={16} style={{ color: mutedColor }} textAlign="center">
                   No friends yet
                 </Text>
-                <Text fontSize={14} color="#9ca3af" textAlign="center">
+                <Text fontSize={14} style={{ color: subtleColor }} textAlign="center">
                   Search for users or add friends by their friend code
                 </Text>
                 <TouchableOpacity onPress={handleAddByCode} style={styles.emptyAddButton}>
@@ -246,7 +263,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 44,
     fontSize: 16,
-    color: '#2B2B32',
   },
   addButton: {
     width: 36,

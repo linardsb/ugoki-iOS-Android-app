@@ -12,10 +12,12 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import { Plus, MagnifyingGlass, Ticket } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -33,6 +35,19 @@ export default function ChallengesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('browse');
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const subtleColor = isDark ? '#71717a' : '#9ca3af';
 
   const {
     data: allChallenges,
@@ -105,26 +120,26 @@ export default function ChallengesScreen() {
       {/* Tabs */}
       <XStack paddingHorizontal="$4" paddingVertical="$3" gap="$3">
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'browse' && styles.tabActive]}
+          style={[styles.tab, { backgroundColor: cardBackground }, activeTab === 'browse' && styles.tabActive]}
           onPress={() => setActiveTab('browse')}
         >
           <Text
             fontSize={15}
             fontWeight="600"
-            color={activeTab === 'browse' ? 'white' : '#6b7280'}
+            style={{ color: activeTab === 'browse' ? 'white' : mutedColor }}
           >
             Browse
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'mine' && styles.tabActive]}
+          style={[styles.tab, { backgroundColor: cardBackground }, activeTab === 'mine' && styles.tabActive]}
           onPress={() => setActiveTab('mine')}
         >
           <Text
             fontSize={15}
             fontWeight="600"
-            color={activeTab === 'mine' ? 'white' : '#6b7280'}
+            style={{ color: activeTab === 'mine' ? 'white' : mutedColor }}
           >
             My Challenges
           </Text>
@@ -149,7 +164,7 @@ export default function ChallengesScreen() {
       >
         <YStack paddingHorizontal="$4" gap="$3">
           {isLoading ? (
-            <Text fontSize={14} color="#6b7280" textAlign="center" paddingVertical="$4">
+            <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">
               Loading...
             </Text>
           ) : challenges && challenges.length > 0 ? (
@@ -158,12 +173,12 @@ export default function ChallengesScreen() {
             ))
           ) : (
             <YStack alignItems="center" paddingVertical="$6" gap="$3">
-              <Text fontSize={16} color="#6b7280" textAlign="center">
+              <Text fontSize={16} style={{ color: mutedColor }} textAlign="center">
                 {activeTab === 'mine'
                   ? 'No active challenges'
                   : 'No challenges available'}
               </Text>
-              <Text fontSize={14} color="#9ca3af" textAlign="center">
+              <Text fontSize={14} style={{ color: subtleColor }} textAlign="center">
                 {activeTab === 'mine'
                   ? 'Join a challenge or create your own to get started'
                   : 'Be the first to create a challenge for the community'}
@@ -171,7 +186,7 @@ export default function ChallengesScreen() {
               <XStack gap="$3">
                 <TouchableOpacity
                   onPress={handleJoinByCode}
-                  style={styles.emptyButton}
+                  style={[styles.emptyButton, { backgroundColor: cardBackground }]}
                 >
                   <Ticket size={18} color="#14b8a6" weight="bold" />
                   <Text color="#14b8a6" fontWeight="600" marginLeft={6}>
@@ -209,7 +224,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'white',
     paddingVertical: 12,
     borderRadius: 12,
   },
@@ -230,7 +244,6 @@ const styles = StyleSheet.create({
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,

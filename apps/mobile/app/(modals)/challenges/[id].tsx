@@ -12,10 +12,12 @@ import {
   TouchableOpacity,
   Alert,
   Share,
+  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import { Users, Calendar, Trophy, Clock, ShareNetwork, SignOut, Copy } from 'phosphor-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -35,6 +37,21 @@ export default function ChallengeDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
+  const progressCardBg = isDark ? '#14b8a620' : '#d1fae5';
+  const borderColor = isDark ? '#2c2c2e' : '#e4e4e7';
 
   const { data: challenge, isLoading, refetch, isRefetching } = useChallenge(id);
   const { data: leaderboard } = useChallengeLeaderboard(id);
@@ -178,7 +195,7 @@ export default function ChallengeDetailScreen() {
               <Text fontSize={22} fontWeight="700" color="$color">
                 {challenge.name}
               </Text>
-              <Text fontSize={14} color="#6b7280">
+              <Text fontSize={14} style={{ color: mutedColor }}>
                 {typeLabel} - Goal: {challenge.goal_value} {unit}
               </Text>
             </YStack>
@@ -190,7 +207,7 @@ export default function ChallengeDetailScreen() {
           </XStack>
 
           {challenge.description && (
-            <Text fontSize={15} color="#4b5563">
+            <Text fontSize={15} style={{ color: mutedColor }}>
               {challenge.description}
             </Text>
           )}
@@ -198,14 +215,14 @@ export default function ChallengeDetailScreen() {
           {/* Stats */}
           <XStack gap="$4" paddingTop="$2">
             <XStack alignItems="center" gap="$2">
-              <Users size={18} color="#6b7280" />
-              <Text fontSize={14} color="#6b7280">
+              <Users size={18} color={mutedColor} />
+              <Text fontSize={14} style={{ color: mutedColor }}>
                 {challenge.participant_count}/{challenge.max_participants}
               </Text>
             </XStack>
             <XStack alignItems="center" gap="$2">
-              <Calendar size={18} color="#6b7280" />
-              <Text fontSize={14} color="#6b7280">
+              <Calendar size={18} color={mutedColor} />
+              <Text fontSize={14} style={{ color: mutedColor }}>
                 {challenge.days_remaining !== null
                   ? `${challenge.days_remaining} days left`
                   : challenge.status === 'upcoming'
@@ -218,20 +235,20 @@ export default function ChallengeDetailScreen() {
           {/* Join Code */}
           <TouchableOpacity onPress={handleCopyCode} activeOpacity={0.7}>
             <XStack
-              backgroundColor="#f3f4f6"
+              backgroundColor={subtleBackground}
               borderRadius="$3"
               padding="$3"
               justifyContent="space-between"
               alignItems="center"
             >
-              <Text fontSize={14} color="#6b7280">
+              <Text fontSize={14} style={{ color: mutedColor }}>
                 Join Code
               </Text>
               <XStack alignItems="center" gap="$2">
-                <Text fontSize={16} fontWeight="700" color="#1f2937">
+                <Text fontSize={16} fontWeight="700" style={{ color: textColor }}>
                   {challenge.join_code}
                 </Text>
-                <Copy size={18} color="#6b7280" />
+                <Copy size={18} color={mutedColor} />
               </XStack>
             </XStack>
           </TouchableOpacity>
@@ -242,7 +259,7 @@ export default function ChallengeDetailScreen() {
           <YStack
             marginHorizontal="$4"
             marginTop="$4"
-            backgroundColor="#d1fae5"
+            backgroundColor={progressCardBg}
             borderRadius="$4"
             padding="$4"
             gap="$3"
@@ -306,7 +323,7 @@ export default function ChallengeDetailScreen() {
               ))}
             </YStack>
           ) : (
-            <Text fontSize={14} color="#6b7280" textAlign="center" paddingVertical="$4">
+            <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">
               No participants yet
             </Text>
           )}
@@ -314,7 +331,7 @@ export default function ChallengeDetailScreen() {
       </ScrollView>
 
       {/* Bottom Action */}
-      <View style={[styles.bottomAction, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.bottomAction, { paddingBottom: insets.bottom + 16, backgroundColor: cardBackground, borderTopColor: borderColor }]}>
         {challenge.is_participating ? (
           <TouchableOpacity
             onPress={handleLeave}
@@ -337,7 +354,7 @@ export default function ChallengeDetailScreen() {
             </Text>
           </TouchableOpacity>
         ) : (
-          <Text fontSize={14} color="#6b7280" textAlign="center">
+          <Text fontSize={14} style={{ color: mutedColor }} textAlign="center">
             This challenge has ended
           </Text>
         )}
@@ -376,9 +393,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 16,
     paddingTop: 16,
-    backgroundColor: 'white',
     borderTopWidth: 1,
-    borderTopColor: '#e4e4e7',
   },
   actionButton: {
     flexDirection: 'row',

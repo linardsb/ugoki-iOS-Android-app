@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
-import { View } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import { XStack, YStack, Text } from 'tamagui';
+import { useThemeStore } from '@/shared/stores/theme';
 import {
   ShieldCheck,
   Wrench,
@@ -15,7 +16,6 @@ import {
   Heart,
 } from 'phosphor-react-native';
 import type { KeyBenefit } from '../types';
-import { CARD_TEXT, LIGHT_CARD } from '../colors';
 
 // Map emoji/title keywords to Phosphor icons
 function getBenefitIcon(benefit: KeyBenefit) {
@@ -48,14 +48,25 @@ interface BenefitBadgeProps {
 }
 
 export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
-  // BenefitBadge uses light card backgrounds, so text must always be dark
-  // This ensures visibility in both light and dark themes
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors matching dashboard cards
+  const cardBackground = isDark ? '#1c1c1e' : '#f9fafb';
+  const iconBackground = isDark ? '#2c2c2e' : '#f3f4f6';
+  const titleColor = isDark ? '#ffffff' : '#1f2937';
+  const bodyColor = isDark ? '#a1a1aa' : '#4b5563';
+
   const icon = getBenefitIcon(benefit);
 
   if (compact) {
     return (
       <XStack
-        backgroundColor={LIGHT_CARD.iconBg}
+        backgroundColor={iconBackground}
         borderRadius="$2"
         paddingHorizontal="$2"
         paddingVertical="$1"
@@ -65,7 +76,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         <View style={{ width: 14, height: 14 }}>
           {React.cloneElement(icon, { size: 14 })}
         </View>
-        <Text fontSize={11} fontWeight="500" numberOfLines={1} style={{ color: CARD_TEXT.title }}>
+        <Text fontSize={11} fontWeight="500" numberOfLines={1} style={{ color: titleColor }}>
           {benefit.title}
         </Text>
       </XStack>
@@ -74,7 +85,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
 
   return (
     <XStack
-      backgroundColor={LIGHT_CARD.background}
+      backgroundColor={cardBackground}
       borderRadius="$3"
       padding="$3"
       gap="$3"
@@ -85,7 +96,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
           width: 40,
           height: 40,
           borderRadius: 20,
-          backgroundColor: LIGHT_CARD.iconBg,
+          backgroundColor: iconBackground,
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -93,10 +104,10 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         {icon}
       </View>
       <YStack flex={1} gap="$1">
-        <Text fontSize={14} fontWeight="600" style={{ color: CARD_TEXT.title }}>
+        <Text fontSize={14} fontWeight="600" style={{ color: titleColor }}>
           {benefit.title}
         </Text>
-        <Text fontSize={13} lineHeight={18} style={{ color: CARD_TEXT.body }}>
+        <Text fontSize={13} lineHeight={18} style={{ color: bodyColor }}>
           {benefit.description}
         </Text>
       </YStack>

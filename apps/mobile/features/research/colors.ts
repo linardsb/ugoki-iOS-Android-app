@@ -41,7 +41,7 @@ export const BACKGROUNDS = {
   dark: {
     card: '#1c1c1e',
     cardAlt: '#2c2c2e',
-    page: '#09090b',
+    page: '#121216',
   },
 };
 

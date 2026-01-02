@@ -96,15 +96,15 @@ export default function HomeScreen() {
         <ActiveFastCard />
       </YStack>
 
-      {/* Level & Streaks Row */}
-      <XStack gap="$3" marginBottom="$4">
-        <YStack flex={1}>
-          <LevelCard level={progression?.level ?? null} />
-        </YStack>
-        <YStack flex={1}>
-          <StreakCard streaks={progression?.streaks ?? []} />
-        </YStack>
-      </XStack>
+      {/* Level Card - Full Width */}
+      <YStack marginBottom="$3">
+        <LevelCard level={progression?.level ?? null} />
+      </YStack>
+
+      {/* Streaks Row */}
+      <YStack marginBottom="$4">
+        <StreakCard streaks={progression?.streaks ?? []} />
+      </YStack>
 
       {/* Weight Card - Full Width */}
       <YStack marginBottom="$3">

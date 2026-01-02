@@ -56,7 +56,7 @@ const ugokiColors = {
   gray700: '#3f3f46',
   gray800: '#27272a',
   gray900: '#18181b',
-  gray950: '#09090b',
+  gray950: '#121216',
 };
 
 // Create tokens

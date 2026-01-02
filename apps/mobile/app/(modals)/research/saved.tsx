@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack, Text } from 'tamagui';
+import { useThemeStore } from '@/shared/stores/theme';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -26,10 +27,13 @@ export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme - use useColorScheme for reliable dark mode detection
+  // Theme - compute effective theme same as root layout
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const backgroundColor = isDark ? '#09090b' : '#fafafa';
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+  const backgroundColor = isDark ? '#121216' : '#fafafa';
   const textColor = isDark ? '#ffffff' : '#1f2937';
   const mutedColor = isDark ? '#f5f5f5' : '#6b7280';   // Brightened for dark mode
   const subtleColor = isDark ? '#e8e8e8' : '#9ca3af';  // Brightened for dark mode
