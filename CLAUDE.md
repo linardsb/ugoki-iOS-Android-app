@@ -3575,3 +3575,49 @@ Implemented a complete Research Hub feature that pulls scientific research from 
 - Fixed parameter ordering in routes (non-default params must come before default params)
 
 **Commit:** `e3f90e11` - Add Research Hub feature with PubMed integration (29 files, +3598 lines)
+
+### January 2, 2026 (Continued) - Research Hub UI Improvements
+
+**UI Polish for Research Paper Detail Screen:**
+
+Improved the Research Hub UI based on user feedback to make it more consistent with the app's design language and more user-friendly.
+
+**Changes to BenefitBadge Component:**
+
+Replaced generic emojis with Phosphor icons matching the app's style:
+
+| Emoji | Replaced With | Color |
+|-------|---------------|-------|
+| 🔥 Evidence-Based | `ShieldCheck` | Teal (#14b8a6) |
+| 💪 Practical Application | `Wrench` | Orange (#f97316) |
+| ⏰ Time Efficient | `Timer` | Purple (#8b5cf6) |
+| Health/Benefits | `Heart` | Red (#ef4444) |
+| Improvements | `TrendUp` | Green (#22c55e) |
+| Default | `Lightbulb` | Yellow (#eab308) |
+
+Icons now display in circular backgrounds (40x40px) for better visual consistency.
+
+**Changes to Paper Detail Screen (`[id].tsx`):**
+
+| Before | After |
+|--------|-------|
+| AI SUMMARY box (teal) | Removed |
+| TL;DR | **Quick Summary** |
+| WHO BENEFITS | **WHO IS THIS FOR** |
+| Full abstract displayed | Collapsible (~200 chars preview) |
+
+**Abstract Section Improvements:**
+
+- Shows first ~200 characters by default (truncated at word boundary)
+- "Read full abstract" link with ▼ caret to expand
+- "Show less" link with ▲ caret when expanded
+- Section labels bold with spacing:
+  - CONTEXT:, OBJECTIVE:, METHODS:, RESULTS:, CONCLUSION:
+  - BACKGROUND:, AIM:, PURPOSE:, DESIGN:, SETTING:
+  - PARTICIPANTS:, INTERVENTIONS:, MEASUREMENTS:, FINDINGS:
+
+**Files Modified:**
+- `features/research/components/BenefitBadge.tsx` - Phosphor icons instead of emojis
+- `app/(modals)/research/[id].tsx` - Collapsible abstract, renamed labels, removed AI Summary box
+
+**Commit:** `3deb9d7c` - Improve Research Hub UI with better icons and collapsible abstract
