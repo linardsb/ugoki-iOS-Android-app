@@ -164,6 +164,7 @@ async def get_active_session(
 async def complete_workout(
     session_id: str,
     request: CompleteWorkoutRequest | None = None,
+    db: AsyncSession = Depends(get_db),
     service: ContentService = Depends(get_content_service),
     progression: ProgressionService = Depends(get_progression_service),
 ) -> WorkoutSession:
@@ -184,8 +185,12 @@ async def complete_workout(
             streak_type=StreakType.WORKOUT,
         )
 
+        # Ensure streak changes are committed before returning
+        await db.commit()
+
         return session
     except ValueError as e:
+        await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
 

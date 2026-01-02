@@ -140,10 +140,15 @@ export default function WorkoutPlayerScreen() {
   };
 
   const handleComplete = () => {
-    if (sessionId) {
+    if (sessionId && workout) {
+      // Use workout estimate if store value is suspiciously low (< 10% of estimate)
+      const finalCalories = caloriesBurned < workout.calories_estimate * 0.1
+        ? workout.calories_estimate
+        : Math.round(caloriesBurned);
+
       completeWorkout.mutate({
         sessionId,
-        caloriesBurned: Math.round(caloriesBurned),
+        caloriesBurned: finalCalories,
       });
     }
   };
@@ -176,6 +181,12 @@ export default function WorkoutPlayerScreen() {
 
   // Completion screen
   if (phase === 'complete') {
+    // Use workout estimate if store value is suspiciously low (< 10% of estimate)
+    // This handles edge cases where calorie accumulation failed
+    const displayCalories = caloriesBurned < workout.calories_estimate * 0.1
+      ? workout.calories_estimate
+      : Math.round(caloriesBurned);
+
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
         <YStack flex={1} backgroundColor="$background" padding="$4">
@@ -216,7 +227,7 @@ export default function WorkoutPlayerScreen() {
                 <XStack gap="$1" alignItems="center">
                   <Fire size={20} color="#ef4444" weight="thin" />
                   <Text fontSize="$6" fontWeight="bold" color="$color">
-                    {Math.round(caloriesBurned)}
+                    {displayCalories}
                   </Text>
                 </XStack>
                 <Text fontSize="$3" color="$colorMuted">calories</Text>
