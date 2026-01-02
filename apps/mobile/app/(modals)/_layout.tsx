@@ -110,6 +110,25 @@ export default function ModalsLayout() {
           presentation: 'card',
         }}
       />
+      {/* Research Screens */}
+      <Stack.Screen
+        name="research/index"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="research/[id]"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="research/saved"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
     </Stack>
   );
 }

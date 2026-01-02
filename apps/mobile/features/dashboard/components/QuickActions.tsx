@@ -1,6 +1,6 @@
 import { XStack, YStack, Text, Card } from 'tamagui';
 import { useRouter } from 'expo-router';
-import { Timer, Barbell, Chat, Trophy, CookingPot, Scales } from 'phosphor-react-native';
+import { Timer, Barbell, Chat, BookOpenText, CookingPot, Scales } from 'phosphor-react-native';
 import type { IconProps } from 'phosphor-react-native';
 import type { ComponentType } from 'react';
 
@@ -44,10 +44,10 @@ export function QuickActions() {
       onPress: () => router.push('/(modals)/log-weight'),
     },
     {
-      icon: Trophy,
-      label: 'Achievements',
-      color: '#f59e0b',
-      onPress: () => router.push('/(modals)/achievements'),
+      icon: BookOpenText,
+      label: 'Research',
+      color: '#6366f1',
+      onPress: () => router.push('/(modals)/research'),
     },
   ];
 

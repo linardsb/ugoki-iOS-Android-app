@@ -22,7 +22,7 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from 'react-native-reanimated';
-import { UsersThree, Gear, User, CookingPot } from 'phosphor-react-native';
+import { UsersThree, Gear, User, CookingPot, BookOpenText } from 'phosphor-react-native';
 import { useUIStore } from '@/shared/stores/ui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -105,6 +105,11 @@ export function ProfilePopupMenu() {
             icon={<UsersThree size={22} color="#14b8a6" weight="regular" />}
             label="Social"
             onPress={() => handleNavigate('/(modals)/social')}
+          />
+          <MenuItem
+            icon={<BookOpenText size={22} color="#6366f1" weight="regular" />}
+            label="Research"
+            onPress={() => handleNavigate('/(modals)/research')}
           />
           <MenuItem
             icon={<CookingPot size={22} color="#f97316" weight="regular" />}

@@ -15,6 +15,7 @@ from src.modules.notification.routes import router as notification_router
 from src.modules.profile.routes import router as profile_router
 from src.modules.event_journal.routes import router as event_journal_router
 from src.modules.social.routes import router as social_router
+from src.modules.research.routes import router as research_router
 from src.routes.uploads import router as uploads_router
 
 
@@ -58,4 +59,5 @@ app.include_router(notification_router, prefix=f"{settings.api_v1_prefix}/notifi
 app.include_router(profile_router, prefix=f"{settings.api_v1_prefix}/profile")
 app.include_router(event_journal_router, prefix=f"{settings.api_v1_prefix}/events")
 app.include_router(social_router, prefix=f"{settings.api_v1_prefix}/social")
+app.include_router(research_router, prefix=f"{settings.api_v1_prefix}/research")
 app.include_router(uploads_router, prefix=f"{settings.api_v1_prefix}")
