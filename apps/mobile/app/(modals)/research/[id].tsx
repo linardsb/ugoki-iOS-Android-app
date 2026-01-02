@@ -64,8 +64,8 @@ function FormattedAbstract({ text, isDark }: { text: string; isDark: boolean }) 
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > 200;
 
-  // Theme colors for abstract text - use bright colors for dark mode readability
-  const textColor = isDark ? '#e5e5e5' : '#4b5563';
+  // Theme colors for abstract text - use very bright colors for dark mode
+  const textColor = isDark ? '#f5f5f5' : '#4b5563';
   const labelColor = isDark ? '#ffffff' : '#1f2937';
 
   // Get display text (truncated or full)
