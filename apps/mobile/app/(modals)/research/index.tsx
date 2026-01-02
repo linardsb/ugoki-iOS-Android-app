@@ -107,13 +107,13 @@ export default function ResearchHubScreen() {
   const isLoading = topicLoading || searchMutation.isPending;
   const noQuota = quota && quota.searches_remaining <= 0;
 
-  // Theme colors - use explicit colors for dark mode readability
+  // Theme colors - use VERY BRIGHT colors for dark mode readability
   const theme = useTheme();
   const isDark = theme.name === 'dark';
   const backgroundColor = theme.background.val;
   const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#fafafa' : '#1f2937';
-  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened for dark mode
   const borderColor = isDark ? '#2c2c2e' : '#e5e7eb';
 
   return (
@@ -127,7 +127,7 @@ export default function ResearchHubScreen() {
             style={[styles.savedButton, { backgroundColor: cardBackground }]}
           >
             <BookmarkSimple size={18} color="#f97316" weight="fill" />
-            <Text fontSize={14} fontWeight="600" color={textColor}>
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Saved
             </Text>
           </TouchableOpacity>
@@ -228,7 +228,7 @@ export default function ResearchHubScreen() {
 
         {/* Section Title */}
         <YStack marginTop="$4" marginBottom="$3">
-          <Text fontSize={18} fontWeight="700" color={textColor}>
+          <Text fontSize={18} fontWeight="700" style={{ color: textColor }}>
             {isSearching
               ? `Results for "${searchQuery}"`
               : selectedTopic === 'all'
@@ -236,7 +236,7 @@ export default function ResearchHubScreen() {
               : topicData?.topic_label || 'Research'}
           </Text>
           {!isSearching && topicData?.topic_description && (
-            <Text fontSize={13} color={mutedColor} marginTop="$1">
+            <Text fontSize={13} marginTop="$1" style={{ color: mutedColor }}>
               {topicData.topic_description}
             </Text>
           )}
@@ -246,7 +246,7 @@ export default function ResearchHubScreen() {
         {isLoading && (
           <YStack alignItems="center" paddingVertical="$6">
             <ActivityIndicator size="large" color="#14b8a6" />
-            <Text fontSize={14} color={mutedColor} marginTop="$2">
+            <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }}>
               {searchMutation.isPending ? 'Searching...' : 'Loading research...'}
             </Text>
           </YStack>
@@ -276,7 +276,7 @@ export default function ResearchHubScreen() {
         {/* Empty State */}
         {!isLoading && papers.length === 0 && (
           <YStack alignItems="center" paddingVertical="$6">
-            <Text fontSize={16} color={mutedColor} textAlign="center">
+            <Text fontSize={16} textAlign="center" style={{ color: mutedColor }}>
               {isSearching
                 ? 'No results found. Try a different search term.'
                 : 'No research papers available yet.'}

@@ -30,7 +30,7 @@ export function QuotaIndicator({ quota, isLoading }: QuotaIndicatorProps) {
         alignItems="center"
       >
         <MagnifyingGlass size={14} color={loadingColor} />
-        <Text fontSize={12} color={loadingColor}>
+        <Text fontSize={12} style={{ color: loadingColor }}>
           Loading...
         </Text>
       </XStack>
@@ -67,7 +67,7 @@ export function QuotaIndicator({ quota, isLoading }: QuotaIndicatorProps) {
       <Text
         fontSize={12}
         fontWeight="500"
-        color={statusColors.text}
+        style={{ color: statusColors.text }}
       >
         {remaining}/{total} searches today
       </Text>

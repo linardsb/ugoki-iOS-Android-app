@@ -65,7 +65,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         <View style={{ width: 14, height: 14 }}>
           {React.cloneElement(icon, { size: 14 })}
         </View>
-        <Text fontSize={11} fontWeight="500" color={CARD_TEXT.title} numberOfLines={1}>
+        <Text fontSize={11} fontWeight="500" numberOfLines={1} style={{ color: CARD_TEXT.title }}>
           {benefit.title}
         </Text>
       </XStack>
@@ -93,10 +93,10 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         {icon}
       </View>
       <YStack flex={1} gap="$1">
-        <Text fontSize={14} fontWeight="600" color={CARD_TEXT.title}>
+        <Text fontSize={14} fontWeight="600" style={{ color: CARD_TEXT.title }}>
           {benefit.title}
         </Text>
-        <Text fontSize={13} color={CARD_TEXT.body} lineHeight={18}>
+        <Text fontSize={13} lineHeight={18} style={{ color: CARD_TEXT.body }}>
           {benefit.description}
         </Text>
       </YStack>

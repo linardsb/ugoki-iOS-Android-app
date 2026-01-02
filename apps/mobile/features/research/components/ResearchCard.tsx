@@ -39,9 +39,9 @@ export function ResearchCard({
   const theme = useTheme();
   const isDark = theme.name === 'dark';
   const cardBackground = isDark ? '#1c1c1e' : 'white';
-  // Use explicit colors for dark mode readability
-  const textColor = isDark ? '#fafafa' : '#1f2937';
-  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
+  // Use VERY BRIGHT colors for dark mode readability - MUST be explicit for visibility
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened from #f0f0f0
   const borderColor = isDark ? '#2c2c2e' : '#f3f4f6';
   const successColors = getStatusColors(isDark, 'success');
   const infoColors = getStatusColors(isDark, 'info');
@@ -95,15 +95,15 @@ export function ResearchCard({
           <Text
             fontSize={14}
             fontWeight="600"
-            color={textColor}
             numberOfLines={2}
+            style={{ color: textColor }}
           >
             {paper.title}
           </Text>
 
           {/* One-liner */}
           {digest?.one_liner && (
-            <Text fontSize={12} color={mutedColor} numberOfLines={2}>
+            <Text fontSize={12} numberOfLines={2} style={{ color: mutedColor }}>
               {digest.one_liner}
             </Text>
           )}
@@ -113,7 +113,7 @@ export function ResearchCard({
             {formattedDate && (
               <XStack gap="$1" alignItems="center">
                 <Calendar size={12} color={mutedColor} />
-                <Text fontSize={11} color={mutedColor}>
+                <Text fontSize={11} style={{ color: mutedColor }}>
                   {formattedDate}
                 </Text>
               </XStack>
@@ -121,7 +121,7 @@ export function ResearchCard({
             {paper.journal && (
               <XStack gap="$1" alignItems="center" flex={1}>
                 <BookOpen size={12} color={mutedColor} />
-                <Text fontSize={11} color={mutedColor} numberOfLines={1}>
+                <Text fontSize={11} numberOfLines={1} style={{ color: mutedColor }}>
                   {paper.journal}
                 </Text>
               </XStack>
@@ -198,13 +198,13 @@ export function ResearchCard({
         </XStack>
 
         {/* Title */}
-        <Text fontSize={16} fontWeight="700" color={textColor} lineHeight={22}>
+        <Text fontSize={16} fontWeight="700" lineHeight={22} style={{ color: textColor }}>
           {paper.title}
         </Text>
 
         {/* One-liner summary */}
         {digest?.one_liner && (
-          <Text fontSize={14} color={mutedColor} lineHeight={20}>
+          <Text fontSize={14} lineHeight={20} style={{ color: mutedColor }}>
             {digest.one_liner}
           </Text>
         )}
@@ -212,7 +212,7 @@ export function ResearchCard({
         {/* Key benefits */}
         {digest?.key_benefits && digest.key_benefits.length > 0 && (
           <YStack gap="$2">
-            <Text fontSize={12} fontWeight="600" color={textColor} opacity={0.7}>
+            <Text fontSize={12} fontWeight="600" style={{ color: textColor, opacity: 0.8 }}>
               KEY TAKEAWAYS
             </Text>
             {digest.key_benefits.slice(0, 3).map((benefit, index) => (
@@ -249,7 +249,7 @@ export function ResearchCard({
           {formattedDate && (
             <XStack gap="$1" alignItems="center">
               <Calendar size={14} color={mutedColor} />
-              <Text fontSize={12} color={mutedColor}>
+              <Text fontSize={12} style={{ color: mutedColor }}>
                 {formattedDate}
               </Text>
             </XStack>
@@ -257,7 +257,7 @@ export function ResearchCard({
           {paper.journal && (
             <XStack gap="$1" alignItems="center" flex={1}>
               <BookOpen size={14} color={mutedColor} />
-              <Text fontSize={12} color={mutedColor} numberOfLines={1}>
+              <Text fontSize={12} numberOfLines={1} style={{ color: mutedColor }}>
                 {paper.journal}
               </Text>
             </XStack>

@@ -15,6 +15,7 @@ export const CARD_TEXT = {
 };
 
 // Theme-aware colors (use with isDark check)
+// IMPORTANT: Dark mode colors must be VERY BRIGHT for readability on dark backgrounds
 export const THEME_TEXT = {
   light: {
     primary: '#1f2937',   // Dark text for light backgrounds
@@ -23,10 +24,10 @@ export const THEME_TEXT = {
     subtle: '#9ca3af',
   },
   dark: {
-    primary: '#fafafa',   // Light text for dark backgrounds
-    secondary: '#d4d4d8',
-    muted: '#a1a1aa',
-    subtle: '#71717a',
+    primary: '#ffffff',   // Pure white for dark backgrounds
+    secondary: '#f5f5f5', // Very light gray - use for body text
+    muted: '#f5f5f5',     // Brightened from #f0f0f0 - must be readable
+    subtle: '#e8e8e8',    // Brightened from #e0e0e0 - must be readable
   },
 };
 

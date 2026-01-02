@@ -73,7 +73,7 @@ export function TopicPill({
         <Text
           fontSize={isSmall ? 12 : 14}
           fontWeight={isSelected ? '600' : '500'}
-          color={isSelected ? '#ffffff' : unselectedTextColor}
+          style={{ color: isSelected ? '#ffffff' : unselectedTextColor }}
         >
           {label}
         </Text>

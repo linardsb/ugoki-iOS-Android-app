@@ -25,13 +25,13 @@ export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme - use explicit colors for dark mode readability
+  // Theme - use VERY BRIGHT colors for dark mode readability
   const theme = useTheme();
   const isDark = theme.name === 'dark';
   const backgroundColor = theme.background.val;
-  const textColor = isDark ? '#fafafa' : '#1f2937';
-  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
-  const subtleColor = isDark ? '#a1a1aa' : '#9ca3af';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';   // Brightened for dark mode
+  const subtleColor = isDark ? '#e8e8e8' : '#9ca3af';  // Brightened for dark mode
 
   const {
     data: savedPapers,
@@ -80,14 +80,14 @@ export default function SavedResearchScreen() {
             gap="$3"
           >
             <BookmarkSimple size={48} color={subtleColor} />
-            <Text fontSize={18} fontWeight="600" color={mutedColor}>
+            <Text fontSize={18} fontWeight="600" style={{ color: mutedColor }}>
               No saved research yet
             </Text>
             <Text
               fontSize={14}
-              color={subtleColor}
               textAlign="center"
               paddingHorizontal="$4"
+              style={{ color: subtleColor }}
             >
               Bookmark interesting research papers to read later. They'll appear here.
             </Text>
@@ -97,7 +97,7 @@ export default function SavedResearchScreen() {
         {/* Saved Papers */}
         {savedPapers && savedPapers.length > 0 && (
           <YStack gap="$3">
-            <Text fontSize={14} color={mutedColor} marginBottom="$1">
+            <Text fontSize={14} marginBottom="$1" style={{ color: mutedColor }}>
               {savedPapers.length} saved paper{savedPapers.length !== 1 && 's'}
             </Text>
 
