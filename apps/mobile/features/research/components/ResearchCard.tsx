@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { XStack, YStack, Text } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from 'tamagui';
 import {
   BookmarkSimple,
   ArrowSquareOut,
@@ -35,6 +35,12 @@ export function ResearchCard({
   variant = 'default',
   onPress,
 }: ResearchCardProps) {
+  const theme = useTheme();
+  const cardBackground = theme.cardBackground?.val || (theme.name === 'dark' ? '#1c1c1e' : 'white');
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const borderColor = theme.name === 'dark' ? '#2c2c2e' : '#f3f4f6';
+
   const topicMeta = TOPIC_METADATA[paper.topic];
   const topicColor = topicMeta?.color || '#6b7280';
   const digest = paper.digest;
@@ -64,7 +70,7 @@ export function ResearchCard({
       <TouchableOpacity
         onPress={onPress || handleOpenLink}
         activeOpacity={0.7}
-        style={styles.cardCompact}
+        style={[styles.cardCompact, { backgroundColor: cardBackground }]}
       >
         <YStack gap="$2" flex={1}>
           {/* Topic badge */}
@@ -84,7 +90,7 @@ export function ResearchCard({
           <Text
             fontSize={14}
             fontWeight="600"
-            color="#1f2937"
+            color={textColor}
             numberOfLines={2}
           >
             {paper.title}
@@ -92,7 +98,7 @@ export function ResearchCard({
 
           {/* One-liner */}
           {digest?.one_liner && (
-            <Text fontSize={12} color="#4b5563" numberOfLines={2}>
+            <Text fontSize={12} color={mutedColor} numberOfLines={2}>
               {digest.one_liner}
             </Text>
           )}
@@ -101,16 +107,16 @@ export function ResearchCard({
           <XStack gap="$3" alignItems="center">
             {formattedDate && (
               <XStack gap="$1" alignItems="center">
-                <Calendar size={12} color="#9ca3af" />
-                <Text fontSize={11} color="#9ca3af">
+                <Calendar size={12} color={mutedColor} />
+                <Text fontSize={11} color={mutedColor}>
                   {formattedDate}
                 </Text>
               </XStack>
             )}
             {paper.journal && (
               <XStack gap="$1" alignItems="center" flex={1}>
-                <BookOpen size={12} color="#9ca3af" />
-                <Text fontSize={11} color="#9ca3af" numberOfLines={1}>
+                <BookOpen size={12} color={mutedColor} />
+                <Text fontSize={11} color={mutedColor} numberOfLines={1}>
                   {paper.journal}
                 </Text>
               </XStack>
@@ -128,7 +134,7 @@ export function ResearchCard({
           >
             <BookmarkSimple
               size={22}
-              color={isSaved ? '#f97316' : '#9ca3af'}
+              color={isSaved ? '#f97316' : mutedColor}
               weight={isSaved ? 'fill' : 'regular'}
             />
           </TouchableOpacity>
@@ -136,7 +142,7 @@ export function ResearchCard({
             onPress={handleOpenLink}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ArrowSquareOut size={20} color="#9ca3af" />
+            <ArrowSquareOut size={20} color={mutedColor} />
           </TouchableOpacity>
         </YStack>
       </TouchableOpacity>
@@ -148,7 +154,7 @@ export function ResearchCard({
     <TouchableOpacity
       onPress={onPress || handleOpenLink}
       activeOpacity={0.8}
-      style={styles.card}
+      style={[styles.card, { backgroundColor: cardBackground }]}
     >
       <YStack gap="$3">
         {/* Header: Topic + Actions */}
@@ -173,7 +179,7 @@ export function ResearchCard({
             >
               <BookmarkSimple
                 size={24}
-                color={isSaved ? '#f97316' : '#9ca3af'}
+                color={isSaved ? '#f97316' : mutedColor}
                 weight={isSaved ? 'fill' : 'regular'}
               />
             </TouchableOpacity>
@@ -181,19 +187,19 @@ export function ResearchCard({
               onPress={handleOpenLink}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <ArrowSquareOut size={22} color="#9ca3af" />
+              <ArrowSquareOut size={22} color={mutedColor} />
             </TouchableOpacity>
           </XStack>
         </XStack>
 
         {/* Title */}
-        <Text fontSize={16} fontWeight="700" color="#1f2937" lineHeight={22}>
+        <Text fontSize={16} fontWeight="700" color={textColor} lineHeight={22}>
           {paper.title}
         </Text>
 
         {/* One-liner summary */}
         {digest?.one_liner && (
-          <Text fontSize={14} color="#4b5563" lineHeight={20}>
+          <Text fontSize={14} color={mutedColor} lineHeight={20}>
             {digest.one_liner}
           </Text>
         )}
@@ -201,7 +207,7 @@ export function ResearchCard({
         {/* Key benefits */}
         {digest?.key_benefits && digest.key_benefits.length > 0 && (
           <YStack gap="$2">
-            <Text fontSize={12} fontWeight="600" color="#6b7280">
+            <Text fontSize={12} fontWeight="600" color={mutedColor}>
               KEY TAKEAWAYS
             </Text>
             {digest.key_benefits.slice(0, 3).map((benefit, index) => (
@@ -233,20 +239,20 @@ export function ResearchCard({
           alignItems="center"
           paddingTop="$2"
           borderTopWidth={1}
-          borderTopColor="#f3f4f6"
+          borderTopColor={borderColor}
         >
           {formattedDate && (
             <XStack gap="$1" alignItems="center">
-              <Calendar size={14} color="#9ca3af" />
-              <Text fontSize={12} color="#9ca3af">
+              <Calendar size={14} color={mutedColor} />
+              <Text fontSize={12} color={mutedColor}>
                 {formattedDate}
               </Text>
             </XStack>
           )}
           {paper.journal && (
             <XStack gap="$1" alignItems="center" flex={1}>
-              <BookOpen size={14} color="#9ca3af" />
-              <Text fontSize={12} color="#9ca3af" numberOfLines={1}>
+              <BookOpen size={14} color={mutedColor} />
+              <Text fontSize={12} color={mutedColor} numberOfLines={1}>
                 {paper.journal}
               </Text>
             </XStack>
@@ -271,7 +277,6 @@ export function ResearchCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -281,7 +286,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardCompact: {
-    backgroundColor: 'white',
     borderRadius: 12,
     padding: 12,
     flexDirection: 'row',

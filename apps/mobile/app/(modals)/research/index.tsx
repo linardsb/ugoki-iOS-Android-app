@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { MagnifyingGlass, BookmarkSimple } from 'phosphor-react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -107,18 +107,26 @@ export default function ResearchHubScreen() {
   const isLoading = topicLoading || searchMutation.isPending;
   const noQuota = quota && quota.searches_remaining <= 0;
 
+  // Theme colors
+  const theme = useTheme();
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.cardBackground?.val || (theme.name === 'dark' ? '#1c1c1e' : 'white');
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const borderColor = theme.name === 'dark' ? '#2c2c2e' : '#e5e7eb';
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScreenHeader
         title="Research Hub"
         showClose
         rightAction={
           <TouchableOpacity
             onPress={() => router.push('/(modals)/research/saved')}
-            style={styles.savedButton}
+            style={[styles.savedButton, { backgroundColor: cardBackground }]}
           >
             <BookmarkSimple size={18} color="#f97316" weight="fill" />
-            <Text fontSize={14} fontWeight="600" color="#1f2937">
+            <Text fontSize={14} fontWeight="600" color={textColor}>
               Saved
             </Text>
           </TouchableOpacity>
@@ -143,7 +151,7 @@ export default function ResearchHubScreen() {
 
         {/* Search Bar */}
         <XStack
-          backgroundColor="white"
+          backgroundColor={cardBackground}
           borderRadius="$4"
           paddingHorizontal="$3"
           paddingVertical="$2"
@@ -151,13 +159,13 @@ export default function ResearchHubScreen() {
           gap="$2"
           marginBottom="$3"
           borderWidth={1}
-          borderColor="#e5e7eb"
+          borderColor={borderColor}
         >
-          <MagnifyingGlass size={20} color="#9ca3af" />
+          <MagnifyingGlass size={20} color={mutedColor} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: textColor }]}
             placeholder="Search research..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={mutedColor}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
@@ -219,7 +227,7 @@ export default function ResearchHubScreen() {
 
         {/* Section Title */}
         <YStack marginTop="$4" marginBottom="$3">
-          <Text fontSize={18} fontWeight="700" color="#1f2937">
+          <Text fontSize={18} fontWeight="700" color={textColor}>
             {isSearching
               ? `Results for "${searchQuery}"`
               : selectedTopic === 'all'
@@ -227,7 +235,7 @@ export default function ResearchHubScreen() {
               : topicData?.topic_label || 'Research'}
           </Text>
           {!isSearching && topicData?.topic_description && (
-            <Text fontSize={13} color="#6b7280" marginTop="$1">
+            <Text fontSize={13} color={mutedColor} marginTop="$1">
               {topicData.topic_description}
             </Text>
           )}
@@ -237,7 +245,7 @@ export default function ResearchHubScreen() {
         {isLoading && (
           <YStack alignItems="center" paddingVertical="$6">
             <ActivityIndicator size="large" color="#14b8a6" />
-            <Text fontSize={14} color="#6b7280" marginTop="$2">
+            <Text fontSize={14} color={mutedColor} marginTop="$2">
               {searchMutation.isPending ? 'Searching...' : 'Loading research...'}
             </Text>
           </YStack>
@@ -267,7 +275,7 @@ export default function ResearchHubScreen() {
         {/* Empty State */}
         {!isLoading && papers.length === 0 && (
           <YStack alignItems="center" paddingVertical="$6">
-            <Text fontSize={16} color="#6b7280" textAlign="center">
+            <Text fontSize={16} color={mutedColor} textAlign="center">
               {isSearching
                 ? 'No results found. Try a different search term.'
                 : 'No research papers available yet.'}
@@ -282,7 +290,6 @@ export default function ResearchHubScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   scrollView: {
     flex: 1,
@@ -293,7 +300,6 @@ const styles = StyleSheet.create({
   savedButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -302,7 +308,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
     paddingVertical: 8,
   },
   topicScroll: {

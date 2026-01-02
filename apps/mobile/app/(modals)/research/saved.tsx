@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, Text } from 'tamagui';
+import { YStack, Text, useTheme } from 'tamagui';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -24,6 +24,13 @@ import { ResearchCard } from '@/features/research/components';
 export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // Theme
+  const theme = useTheme();
+  const backgroundColor = theme.background.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const subtleColor = theme.colorSubtle?.val || '#9ca3af';
 
   const {
     data: savedPapers,
@@ -39,7 +46,7 @@ export default function SavedResearchScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Saved Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center">
           <ActivityIndicator size="large" color="#14b8a6" />
@@ -49,7 +56,7 @@ export default function SavedResearchScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScreenHeader title="Saved Research" showClose />
 
       <ScrollView
@@ -71,13 +78,13 @@ export default function SavedResearchScreen() {
             paddingVertical="$8"
             gap="$3"
           >
-            <BookmarkSimple size={48} color="#d1d5db" />
-            <Text fontSize={18} fontWeight="600" color="#6b7280">
+            <BookmarkSimple size={48} color={subtleColor} />
+            <Text fontSize={18} fontWeight="600" color={mutedColor}>
               No saved research yet
             </Text>
             <Text
               fontSize={14}
-              color="#9ca3af"
+              color={subtleColor}
               textAlign="center"
               paddingHorizontal="$4"
             >
@@ -89,7 +96,7 @@ export default function SavedResearchScreen() {
         {/* Saved Papers */}
         {savedPapers && savedPapers.length > 0 && (
           <YStack gap="$3">
-            <Text fontSize={14} color="#6b7280" marginBottom="$1">
+            <Text fontSize={14} color={mutedColor} marginBottom="$1">
               {savedPapers.length} saved paper{savedPapers.length !== 1 && 's'}
             </Text>
 
@@ -117,7 +124,6 @@ export default function SavedResearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   scrollView: {
     flex: 1,

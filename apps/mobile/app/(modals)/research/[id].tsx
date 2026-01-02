@@ -6,7 +6,7 @@ import React, { useMemo, useState } from 'react';
 import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import {
   BookmarkSimple,
   ArrowSquareOut,
@@ -59,9 +59,13 @@ function truncateText(text: string, maxLength: number = 200): string {
 }
 
 // Component to format abstract with bold section labels and collapsible view
-function FormattedAbstract({ text }: { text: string }) {
+function FormattedAbstract({ text, isDark }: { text: string; isDark: boolean }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > 200;
+
+  // Theme colors for abstract text
+  const textColor = isDark ? '#a1a1aa' : '#4b5563';
+  const labelColor = isDark ? '#fafafa' : '#1f2937';
 
   // Get display text (truncated or full)
   const displayText = isExpanded || !isLong ? text : truncateText(text, 200);
@@ -70,9 +74,12 @@ function FormattedAbstract({ text }: { text: string }) {
   const labelPattern = new RegExp(`(${ABSTRACT_LABELS.join('|')})`, 'gi');
   const parts = displayText.split(labelPattern);
 
+  // Use React Native Text for reliable nested text rendering
+  const RNText = require('react-native').Text;
+
   return (
     <YStack>
-      <Text fontSize={14} color="#4b5563" lineHeight={22}>
+      <RNText style={{ fontSize: 14, color: textColor, lineHeight: 22 }}>
         {parts.map((part, index) => {
           const isLabel = ABSTRACT_LABELS.some(
             (label) => label.toLowerCase() === part.toLowerCase()
@@ -82,18 +89,18 @@ function FormattedAbstract({ text }: { text: string }) {
             // Add spacing before label (except first one)
             const needsSpacing = index > 0;
             return (
-              <Text key={index}>
-                {needsSpacing && '\n\n'}
-                <Text fontWeight="700" color="#1f2937">
+              <RNText key={index}>
+                {needsSpacing ? '\n\n' : ''}
+                <RNText style={{ fontWeight: '700', color: labelColor }}>
                   {part}
-                </Text>
-              </Text>
+                </RNText>
+              </RNText>
             );
           }
 
-          return <Text key={index}>{part}</Text>;
+          return <RNText key={index}>{part}</RNText>;
         })}
-      </Text>
+      </RNText>
 
       {isLong && (
         <TouchableOpacity
@@ -121,6 +128,17 @@ export default function ResearchDetailScreen() {
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // Theme
+  const theme = useTheme();
+  const isDark = theme.name === 'dark';
+  const backgroundColor = theme.background.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const cardBackground = isDark ? '#1c1c1e' : '#eff6ff';
+  const whoCardBackground = isDark ? '#1e3a5f' : '#eff6ff';
+  const whoTextColor = isDark ? '#93c5fd' : '#2563eb';
+  const whoBodyColor = isDark ? '#bfdbfe' : '#1e40af';
 
   // Queries
   const { data: paper, isLoading, error } = usePaper(id, !!id);
@@ -153,11 +171,11 @@ export default function ResearchDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center">
           <ActivityIndicator size="large" color="#14b8a6" />
-          <Text fontSize={14} color="#6b7280" marginTop="$2">
+          <Text fontSize={14} color={mutedColor} marginTop="$2">
             Loading paper...
           </Text>
         </YStack>
@@ -167,7 +185,7 @@ export default function ResearchDetailScreen() {
 
   if (error || !paper) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
           <Text fontSize={16} color="#dc2626" textAlign="center">
@@ -199,7 +217,7 @@ export default function ResearchDetailScreen() {
     : null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScreenHeader
         title="Research"
         showClose
@@ -208,12 +226,12 @@ export default function ResearchDetailScreen() {
             <TouchableOpacity onPress={handleSaveToggle}>
               <BookmarkSimple
                 size={24}
-                color={isSaved ? '#f97316' : '#6b7280'}
+                color={isSaved ? '#f97316' : mutedColor}
                 weight={isSaved ? 'fill' : 'regular'}
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleOpenLink}>
-              <ArrowSquareOut size={24} color="#6b7280" />
+              <ArrowSquareOut size={24} color={mutedColor} />
             </TouchableOpacity>
           </XStack>
         }
@@ -241,13 +259,13 @@ export default function ResearchDetailScreen() {
           </XStack>
           {paper.open_access && (
             <XStack
-              backgroundColor="#dbeafe"
+              backgroundColor={isDark ? '#1e3a5f' : '#dbeafe'}
               paddingHorizontal="$2"
               paddingVertical="$1"
               borderRadius="$2"
               marginLeft="$2"
             >
-              <Text fontSize={11} fontWeight="600" color="#2563eb">
+              <Text fontSize={11} fontWeight="600" color={isDark ? '#93c5fd' : '#2563eb'}>
                 Open Access
               </Text>
             </XStack>
@@ -258,7 +276,7 @@ export default function ResearchDetailScreen() {
         <Text
           fontSize={22}
           fontWeight="700"
-          color="#1f2937"
+          color={textColor}
           lineHeight={28}
           marginBottom="$3"
         >
@@ -269,8 +287,8 @@ export default function ResearchDetailScreen() {
         <YStack gap="$2" marginBottom="$4">
           {paper.authors && paper.authors.length > 0 && (
             <XStack gap="$2" alignItems="flex-start">
-              <User size={16} color="#6b7280" style={{ marginTop: 2 }} />
-              <Text fontSize={13} color="#6b7280" flex={1}>
+              <User size={16} color={mutedColor} style={{ marginTop: 2 }} />
+              <Text fontSize={13} color={mutedColor} flex={1}>
                 {paper.authors.slice(0, 3).join(', ')}
                 {paper.authors.length > 3 && ` +${paper.authors.length - 3} more`}
               </Text>
@@ -278,16 +296,16 @@ export default function ResearchDetailScreen() {
           )}
           {paper.journal && (
             <XStack gap="$2" alignItems="center">
-              <BookOpen size={16} color="#6b7280" />
-              <Text fontSize={13} color="#6b7280" flex={1}>
+              <BookOpen size={16} color={mutedColor} />
+              <Text fontSize={13} color={mutedColor} flex={1}>
                 {paper.journal}
               </Text>
             </XStack>
           )}
           {formattedDate && (
             <XStack gap="$2" alignItems="center">
-              <Calendar size={16} color="#6b7280" />
-              <Text fontSize={13} color="#6b7280">
+              <Calendar size={16} color={mutedColor} />
+              <Text fontSize={13} color={mutedColor}>
                 {formattedDate}
               </Text>
             </XStack>
@@ -300,7 +318,7 @@ export default function ResearchDetailScreen() {
             {/* Key Takeaways */}
             {digest.key_benefits && digest.key_benefits.length > 0 && (
               <YStack gap="$2">
-                <Text fontSize={14} fontWeight="700" color="#1f2937">
+                <Text fontSize={14} fontWeight="700" color={textColor}>
                   Key Takeaways
                 </Text>
                 {digest.key_benefits.map((benefit, index) => (
@@ -312,15 +330,15 @@ export default function ResearchDetailScreen() {
             {/* Who Benefits */}
             {digest.who_benefits && (
               <YStack
-                backgroundColor="#eff6ff"
+                backgroundColor={whoCardBackground}
                 borderRadius="$3"
                 padding="$3"
                 gap="$1"
               >
-                <Text fontSize={12} fontWeight="700" color="#2563eb">
+                <Text fontSize={12} fontWeight="700" color={whoTextColor}>
                   WHO IS THIS FOR
                 </Text>
-                <Text fontSize={14} color="#1e40af" lineHeight={20}>
+                <Text fontSize={14} color={whoBodyColor} lineHeight={20}>
                   {digest.who_benefits}
                 </Text>
               </YStack>
@@ -329,10 +347,10 @@ export default function ResearchDetailScreen() {
             {/* Quick Summary */}
             {digest.tldr && (
               <YStack gap="$2">
-                <Text fontSize={14} fontWeight="700" color="#1f2937">
+                <Text fontSize={14} fontWeight="700" color={textColor}>
                   Quick Summary
                 </Text>
-                <Text fontSize={14} color="#4b5563" lineHeight={22}>
+                <Text fontSize={14} color={mutedColor} lineHeight={22}>
                   {digest.tldr}
                 </Text>
               </YStack>
@@ -343,11 +361,11 @@ export default function ResearchDetailScreen() {
         {/* Abstract */}
         {paper.abstract && (
           <YStack marginTop="$4" gap="$2">
-            <Text fontSize={14} fontWeight="700" color="#1f2937">
+            <Text fontSize={14} fontWeight="700" color={textColor}>
               Abstract
             </Text>
             <YStack gap="$2">
-              <FormattedAbstract text={paper.abstract} />
+              <FormattedAbstract text={paper.abstract} isDark={isDark} />
             </YStack>
           </YStack>
         )}
@@ -366,7 +384,7 @@ export default function ResearchDetailScreen() {
 
         {/* Source Info */}
         <YStack marginTop="$4" alignItems="center">
-          <Text fontSize={11} color="#9ca3af">
+          <Text fontSize={11} color={mutedColor}>
             Source: {paper.source.toUpperCase()}
             {paper.pmid && ` • PMID: ${paper.pmid}`}
           </Text>
@@ -379,7 +397,6 @@ export default function ResearchDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
   },
   scrollView: {
     flex: 1,

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import { XStack, YStack, Text } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from 'tamagui';
 import {
   ShieldCheck,
   Wrench,
@@ -47,12 +47,19 @@ interface BenefitBadgeProps {
 }
 
 export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
+  const theme = useTheme();
+  const isDark = theme.name === 'dark';
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const badgeBackground = isDark ? '#2c2c2e' : '#f9fafb';
+  const iconBackground = isDark ? '#3c3c3e' : '#f3f4f6';
+
   const icon = getBenefitIcon(benefit);
 
   if (compact) {
     return (
       <XStack
-        backgroundColor="#f3f4f6"
+        backgroundColor={iconBackground}
         borderRadius="$2"
         paddingHorizontal="$2"
         paddingVertical="$1"
@@ -62,7 +69,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         <View style={{ width: 14, height: 14 }}>
           {React.cloneElement(icon, { size: 14 })}
         </View>
-        <Text fontSize={11} fontWeight="500" color="#1f2937" numberOfLines={1}>
+        <Text fontSize={11} fontWeight="500" color={textColor} numberOfLines={1}>
           {benefit.title}
         </Text>
       </XStack>
@@ -71,7 +78,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
 
   return (
     <XStack
-      backgroundColor="#f9fafb"
+      backgroundColor={badgeBackground}
       borderRadius="$3"
       padding="$3"
       gap="$3"
@@ -82,7 +89,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
           width: 40,
           height: 40,
           borderRadius: 20,
-          backgroundColor: '#f3f4f6',
+          backgroundColor: iconBackground,
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -90,10 +97,10 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         {icon}
       </View>
       <YStack flex={1} gap="$1">
-        <Text fontSize={14} fontWeight="600" color="#1f2937">
+        <Text fontSize={14} fontWeight="600" color={textColor}>
           {benefit.title}
         </Text>
-        <Text fontSize={13} color="#4b5563" lineHeight={18}>
+        <Text fontSize={13} color={mutedColor} lineHeight={18}>
           {benefit.description}
         </Text>
       </YStack>

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { XStack, Text } from 'tamagui';
+import { XStack, Text, useTheme } from 'tamagui';
 import {
   ForkKnife,
   Lightning,
@@ -36,6 +36,12 @@ export function TopicPill({
   onPress,
   size = 'md',
 }: TopicPillProps) {
+  const theme = useTheme();
+  const isDark = theme.name === 'dark';
+  const textColor = theme.color.val;
+  const pillBackground = isDark ? '#2c2c2e' : 'white';
+  const pillBorder = isDark ? '#3c3c3e' : '#e5e7eb';
+
   const Icon = TOPIC_ICONS[topic];
   const metadata = topic === 'all' ? null : TOPIC_METADATA[topic];
   const label = topic === 'all' ? 'All' : metadata?.label || topic;
@@ -51,7 +57,7 @@ export function TopicPill({
         styles.pill,
         isSmall ? styles.pillSmall : styles.pillMedium,
         isSelected && { backgroundColor: color, borderColor: color },
-        !isSelected && styles.pillUnselected,
+        !isSelected && { backgroundColor: pillBackground, borderColor: pillBorder },
       ]}
     >
       <XStack alignItems="center" gap={isSmall ? 4 : 6}>
@@ -63,7 +69,7 @@ export function TopicPill({
         <Text
           fontSize={isSmall ? 12 : 14}
           fontWeight={isSelected ? '600' : '500'}
-          color={isSelected ? 'white' : '#1f2937'}
+          color={isSelected ? 'white' : textColor}
         >
           {label}
         </Text>
@@ -84,9 +90,5 @@ const styles = StyleSheet.create({
   pillMedium: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-  },
-  pillUnselected: {
-    backgroundColor: 'white',
-    borderColor: '#e5e7eb',
   },
 });
