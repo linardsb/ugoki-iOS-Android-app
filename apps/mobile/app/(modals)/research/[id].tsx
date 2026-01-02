@@ -2,7 +2,7 @@
  * Research Paper Detail Screen.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,7 +13,8 @@ import {
   Calendar,
   BookOpen,
   User,
-  Sparkle,
+  CaretDown,
+  CaretUp,
 } from 'phosphor-react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -25,6 +26,95 @@ import {
 } from '@/features/research/hooks';
 import { BenefitBadge, openResearchLink } from '@/features/research/components';
 import { TOPIC_METADATA } from '@/features/research/types';
+
+// Section labels to make bold in abstracts
+const ABSTRACT_LABELS = [
+  'CONTEXT:',
+  'OBJECTIVE:',
+  'OBJECTIVES:',
+  'METHODS:',
+  'METHOD:',
+  'RESULTS:',
+  'RESULT:',
+  'CONCLUSION:',
+  'CONCLUSIONS:',
+  'BACKGROUND:',
+  'AIM:',
+  'AIMS:',
+  'PURPOSE:',
+  'DESIGN:',
+  'SETTING:',
+  'PARTICIPANTS:',
+  'INTERVENTIONS:',
+  'MEASUREMENTS:',
+  'FINDINGS:',
+];
+
+// Truncate text to ~150 characters at word boundary
+function truncateText(text: string, maxLength: number = 200): string {
+  if (text.length <= maxLength) return text;
+  const truncated = text.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  return truncated.substring(0, lastSpace) + '...';
+}
+
+// Component to format abstract with bold section labels and collapsible view
+function FormattedAbstract({ text }: { text: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = text.length > 200;
+
+  // Get display text (truncated or full)
+  const displayText = isExpanded || !isLong ? text : truncateText(text, 200);
+
+  // Split text by labels while keeping the labels
+  const labelPattern = new RegExp(`(${ABSTRACT_LABELS.join('|')})`, 'gi');
+  const parts = displayText.split(labelPattern);
+
+  return (
+    <YStack>
+      <Text fontSize={14} color="#4b5563" lineHeight={22}>
+        {parts.map((part, index) => {
+          const isLabel = ABSTRACT_LABELS.some(
+            (label) => label.toLowerCase() === part.toLowerCase()
+          );
+
+          if (isLabel) {
+            // Add spacing before label (except first one)
+            const needsSpacing = index > 0;
+            return (
+              <Text key={index}>
+                {needsSpacing && '\n\n'}
+                <Text fontWeight="700" color="#1f2937">
+                  {part}
+                </Text>
+              </Text>
+            );
+          }
+
+          return <Text key={index}>{part}</Text>;
+        })}
+      </Text>
+
+      {isLong && (
+        <TouchableOpacity
+          onPress={() => setIsExpanded(!isExpanded)}
+          style={{ marginTop: 8 }}
+        >
+          <XStack alignItems="center" gap="$1">
+            <Text fontSize={13} fontWeight="600" color="#14b8a6">
+              {isExpanded ? 'Show less' : 'Read full abstract'}
+            </Text>
+            {isExpanded ? (
+              <CaretUp size={14} color="#14b8a6" weight="bold" />
+            ) : (
+              <CaretDown size={14} color="#14b8a6" weight="bold" />
+            )}
+          </XStack>
+        </TouchableOpacity>
+      )}
+    </YStack>
+  );
+}
 
 export default function ResearchDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
@@ -204,29 +294,10 @@ export default function ResearchDetailScreen() {
           )}
         </YStack>
 
-        {/* AI Summary Section */}
+        {/* Research Insights Section */}
         {digest && (
           <YStack gap="$4">
-            {/* Quick Summary */}
-            <YStack
-              backgroundColor="#f0fdf4"
-              borderRadius="$4"
-              padding="$4"
-              borderLeftWidth={4}
-              borderLeftColor="#14b8a6"
-            >
-              <XStack gap="$2" alignItems="center" marginBottom="$2">
-                <Sparkle size={18} color="#14b8a6" weight="fill" />
-                <Text fontSize={12} fontWeight="700" color="#14b8a6">
-                  AI SUMMARY
-                </Text>
-              </XStack>
-              <Text fontSize={15} color="#166534" lineHeight={22}>
-                {digest.one_liner}
-              </Text>
-            </YStack>
-
-            {/* Key Benefits */}
+            {/* Key Takeaways */}
             {digest.key_benefits && digest.key_benefits.length > 0 && (
               <YStack gap="$2">
                 <Text fontSize={14} fontWeight="700" color="#1f2937">
@@ -247,7 +318,7 @@ export default function ResearchDetailScreen() {
                 gap="$1"
               >
                 <Text fontSize={12} fontWeight="700" color="#2563eb">
-                  WHO BENEFITS
+                  WHO IS THIS FOR
                 </Text>
                 <Text fontSize={14} color="#1e40af" lineHeight={20}>
                   {digest.who_benefits}
@@ -255,11 +326,11 @@ export default function ResearchDetailScreen() {
               </YStack>
             )}
 
-            {/* TL;DR */}
+            {/* Quick Summary */}
             {digest.tldr && (
               <YStack gap="$2">
                 <Text fontSize={14} fontWeight="700" color="#1f2937">
-                  TL;DR
+                  Quick Summary
                 </Text>
                 <Text fontSize={14} color="#4b5563" lineHeight={22}>
                   {digest.tldr}
@@ -275,9 +346,9 @@ export default function ResearchDetailScreen() {
             <Text fontSize={14} fontWeight="700" color="#1f2937">
               Abstract
             </Text>
-            <Text fontSize={14} color="#4b5563" lineHeight={22}>
-              {paper.abstract}
-            </Text>
+            <YStack gap="$2">
+              <FormattedAbstract text={paper.abstract} />
+            </YStack>
           </YStack>
         )}
 
