@@ -107,13 +107,14 @@ export default function ResearchHubScreen() {
   const isLoading = topicLoading || searchMutation.isPending;
   const noQuota = quota && quota.searches_remaining <= 0;
 
-  // Theme colors
+  // Theme colors - use explicit colors for dark mode readability
   const theme = useTheme();
+  const isDark = theme.name === 'dark';
   const backgroundColor = theme.background.val;
-  const cardBackground = theme.cardBackground?.val || (theme.name === 'dark' ? '#1c1c1e' : 'white');
-  const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
-  const borderColor = theme.name === 'dark' ? '#2c2c2e' : '#e5e7eb';
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#fafafa' : '#1f2937';
+  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
+  const borderColor = isDark ? '#2c2c2e' : '#e5e7eb';
 
   return (
     <View style={[styles.container, { backgroundColor }]}>

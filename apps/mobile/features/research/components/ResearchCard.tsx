@@ -38,10 +38,10 @@ export function ResearchCard({
 }: ResearchCardProps) {
   const theme = useTheme();
   const isDark = theme.name === 'dark';
-  const cardBackground = theme.cardBackground?.val || (isDark ? '#1c1c1e' : 'white');
-  // Use resolved theme values directly for reliable dark mode support
-  const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted.val;
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  // Use explicit colors for dark mode readability
+  const textColor = isDark ? '#fafafa' : '#1f2937';
+  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
   const borderColor = isDark ? '#2c2c2e' : '#f3f4f6';
   const successColors = getStatusColors(isDark, 'success');
   const infoColors = getStatusColors(isDark, 'info');

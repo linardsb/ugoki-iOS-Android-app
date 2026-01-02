@@ -25,12 +25,13 @@ export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme
+  // Theme - use explicit colors for dark mode readability
   const theme = useTheme();
+  const isDark = theme.name === 'dark';
   const backgroundColor = theme.background.val;
-  const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
-  const subtleColor = theme.colorSubtle?.val || '#9ca3af';
+  const textColor = isDark ? '#fafafa' : '#1f2937';
+  const mutedColor = isDark ? '#d4d4d8' : '#6b7280';
+  const subtleColor = isDark ? '#a1a1aa' : '#9ca3af';
 
   const {
     data: savedPapers,
