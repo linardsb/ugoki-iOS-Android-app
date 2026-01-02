@@ -38,14 +38,17 @@ export function TopicPill({
 }: TopicPillProps) {
   const theme = useTheme();
   const isDark = theme.name === 'dark';
-  const textColor = theme.color.val;
-  const pillBackground = isDark ? '#2c2c2e' : 'white';
-  const pillBorder = isDark ? '#3c3c3e' : '#e5e7eb';
+
+  // Explicit colors for both themes - ensures text is always readable
+  const pillBackground = isDark ? '#27272a' : '#f4f4f5';
+  const pillBorder = isDark ? '#3f3f46' : '#e4e4e7';
+  // Unselected text must contrast with pill background
+  const unselectedTextColor = isDark ? '#e5e5e5' : '#27272a';
 
   const Icon = TOPIC_ICONS[topic];
   const metadata = topic === 'all' ? null : TOPIC_METADATA[topic];
   const label = topic === 'all' ? 'All' : metadata?.label || topic;
-  const color = topic === 'all' ? '#6b7280' : metadata?.color || '#6b7280';
+  const topicColor = topic === 'all' ? '#6b7280' : metadata?.color || '#6b7280';
 
   const isSmall = size === 'sm';
 
@@ -56,20 +59,21 @@ export function TopicPill({
       style={[
         styles.pill,
         isSmall ? styles.pillSmall : styles.pillMedium,
-        isSelected && { backgroundColor: color, borderColor: color },
-        !isSelected && { backgroundColor: pillBackground, borderColor: pillBorder },
+        isSelected
+          ? { backgroundColor: topicColor, borderColor: topicColor }
+          : { backgroundColor: pillBackground, borderColor: pillBorder },
       ]}
     >
       <XStack alignItems="center" gap={isSmall ? 4 : 6}>
         <Icon
           size={isSmall ? 14 : 18}
-          color={isSelected ? 'white' : color}
+          color={isSelected ? '#ffffff' : topicColor}
           weight={isSelected ? 'fill' : 'regular'}
         />
         <Text
           fontSize={isSmall ? 12 : 14}
           fontWeight={isSelected ? '600' : '500'}
-          color={isSelected ? 'white' : textColor}
+          color={isSelected ? '#ffffff' : unselectedTextColor}
         >
           {label}
         </Text>
