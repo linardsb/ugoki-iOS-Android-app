@@ -15,6 +15,7 @@ import type { ResearchPaper } from '../types';
 import { TOPIC_METADATA } from '../types';
 import { BenefitBadge } from './BenefitBadge';
 import { openResearchLink } from './ExternalLinkWarning';
+import { getStatusColors } from '../colors';
 
 interface ResearchCardProps {
   paper: ResearchPaper;
@@ -36,10 +37,14 @@ export function ResearchCard({
   onPress,
 }: ResearchCardProps) {
   const theme = useTheme();
-  const cardBackground = theme.cardBackground?.val || (theme.name === 'dark' ? '#1c1c1e' : 'white');
+  const isDark = theme.name === 'dark';
+  const cardBackground = theme.cardBackground?.val || (isDark ? '#1c1c1e' : 'white');
+  // Use resolved theme values directly for reliable dark mode support
   const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
-  const borderColor = theme.name === 'dark' ? '#2c2c2e' : '#f3f4f6';
+  const mutedColor = theme.colorMuted.val;
+  const borderColor = isDark ? '#2c2c2e' : '#f3f4f6';
+  const successColors = getStatusColors(isDark, 'success');
+  const infoColors = getStatusColors(isDark, 'info');
 
   const topicMeta = TOPIC_METADATA[paper.topic];
   const topicColor = topicMeta?.color || '#6b7280';
@@ -219,15 +224,15 @@ export function ResearchCard({
         {/* Who benefits */}
         {digest?.who_benefits && (
           <YStack
-            backgroundColor="#f0fdf4"
+            backgroundColor={successColors.bg}
             borderRadius="$2"
             padding="$2"
             gap="$1"
           >
-            <Text fontSize={11} fontWeight="600" color="#16a34a">
+            <Text fontSize={11} fontWeight="600" color={successColors.text}>
               WHO BENEFITS
             </Text>
-            <Text fontSize={13} color="#166534">
+            <Text fontSize={13} color={successColors.text} opacity={0.9}>
               {digest.who_benefits}
             </Text>
           </YStack>
@@ -259,12 +264,12 @@ export function ResearchCard({
           )}
           {paper.open_access && (
             <XStack
-              backgroundColor="#dbeafe"
+              backgroundColor={infoColors.bg}
               paddingHorizontal="$2"
               paddingVertical="$1"
               borderRadius="$1"
             >
-              <Text fontSize={10} fontWeight="600" color="#2563eb">
+              <Text fontSize={10} fontWeight="600" color={infoColors.text}>
                 Open Access
               </Text>
             </XStack>

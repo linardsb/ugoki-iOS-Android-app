@@ -13,3 +13,6 @@ export * from './hooks';
 
 // Components
 export * from './components';
+
+// Colors (global theme constants)
+export * from './colors';

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
 import {
   ShieldCheck,
   Wrench,
@@ -15,6 +15,7 @@ import {
   Heart,
 } from 'phosphor-react-native';
 import type { KeyBenefit } from '../types';
+import { CARD_TEXT, LIGHT_CARD } from '../colors';
 
 // Map emoji/title keywords to Phosphor icons
 function getBenefitIcon(benefit: KeyBenefit) {
@@ -47,20 +48,14 @@ interface BenefitBadgeProps {
 }
 
 export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
-  const textColor = theme.color.val;
-  // Use lighter description color for better readability in dark mode
-  const descriptionColor = isDark ? '#d4d4d8' : '#4b5563';
-  const badgeBackground = isDark ? '#2c2c2e' : '#f9fafb';
-  const iconBackground = isDark ? '#3c3c3e' : '#f3f4f6';
-
+  // BenefitBadge uses light card backgrounds, so text must always be dark
+  // This ensures visibility in both light and dark themes
   const icon = getBenefitIcon(benefit);
 
   if (compact) {
     return (
       <XStack
-        backgroundColor={iconBackground}
+        backgroundColor={LIGHT_CARD.iconBg}
         borderRadius="$2"
         paddingHorizontal="$2"
         paddingVertical="$1"
@@ -70,7 +65,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         <View style={{ width: 14, height: 14 }}>
           {React.cloneElement(icon, { size: 14 })}
         </View>
-        <Text fontSize={11} fontWeight="500" color={textColor} numberOfLines={1}>
+        <Text fontSize={11} fontWeight="500" color={CARD_TEXT.title} numberOfLines={1}>
           {benefit.title}
         </Text>
       </XStack>
@@ -79,7 +74,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
 
   return (
     <XStack
-      backgroundColor={badgeBackground}
+      backgroundColor={LIGHT_CARD.background}
       borderRadius="$3"
       padding="$3"
       gap="$3"
@@ -90,7 +85,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
           width: 40,
           height: 40,
           borderRadius: 20,
-          backgroundColor: iconBackground,
+          backgroundColor: LIGHT_CARD.iconBg,
           alignItems: 'center',
           justifyContent: 'center',
         }}
@@ -98,10 +93,10 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
         {icon}
       </View>
       <YStack flex={1} gap="$1">
-        <Text fontSize={14} fontWeight="600" color={textColor}>
+        <Text fontSize={14} fontWeight="600" color={CARD_TEXT.title}>
           {benefit.title}
         </Text>
-        <Text fontSize={13} color={descriptionColor} lineHeight={18}>
+        <Text fontSize={13} color={CARD_TEXT.body} lineHeight={18}>
           {benefit.description}
         </Text>
       </YStack>

@@ -26,6 +26,7 @@ import {
 } from '@/features/research/hooks';
 import { BenefitBadge, openResearchLink } from '@/features/research/components';
 import { TOPIC_METADATA } from '@/features/research/types';
+import { getStatusColors } from '@/features/research/colors';
 
 // Section labels to make bold in abstracts
 const ABSTRACT_LABELS = [
@@ -63,9 +64,9 @@ function FormattedAbstract({ text, isDark }: { text: string; isDark: boolean }) 
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > 200;
 
-  // Theme colors for abstract text
-  const textColor = isDark ? '#a1a1aa' : '#4b5563';
-  const labelColor = isDark ? '#fafafa' : '#1f2937';
+  // Theme colors for abstract text - use bright colors for dark mode readability
+  const textColor = isDark ? '#e5e5e5' : '#4b5563';
+  const labelColor = isDark ? '#ffffff' : '#1f2937';
 
   // Get display text (truncated or full)
   const displayText = isExpanded || !isLong ? text : truncateText(text, 200);
@@ -133,12 +134,10 @@ export default function ResearchDetailScreen() {
   const theme = useTheme();
   const isDark = theme.name === 'dark';
   const backgroundColor = theme.background.val;
+  // Use resolved theme values directly for reliable dark mode support
   const textColor = theme.color.val;
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
-  const cardBackground = isDark ? '#1c1c1e' : '#eff6ff';
-  const whoCardBackground = isDark ? '#1e3a5f' : '#eff6ff';
-  const whoTextColor = isDark ? '#93c5fd' : '#2563eb';
-  const whoBodyColor = isDark ? '#bfdbfe' : '#1e40af';
+  const mutedColor = theme.colorMuted.val;
+  const infoColors = getStatusColors(isDark, 'info');
 
   // Queries
   const { data: paper, isLoading, error } = usePaper(id, !!id);
@@ -259,13 +258,13 @@ export default function ResearchDetailScreen() {
           </XStack>
           {paper.open_access && (
             <XStack
-              backgroundColor={isDark ? '#1e3a5f' : '#dbeafe'}
+              backgroundColor={infoColors.bg}
               paddingHorizontal="$2"
               paddingVertical="$1"
               borderRadius="$2"
               marginLeft="$2"
             >
-              <Text fontSize={11} fontWeight="600" color={isDark ? '#93c5fd' : '#2563eb'}>
+              <Text fontSize={11} fontWeight="600" color={infoColors.text}>
                 Open Access
               </Text>
             </XStack>
@@ -330,15 +329,15 @@ export default function ResearchDetailScreen() {
             {/* Who Benefits */}
             {digest.who_benefits && (
               <YStack
-                backgroundColor={whoCardBackground}
+                backgroundColor={infoColors.bg}
                 borderRadius="$3"
                 padding="$3"
                 gap="$1"
               >
-                <Text fontSize={12} fontWeight="700" color={whoTextColor}>
+                <Text fontSize={12} fontWeight="700" color={infoColors.text}>
                   WHO IS THIS FOR
                 </Text>
-                <Text fontSize={14} color={whoBodyColor} lineHeight={20}>
+                <Text fontSize={14} color={infoColors.text} opacity={0.9} lineHeight={20}>
                   {digest.who_benefits}
                 </Text>
               </YStack>
