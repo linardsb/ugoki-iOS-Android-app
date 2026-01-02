@@ -29,7 +29,7 @@ All data in UGOKI reduces to 5 primitive types:
 | `METRIC` | Numeric measurement with timestamp |
 | `PROGRESSION` | Position in ordered sequence (streaks, levels) |
 
-### Modules (10 total)
+### Modules (11 total)
 
 ```
 IDENTITY       → Authentication, authorization
@@ -42,6 +42,7 @@ NOTIFICATION   → Push, email, scheduling
 PROFILE        → User PII, preferences (GDPR isolated)
 AI_COACH       → Pydantic AI agents, Claude integration
 SOCIAL         → Friends, followers, leaderboards, challenges
+RESEARCH       → PubMed integration, AI summaries, saved papers
 ```
 
 ---
@@ -487,7 +488,7 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 
 **Phase:** MVP COMPLETE - Ready for Production Deployment 🎉
 
-### Backend (10/10 Modules Complete)
+### Backend (11/11 Modules Complete)
 
 | Module | Status | Key Features |
 |--------|--------|--------------|
@@ -501,6 +502,7 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 | PROFILE | ✅ Complete | Goals, health, dietary, social, GDPR compliance, bloodwork onboarding |
 | EVENT_JOURNAL | ✅ Complete | Immutable event log, activity tracking |
 | SOCIAL | ✅ Complete | Friends, followers, leaderboards, challenges |
+| RESEARCH | ✅ Complete | PubMed API, AI summaries (Claude Haiku), 15/day search quota, saved papers |
 
 ### Mobile App Progress
 
@@ -515,6 +517,7 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 | Phase 6 | ✅ Complete | Profile & Settings (profile editing, preferences, GDPR delete) |
 | Phase 7 | ✅ Complete | Polish (push notifications, weight logging, achievements, EAS builds) |
 | Phase 8 | ✅ Complete | Social (friends, followers, leaderboards, challenges) |
+| Phase 9 | ✅ Complete | Research Hub (PubMed search, AI summaries, saved papers, quota tracking) |
 
 ### Database Tables
 - `identities`, `capabilities` (IDENTITY)
@@ -526,6 +529,7 @@ DELETE /api/v1/{module}/{resource}/{id}    # Delete
 - `user_profiles`, `user_goals`, `health_profiles`, `dietary_profiles`, `workout_restrictions`, `social_profiles`, `user_preferences`, `onboarding_status` (PROFILE)
 - `activity_events` (EVENT_JOURNAL)
 - `friendships`, `follows`, `challenges`, `challenge_participants` (SOCIAL)
+- `research_papers`, `user_saved_research`, `user_search_quotas` (RESEARCH)
 
 ### Seeded Data
 - 21 achievements (streak, fasting, workout, weight, special categories)
@@ -627,6 +631,104 @@ Welcome Screen → Create Anonymous Identity → Onboarding (3 steps) → Main A
 | `EmptyState` | `shared/components/ui/` | Empty state with action |
 | `ScreenHeader` | `shared/components/ui/` | Screen header with back button |
 | `Avatar` | `shared/components/ui/` | User avatar with fallback |
+
+---
+
+## Research Hub Feature
+
+Users can browse and search scientific research on health topics (Intermittent Fasting, HIIT, Nutrition, Sleep). Papers are fetched from PubMed and summarized by AI (Claude Haiku) into bite-sized, actionable insights.
+
+### Topics
+
+| Topic | Description | Color |
+|-------|-------------|-------|
+| `intermittent_fasting` | Time-restricted eating and metabolic benefits | Teal (#14b8a6) |
+| `hiit` | High-intensity interval training and workout optimization | Orange (#f97316) |
+| `nutrition` | Diet, macronutrients, and their effects on health | Green (#22c55e) |
+| `sleep` | Sleep quality, recovery, and circadian rhythm | Purple (#8b5cf6) |
+
+### API Endpoints
+
+```
+GET  /api/v1/research/topics                    # List all topics with metadata
+GET  /api/v1/research/topics/{topic}            # Get papers for a topic (no quota)
+GET  /api/v1/research/search                    # Search papers (counts against quota)
+GET  /api/v1/research/papers/{id}               # Get single paper details
+GET  /api/v1/research/saved                     # User's saved papers
+POST /api/v1/research/saved                     # Save a paper
+DELETE /api/v1/research/saved/{id}              # Unsave a paper
+GET  /api/v1/research/quota                     # Check remaining searches
+```
+
+### AI-Generated Digest
+
+Each paper is summarized by Claude Haiku into a `ResearchDigest`:
+- **one_liner**: Single sentence summary of the key finding
+- **key_benefits**: Array of {emoji, title, description} takeaways
+- **who_benefits**: Who should pay attention to this research
+- **tldr**: 2-3 sentence summary for quick understanding
+
+### Key Files (Backend)
+
+```
+src/modules/research/
+├── __init__.py                    # Module exports
+├── models.py                      # Pydantic models (ResearchPaper, ResearchDigest, etc.)
+├── interface.py                   # Abstract interface (8 methods)
+├── orm.py                         # SQLAlchemy models (ResearchPaperORM, etc.)
+├── service.py                     # Business logic with caching
+├── routes.py                      # FastAPI endpoints
+├── sources/
+│   ├── base.py                    # Abstract adapter interface
+│   └── pubmed.py                  # PubMed E-utilities API adapter
+└── ai/
+    └── summarizer.py              # Claude Haiku summarizer
+```
+
+### Key Files (Mobile)
+
+```
+features/research/
+├── types.ts                       # TypeScript types matching backend
+├── hooks/useResearch.ts           # React Query hooks (8 hooks)
+├── components/
+│   ├── TopicPill.tsx              # Topic selection button
+│   ├── ResearchCard.tsx           # Paper card with digest
+│   ├── BenefitBadge.tsx           # Key benefit display
+│   ├── QuotaIndicator.tsx         # Search quota remaining
+│   └── ExternalLinkWarning.tsx    # "Leaving app" alert
+└── index.ts                       # Re-exports
+
+app/(modals)/research/
+├── index.tsx                      # Main research hub screen
+├── [id].tsx                       # Paper detail screen
+└── saved.tsx                      # Saved papers screen
+```
+
+### Quota System
+
+- 15 searches per user per day
+- Topic browsing does NOT count against quota
+- Quota resets at midnight UTC
+- Tracked in `user_search_quotas` table
+
+### PubMed Integration
+
+Uses NCBI E-utilities API (free, no key required for <3 req/sec):
+1. **ESearch** - Get list of PMIDs matching query
+2. **EFetch** - Fetch paper details (title, authors, abstract, journal, date)
+
+Papers are cached in `research_papers` table to minimize API calls.
+
+### Cost Estimate
+
+| Users | Searches/day | AI Tokens/month | Cost |
+|-------|--------------|-----------------|------|
+| 20 | 10 avg | ~600K | ~$0.15/mo |
+| 100 | 10 avg | ~3M | ~$0.75/mo |
+| 1000 | 10 avg | ~30M | ~$7.50/mo |
+
+(Using Claude Haiku at $0.25/1M input, $1.25/1M output)
 
 ---
 
@@ -3414,3 +3516,62 @@ From `shared/theme/tamagui.config.ts`:
 2. **Theme tokens on fixed backgrounds**: Never use `$color` on elements with `backgroundColor="white"` - the text becomes invisible in dark mode.
 
 3. **Consistent pattern**: Establish a rule early - theme backgrounds get theme colors, fixed backgrounds get fixed colors.
+
+### January 2, 2026 - Research Hub Feature
+
+**Full Research Hub Implementation:**
+
+Implemented a complete Research Hub feature that pulls scientific research from PubMed and summarizes it with AI (Claude Haiku) into bite-sized, actionable insights.
+
+**Backend Module Created (`src/modules/research/`):**
+
+| File | Purpose |
+|------|---------|
+| `models.py` | Pydantic models (ResearchPaper, ResearchDigest, KeyBenefit, UserSearchQuota, etc.) |
+| `interface.py` | Abstract interface with 8 methods |
+| `orm.py` | SQLAlchemy models (ResearchPaperORM, UserSavedResearchORM, UserSearchQuotaORM) |
+| `service.py` | Business logic with PubMed integration and AI summarization |
+| `routes.py` | 8 FastAPI endpoints |
+| `sources/pubmed.py` | PubMed E-utilities API adapter |
+| `ai/summarizer.py` | Claude Haiku summarizer for bite-sized digests |
+
+**Mobile Feature Created (`features/research/`):**
+
+| File | Purpose |
+|------|---------|
+| `types.ts` | TypeScript types matching backend |
+| `hooks/useResearch.ts` | 8 React Query hooks |
+| `components/TopicPill.tsx` | Topic selection button |
+| `components/ResearchCard.tsx` | Paper card with AI digest |
+| `components/BenefitBadge.tsx` | Key benefit display |
+| `components/QuotaIndicator.tsx` | "12/15 searches remaining" |
+| `components/ExternalLinkWarning.tsx` | Alert before leaving app |
+
+**Modal Screens Created:**
+- `app/(modals)/research/index.tsx` - Main hub with search and topic browsing
+- `app/(modals)/research/[id].tsx` - Paper detail with AI summary
+- `app/(modals)/research/saved.tsx` - User's bookmarked papers
+
+**Database Migration:**
+- `5f73e0ba06be_add_research_tables.py` - Creates 3 tables:
+  - `research_papers` - Cached papers with AI digest
+  - `user_saved_research` - User bookmarks
+  - `user_search_quotas` - Daily quota tracking (15/day)
+
+**Integration Points:**
+- Dashboard QuickActions: Added Research button (purple BookOpenText icon)
+- Profile Popup Menu: Added Research menu item
+
+**Key Features:**
+- 4 topics: Intermittent Fasting, HIIT, Nutrition, Sleep
+- PubMed API integration (free, no key required)
+- AI summaries with one-liner, key benefits, who benefits, TL;DR
+- 15 searches per day quota (topic browsing unlimited)
+- Save/unsave papers for later reading
+- External link warning before leaving app
+
+**Bug Fixes During Development:**
+- Fixed duplicate index definition in ORM (removed `index=True` when explicit Index exists)
+- Fixed parameter ordering in routes (non-default params must come before default params)
+
+**Commit:** `e3f90e11` - Add Research Hub feature with PubMed integration (29 files, +3598 lines)
