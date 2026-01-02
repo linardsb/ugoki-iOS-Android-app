@@ -10,10 +10,11 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
 import { MagnifyingGlass, BookmarkSimple } from 'phosphor-react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -107,10 +108,10 @@ export default function ResearchHubScreen() {
   const isLoading = topicLoading || searchMutation.isPending;
   const noQuota = quota && quota.searches_remaining <= 0;
 
-  // Theme colors - use VERY BRIGHT colors for dark mode readability
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
-  const backgroundColor = theme.background.val;
+  // Theme colors - use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const backgroundColor = isDark ? '#09090b' : '#fafafa';
   const cardBackground = isDark ? '#1c1c1e' : 'white';
   const textColor = isDark ? '#ffffff' : '#1f2937';
   const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened for dark mode

@@ -3,7 +3,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
@@ -104,10 +104,11 @@ export default function ResearchDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme
+  // Theme - use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const theme = useTheme();
-  const isDark = theme.name === 'dark';
-  const backgroundColor = theme.background.val;
+  const backgroundColor = isDark ? '#09090b' : '#fafafa';
   // Use VERY BRIGHT explicit colors for dark mode readability
   const textColor = isDark ? '#ffffff' : '#1f2937';
   const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened for dark mode

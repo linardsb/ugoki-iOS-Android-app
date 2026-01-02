@@ -3,7 +3,8 @@
  */
 
 import React from 'react';
-import { XStack, Text, useTheme } from 'tamagui';
+import { useColorScheme } from 'react-native';
+import { XStack, Text } from 'tamagui';
 import { MagnifyingGlass } from 'phosphor-react-native';
 import type { UserSearchQuota } from '../types';
 import { getTextColor as getThemeTextColor, getStatusColors, getBackground } from '../colors';
@@ -14,8 +15,9 @@ interface QuotaIndicatorProps {
 }
 
 export function QuotaIndicator({ quota, isLoading }: QuotaIndicatorProps) {
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
+  // Use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const loadingBg = getBackground(isDark, 'cardAlt');
   const loadingColor = getThemeTextColor(isDark, 'subtle');
 

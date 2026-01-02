@@ -3,8 +3,8 @@
  */
 
 import React, { useState } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { XStack, YStack, Text } from 'tamagui';
 import {
   BookmarkSimple,
   ArrowSquareOut,
@@ -36,8 +36,9 @@ export function ResearchCard({
   variant = 'default',
   onPress,
 }: ResearchCardProps) {
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
+  // Use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const cardBackground = isDark ? '#1c1c1e' : 'white';
   // Use VERY BRIGHT colors for dark mode readability - MUST be explicit for visibility
   const textColor = isDark ? '#ffffff' : '#1f2937';

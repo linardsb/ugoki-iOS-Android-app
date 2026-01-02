@@ -9,10 +9,11 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, Text, useTheme } from 'tamagui';
+import { YStack, Text } from 'tamagui';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -25,10 +26,10 @@ export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme - use VERY BRIGHT colors for dark mode readability
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
-  const backgroundColor = theme.background.val;
+  // Theme - use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const backgroundColor = isDark ? '#09090b' : '#fafafa';
   const textColor = isDark ? '#ffffff' : '#1f2937';
   const mutedColor = isDark ? '#f5f5f5' : '#6b7280';   // Brightened for dark mode
   const subtleColor = isDark ? '#e8e8e8' : '#9ca3af';  // Brightened for dark mode

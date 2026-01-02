@@ -3,8 +3,8 @@
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { XStack, Text, useTheme } from 'tamagui';
+import { TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { XStack, Text } from 'tamagui';
 import {
   ForkKnife,
   Lightning,
@@ -36,8 +36,9 @@ export function TopicPill({
   onPress,
   size = 'md',
 }: TopicPillProps) {
-  const theme = useTheme();
-  const isDark = theme.name === 'dark';
+  // Use useColorScheme for reliable dark mode detection
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   // Explicit colors for both themes - ensures text is always readable
   const pillBackground = isDark ? '#27272a' : '#f4f4f5';
