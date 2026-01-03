@@ -37,7 +37,8 @@ class ResearchPaperORM(Base, TimestampMixin):
     # AI-generated digest (cached)
     one_liner: Mapped[str | None] = mapped_column(Text, nullable=True)
     key_benefits: Mapped[str | None] = mapped_column(JSON, nullable=True)  # JSON array
-    who_benefits: Mapped[str | None] = mapped_column(Text, nullable=True)
+    audience_tags: Mapped[str | None] = mapped_column(JSON, nullable=True)  # JSON array of strings
+    who_benefits: Mapped[str | None] = mapped_column(Text, nullable=True)  # Deprecated, use audience_tags
     tldr: Mapped[str | None] = mapped_column(Text, nullable=True)
     ai_processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 

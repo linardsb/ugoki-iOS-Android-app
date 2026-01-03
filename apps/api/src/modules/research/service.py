@@ -101,6 +101,7 @@ class ResearchService(ResearchInterface):
             digest = ResearchDigest(
                 one_liner=orm.one_liner,
                 key_benefits=key_benefits,
+                audience_tags=orm.audience_tags or [],
                 who_benefits=orm.who_benefits or "",
                 tldr=orm.tldr or "",
             )
@@ -204,7 +205,8 @@ class ResearchService(ResearchInterface):
                 {"emoji": kb.emoji, "title": kb.title, "description": kb.description}
                 for kb in digest.key_benefits
             ]
-            orm.who_benefits = digest.who_benefits
+            orm.audience_tags = list(digest.audience_tags) if digest.audience_tags else []
+            orm.who_benefits = digest.who_benefits  # Deprecated, kept for backwards compat
             orm.tldr = digest.tldr
             orm.ai_processed_at = datetime.now(UTC)
             orm.updated_at = datetime.now(UTC)
