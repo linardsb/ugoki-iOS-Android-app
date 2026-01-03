@@ -10,7 +10,7 @@ Mobile app development guide for the UGOKI Expo React Native application.
 Framework:    Expo SDK 52 + React Native 0.76
 UI:           Tamagui 1.141
 State:        Zustand 5.0 + TanStack Query 5.0
-Storage:      react-native-mmkv 3.2
+Storage:      @react-native-async-storage/async-storage
 Navigation:   Expo Router 4.0
 Animations:   react-native-reanimated 3.16
 ```
@@ -42,7 +42,7 @@ Welcome Screen → Create Anonymous Identity → Onboarding (3 steps) → Main A
                  POST /identity/authenticate
                  { provider: "anonymous", token: deviceId }
                           ↓
-                 Store: identity, accessToken in MMKV
+                 Store: identity, accessToken in AsyncStorage
                           ↓
                  Onboarding saves:
                  - POST /profile (create)
@@ -60,7 +60,7 @@ Welcome Screen → Create Anonymous Identity → Onboarding (3 steps) → Main A
 | `shared/theme/tamagui.config.ts` | Theme colors, tokens, fonts |
 | `shared/api/client.ts` | Axios instance with auth interceptors |
 | `shared/api/query-client.ts` | TanStack Query client + typed query keys |
-| `shared/stores/storage.ts` | MMKV storage with typed helpers |
+| `shared/stores/storage.ts` | AsyncStorage with typed helpers |
 | `shared/stores/auth.ts` | Auth state (identity, token, isAuthenticated) |
 | `features/auth/hooks/useCreateAnonymous.ts` | Anonymous auth mutation |
 | `features/profile/hooks/useSaveOnboarding.ts` | Combined onboarding mutation |
