@@ -10,7 +10,7 @@ export type GoalType =
   | 'better_sleep'
   | 'reduce_stress';
 
-export type Gender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
+export type Gender = 'male' | 'female';
 
 export type UnitSystem = 'metric' | 'imperial';
 

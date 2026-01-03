@@ -2003,11 +2003,10 @@ A deep dive code review identified 28 issues across all features. All critical a
 |---|-------|------|-----|
 | 1 | Login button not functional | `app/(auth)/login.tsx` | Added state management, validation, and "Coming Soon" alert |
 | 2 | Signup button not functional | `app/(auth)/signup.tsx` | Added state management, password validation (8 char min), "Coming Soon" alert |
-| 3 | Gender options inconsistent | `app/(modals)/settings.tsx` | Added 'other' and 'prefer_not_to_say' options with icons |
-| 4 | AI Coach error not visible | `app/(tabs)/coach.tsx` | Added error message to chat feed + improved Alert |
-| 5 | Avatar image no fallback | `app/(tabs)/_layout.tsx` | Added `imageError` state with `onError` handler |
-| 6 | Dead code in recipe detail | `app/(modals)/recipes/[id].tsx` | Removed unused `totalTime` calculation |
-| 7 | No loading state for toggles | `app/(modals)/settings.tsx` | Added `isNotificationUpdating` to disable toggles during mutation |
+| 3 | AI Coach error not visible | `app/(tabs)/coach.tsx` | Added error message to chat feed + improved Alert |
+| 4 | Avatar image no fallback | `app/(tabs)/_layout.tsx` | Added `imageError` state with `onError` handler |
+| 5 | Dead code in recipe detail | `app/(modals)/recipes/[id].tsx` | Removed unused `totalTime` calculation |
+| 6 | No loading state for toggles | `app/(modals)/settings.tsx` | Added `isNotificationUpdating` to disable toggles during mutation |
 
 ---
 
@@ -2037,23 +2036,6 @@ if (password.length < 8) {
   Alert.alert('Weak Password', 'Password must be at least 8 characters.');
   return;
 }
-```
-
----
-
-**Gender Options Fix:**
-
-Added missing gender options to settings.tsx to match onboarding screen:
-
-```tsx
-import { GenderNonbinary, UserCircle } from 'phosphor-react-native';
-
-const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[] = [
-  { value: 'male', label: 'Male', Icon: GenderMale },
-  { value: 'female', label: 'Female', Icon: GenderFemale },
-  { value: 'other', label: 'Other', Icon: GenderNonbinary },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say', Icon: UserCircle },
-];
 ```
 
 ---

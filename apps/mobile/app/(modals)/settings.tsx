@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, Input } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, GenderNonbinary, UserCircle, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 import {
   useProfile,
@@ -22,8 +22,6 @@ import type { UnitSystem, FastingProtocol, GoalType, Gender } from '@/features/p
 const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[] = [
   { value: 'male', label: 'Male', Icon: GenderMale },
   { value: 'female', label: 'Female', Icon: GenderFemale },
-  { value: 'other', label: 'Other', Icon: GenderNonbinary },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say', Icon: UserCircle },
 ];
 
 const PERSONALITY_ICONS = {
