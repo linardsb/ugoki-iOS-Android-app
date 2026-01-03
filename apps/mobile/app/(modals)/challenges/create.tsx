@@ -12,10 +12,12 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useThemeStore } from '@/shared/stores/theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Warning } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -75,6 +77,23 @@ export default function CreateChallengeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const createChallenge = useCreateChallenge();
+
+  // Theme detection
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const backgroundColor = isDark ? '#121216' : '#fafafa';
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const inputBackground = isDark ? '#2c2c2e' : 'white';
+  const borderColor = isDark ? '#3c3c3e' : '#e4e4e7';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const placeholderColor = isDark ? '#71717a' : '#9ca3af';
+  const selectedBg = isDark ? '#14b8a620' : '#d1fae5';
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -156,7 +175,7 @@ export default function CreateChallengeScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background.val }]}>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScreenHeader title="Create Challenge" showClose />
 
       <ScrollView
@@ -167,13 +186,13 @@ export default function CreateChallengeScreen() {
         <YStack paddingHorizontal="$4" paddingTop="$4" gap="$4">
           {/* Name */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$color">
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Challenge Name
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
               placeholder="e.g., 7-Day Fasting Challenge"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={placeholderColor}
               value={name}
               onChangeText={setName}
               maxLength={100}
@@ -182,13 +201,13 @@ export default function CreateChallengeScreen() {
 
           {/* Description */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$color">
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Description (optional)
             </Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { backgroundColor: inputBackground, borderColor, color: textColor }]}
               placeholder="What is this challenge about?"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={placeholderColor}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -199,7 +218,7 @@ export default function CreateChallengeScreen() {
 
           {/* Challenge Type */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$color">
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Challenge Type
             </Text>
             <YStack gap="$2">
@@ -210,18 +229,18 @@ export default function CreateChallengeScreen() {
                     activeOpacity={0.7}
                   >
                     <XStack
-                      backgroundColor={challengeType === type.value ? '#d1fae5' : 'white'}
+                      backgroundColor={challengeType === type.value ? selectedBg : cardBackground}
                       borderRadius="$3"
                       padding="$3"
                       borderWidth={challengeType === type.value ? 2 : 1}
-                      borderColor={challengeType === type.value ? '#14b8a6' : '#e4e4e7'}
+                      borderColor={challengeType === type.value ? '#14b8a6' : borderColor}
                       alignItems="center"
                     >
                       <YStack flex={1}>
-                        <Text fontSize={15} fontWeight="600" color="#1f2937">
+                        <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>
                           {type.label}
                         </Text>
-                        <Text fontSize={13} color="#6b7280">
+                        <Text fontSize={13} style={{ color: mutedColor }}>
                           {type.description}
                         </Text>
                       </YStack>
@@ -238,13 +257,13 @@ export default function CreateChallengeScreen() {
 
           {/* Goal Value */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$color">
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Goal ({unit})
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
               placeholder="e.g., 7"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={placeholderColor}
               value={goalValue}
               onChangeText={setGoalValue}
               keyboardType="numeric"
@@ -254,28 +273,28 @@ export default function CreateChallengeScreen() {
           {/* Dates */}
           <XStack gap="$3">
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color="$color">
+              <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
                 Start Date
               </Text>
               <TouchableOpacity
                 onPress={() => setShowStartPicker(true)}
-                style={styles.dateButton}
+                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor }]}
               >
-                <Text fontSize={15} color="#1f2937">
+                <Text fontSize={15} style={{ color: textColor }}>
                   {formatDate(startDate)}
                 </Text>
               </TouchableOpacity>
             </YStack>
 
             <YStack flex={1} gap="$2">
-              <Text fontSize={14} fontWeight="600" color="$color">
+              <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
                 End Date
               </Text>
               <TouchableOpacity
                 onPress={() => setShowEndPicker(true)}
-                style={styles.dateButton}
+                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor }]}
               >
-                <Text fontSize={15} color="#1f2937">
+                <Text fontSize={15} style={{ color: textColor }}>
                   {formatDate(endDate)}
                 </Text>
               </TouchableOpacity>
@@ -310,13 +329,13 @@ export default function CreateChallengeScreen() {
 
           {/* Max Participants */}
           <YStack gap="$2">
-            <Text fontSize={14} fontWeight="600" color="$color">
+            <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Max Participants
             </Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
               placeholder="50"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={placeholderColor}
               value={maxParticipants}
               onChangeText={setMaxParticipants}
               keyboardType="numeric"
@@ -326,17 +345,19 @@ export default function CreateChallengeScreen() {
           {/* Public Toggle */}
           <TouchableOpacity onPress={() => setIsPublic(!isPublic)} activeOpacity={0.7}>
             <XStack
-              backgroundColor="white"
+              backgroundColor={cardBackground}
               borderRadius="$3"
               padding="$4"
               justifyContent="space-between"
               alignItems="center"
+              borderWidth={1}
+              borderColor={borderColor}
             >
               <YStack flex={1}>
-                <Text fontSize={15} fontWeight="600" color="#1f2937">
+                <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>
                   Public Challenge
                 </Text>
-                <Text fontSize={13} color="#6b7280">
+                <Text fontSize={13} style={{ color: mutedColor }}>
                   Anyone can find and join this challenge
                 </Text>
               </YStack>
@@ -349,7 +370,7 @@ export default function CreateChallengeScreen() {
       </ScrollView>
 
       {/* Create Button */}
-      <View style={[styles.bottomAction, { paddingBottom: insets.bottom + 16 }]}>
+      <View style={[styles.bottomAction, { paddingBottom: insets.bottom + 16, backgroundColor, borderTopColor: borderColor }]}>
         <TouchableOpacity
           onPress={handleCreate}
           style={styles.createButton}
@@ -372,32 +393,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   input: {
-    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: '#2B2B32',
     borderWidth: 1,
-    borderColor: '#e4e4e7',
   },
   textArea: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
   dateButton: {
-    backgroundColor: 'white',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: '#e4e4e7',
   },
   toggle: {
     width: 50,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#e4e4e7',
+    backgroundColor: '#3c3c3e',
     padding: 2,
   },
   toggleActive: {
@@ -419,9 +435,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 16,
     paddingTop: 16,
-    backgroundColor: 'white',
     borderTopWidth: 1,
-    borderTopColor: '#e4e4e7',
   },
   createButton: {
     backgroundColor: '#14b8a6',
