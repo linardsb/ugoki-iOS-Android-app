@@ -1063,32 +1063,7 @@ Fixed all navigation icons (X close buttons, arrows, chevrons) that were invisib
 - `getActivityNavigation` - Get navigation route for activity item
 - `navigateToActivity` - Navigate to activity destination
 
-### December 30, 2025 (Continued) - Theme-Aware Icons & UI Polish
-
-**Dark Theme Icon Visibility Fix:**
-
-Made all icons theme-aware so they display correctly in both light and dark modes.
-
-- **Pattern Used:** `useTheme()` from Tamagui to get theme colors:
-  ```tsx
-  const theme = useTheme();
-  const iconColor = theme.color.val;
-  const mutedIconColor = theme.colorMuted.val;
-  ```
-
-**Files Updated for Theme-Aware Icons:**
-| File | Changes |
-|------|---------|
-| `shared/components/ui/ScreenHeader.tsx` | ArrowLeft, X icons use `iconColor` |
-| `app/(auth)/login.tsx` | Back arrow uses theme color |
-| `app/(auth)/signup.tsx` | Back arrow uses theme color |
-| `app/(modals)/settings.tsx` | All CaretUp/Down/Right icons use `mutedIconColor` |
-| `app/(modals)/workout/[id].tsx` | X close and CaretRight use theme colors |
-| `features/profile/components/SettingsItem.tsx` | CaretRight uses `mutedIconColor` |
-| `app/(tabs)/profile.tsx` | All menu icons use theme colors |
-| `app/(tabs)/coach.tsx` | Gear icon uses `iconColor` |
-| `features/activity/components/RecentActivityCard.tsx` | CaretRight uses `mutedIconColor` |
-| `features/dashboard/components/LevelCard.tsx` | CaretRight uses theme color |
+### December 30, 2025 (Continued) - UI Polish
 
 **WorkoutCard Icon Improvements:**
 
@@ -2543,107 +2518,19 @@ These issues are documented for future improvement but don't affect core functio
 
 **GitHub:** All changes pushed to `main` branch
 
-### January 1, 2026 - Dark Mode Text Visibility Fixes
-
-**Issue:** Multiple screens had unreadable text in dark mode due to incorrect color usage.
-
-**Root Cause:** Text inside white/light background containers was using `$color` (theme-aware token), which becomes light in dark mode - making it invisible on white backgrounds.
-
-**Fix Pattern Established:**
-- **Theme backgrounds** → use `$color` (adapts to light/dark)
-- **White/light backgrounds** → use hardcoded `#1f2937` (dark gray)
-
----
+### January 1, 2026 - Bug Fixes
 
 **Social Screen Text Rendering Fix:**
 
-**Problem:** `{requestCount && requestCount > 0 && (...)}` returned `0` when requestCount was 0, causing "Text strings must be rendered within a <Text> component" error.
+Fixed `{requestCount && requestCount > 0 && (...)}` returning `0` instead of `false`, causing React Native text rendering error.
 
-**Fix:** Changed to ternary operator:
-```tsx
-// BEFORE (broken):
-{requestCount && requestCount > 0 && (<View>...</View>)}
-
-// AFTER (fixed):
-{requestCount > 0 ? (<View>...</View>) : null}
-```
-
----
-
-**Files Fixed for Dark Mode Text Visibility:**
-
-| File | Changes |
-|------|---------|
-| `shared/components/ui/ProfilePopupMenu.tsx` | Menu labels: `$color` → `#1f2937` |
-| `app/(modals)/social.tsx` | Stat cards & menu items: `$color` → `#1f2937` |
-| `features/social/components/ChallengeCard.tsx` | Card text: `$color` → `#1f2937` |
-| `features/social/components/LeaderboardEntry.tsx` | Entry text: `$color` → `#1f2937` |
-| `features/social/components/UserCard.tsx` | Card text: `$color` → `#1f2937` |
-| `features/social/components/FriendRequestCard.tsx` | Card text: `$color` → `#1f2937` |
-| `app/(modals)/challenges/create.tsx` | Type labels, date buttons, toggle: `$color` → `#1f2937` |
-| `app/(modals)/challenges/[id].tsx` | Join code text: `$color` → `#1f2937` |
-
----
+**Fix:** Changed to ternary: `{requestCount > 0 ? (...) : null}`
 
 **Challenge Detail Screen UX Fix:**
 
-Added close button (X) to Challenge detail screen header so users can dismiss the modal without having to leave the challenge.
+Added close button (X) to Challenge detail screen header.
 
-```tsx
-<ScreenHeader
-  title="Challenge"
-  showClose  // <-- Added
-  rightAction={...}
-/>
-```
-
----
-
-**Batch Color Replacement Commands Used:**
-
-```bash
-# First pass: Change hardcoded dark to theme-aware (for theme backgrounds)
-sed -i '' 's/color="#2B2B32"/color="$color"/g' <file>
-
-# Second pass: Revert for white card components
-sed -i '' 's/color="\$color"/color="#1f2937"/g' <component-files>
-```
-
----
-
-**Theme Token Reference:**
-
-From `shared/theme/tamagui.config.ts`:
-
-| Token | Light Mode | Dark Mode |
-|-------|------------|-----------|
-| `$color` | `#2B2B32` | `#fafafa` |
-| `$colorMuted` | `#71717a` | `#a1a1aa` |
-| `$colorSubtle` | `#a1a1aa` | `#71717a` |
-| `$background` | `#fafafa` | `#09090b` |
-
----
-
-**Commits:**
-
-| Hash | Description |
-|------|-------------|
-| `458ff84d` | Fix text rendering error in Social screen |
-| `5ff15ef5` | Fix dark theme text visibility across all screens |
-| `98fb5605` | Fix text colors for white card backgrounds |
-| `1274cf58` | Fix dark mode text visibility in Create Challenge screen |
-| `8878218b` | Fix join code text visibility in Challenge detail screen |
-| `0886c5df` | Add close button to Challenge detail screen |
-
----
-
-**Key Learnings:**
-
-1. **React Native conditional rendering gotcha**: `{0 && something}` returns `0`, not `false`. Always use ternary for number-based conditions.
-
-2. **Theme tokens on fixed backgrounds**: Never use `$color` on elements with `backgroundColor="white"` - the text becomes invisible in dark mode.
-
-3. **Consistent pattern**: Establish a rule early - theme backgrounds get theme colors, fixed backgrounds get fixed colors.
+**Key Learning:** React Native conditional rendering gotcha - `{0 && something}` returns `0`, not `false`. Always use ternary for number-based conditions.
 
 ### January 2, 2026 - Research Hub Feature
 
@@ -2931,36 +2818,7 @@ async def complete_workout(
 
 **Create Challenge Dark Theme Fix:**
 
-Updated Create Challenge screen to use proper dark theme colors instead of white inputs/cards.
-
-**File:** `apps/mobile/app/(modals)/challenges/create.tsx`
-
-**Theme Detection Added:**
-```tsx
-const colorScheme = useColorScheme();
-const { mode: themeMode } = useThemeStore();
-const systemTheme = colorScheme || 'light';
-const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-const isDark = effectiveTheme === 'dark';
-
-// Theme-aware colors
-const backgroundColor = isDark ? '#121216' : '#fafafa';
-const cardBackground = isDark ? '#1c1c1e' : 'white';
-const inputBackground = isDark ? '#2c2c2e' : 'white';
-const borderColor = isDark ? '#3c3c3e' : '#e4e4e7';
-const textColor = isDark ? '#ffffff' : '#1f2937';
-const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-const placeholderColor = isDark ? '#71717a' : '#9ca3af';
-const selectedBg = isDark ? '#14b8a620' : '#d1fae5';
-```
-
-**Elements Updated:**
-- Page container background
-- All TextInput fields (name, description, goal, max participants)
-- Challenge type selection cards
-- Date picker buttons
-- Public toggle switch background
-- Bottom action bar
+Applied dark theme styling to Create Challenge screen using the established color palette (see January 2 section below for reference).
 
 ---
 
@@ -2974,8 +2832,3 @@ const selectedBg = isDark ? '#14b8a620' : '#d1fae5';
 | `src/modules/time_keeper/routes.py` | Added SocialService, update challenge progress on close |
 | `src/modules/content/routes.py` | Added SocialService, update challenge progress on complete |
 | `app/(modals)/challenges/create.tsx` | Full dark theme styling |
-
-**Commits:**
-- `Add audience_tags column to research_papers table`
-- `Auto-update challenge progress when completing workouts and fasts`
-- `Update Create Challenge screen to use dark theme colors`
