@@ -35,8 +35,11 @@ class ResearchDigest(BaseModel):
     """AI-processed summary of a research paper - bite-sized and actionable."""
     one_liner: str = Field(..., description="Single sentence summary of the key finding")
     key_benefits: list[KeyBenefit] = Field(default_factory=list, description="3-5 main benefit points")
-    who_benefits: str = Field(..., description="Who would benefit most from this research")
+    audience_tags: list[str] = Field(default_factory=list, description="2-4 specific audience tags")
     tldr: str = Field(..., description="2-3 sentence plain English summary")
+
+    # Deprecated field - kept for backwards compatibility with existing data
+    who_benefits: str | None = Field(None, description="Deprecated: use audience_tags instead")
 
 
 # =============================================================================

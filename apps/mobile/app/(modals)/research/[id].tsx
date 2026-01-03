@@ -305,20 +305,27 @@ export default function ResearchDetailScreen() {
               </YStack>
             )}
 
-            {/* Who Benefits */}
-            {digest.who_benefits && (
-              <YStack
-                backgroundColor={infoColors.bg}
-                borderRadius="$3"
-                padding="$3"
-                gap="$1"
-              >
-                <Text fontSize={12} fontWeight="700" color={infoColors.text}>
+            {/* Audience Tags */}
+            {digest.audience_tags && digest.audience_tags.length > 0 && (
+              <YStack gap="$2">
+                <Text fontSize={12} fontWeight="700" style={{ color: mutedColor }}>
                   WHO IS THIS FOR
                 </Text>
-                <Text fontSize={14} color={infoColors.text} opacity={0.9} lineHeight={20}>
-                  {digest.who_benefits}
-                </Text>
+                <XStack flexWrap="wrap" gap="$2">
+                  {digest.audience_tags.map((tag, index) => (
+                    <XStack
+                      key={index}
+                      backgroundColor={infoColors.bg}
+                      paddingHorizontal="$3"
+                      paddingVertical="$2"
+                      borderRadius="$4"
+                    >
+                      <Text fontSize={13} fontWeight="600" color={infoColors.text}>
+                        {tag}
+                      </Text>
+                    </XStack>
+                  ))}
+                </XStack>
               </YStack>
             )}
 

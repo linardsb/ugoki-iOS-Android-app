@@ -33,9 +33,23 @@ OUTPUT FORMAT (JSON):
         {"emoji": "💪", "title": "Another Benefit", "description": "Explanation"},
         {"emoji": "🧠", "title": "Third Point", "description": "Why this matters"}
     ],
-    "who_benefits": "Best for: [specific audience who would benefit most]",
+    "audience_tags": ["Tag 1", "Tag 2", "Tag 3"],
     "tldr": "2-3 sentence plain English summary of the research and its implications"
 }
+
+AUDIENCE TAGS GUIDELINES:
+Generate 2-4 specific, short tags (2-4 words each) describing WHO would benefit most.
+Be SPECIFIC - avoid generic phrases like "health-conscious people".
+
+GOOD AUDIENCE TAG EXAMPLES:
+- Experience: "Fasting Beginners", "Advanced Athletes", "New to HIIT"
+- Goals: "Weight Loss Focus", "Muscle Builders", "Energy Seekers", "Longevity Focused"
+- Protocols: "16:8 Fasters", "HIIT Enthusiasts", "Keto Dieters", "Morning Exercisers"
+- Conditions: "Metabolic Health", "Blood Sugar Management", "Heart Health Focus"
+- Lifestyle: "Busy Professionals", "Shift Workers", "Time-Crunched Parents"
+
+BAD AUDIENCE TAGS (too generic):
+- "Health optimizers", "Fitness enthusiasts", "People wanting to be healthier"
 
 EMOJI SUGGESTIONS:
 - 🔥 Fat burning, metabolism
@@ -138,10 +152,18 @@ class ResearchSummarizer:
                     description=benefit_data.get("description", "")[:200],
                 ))
 
+            # Parse audience tags (new) or fall back to who_benefits (legacy)
+            audience_tags = data.get("audience_tags", [])
+            if not audience_tags and data.get("who_benefits"):
+                # Convert legacy who_benefits to a single tag
+                audience_tags = [data.get("who_benefits", "").replace("Best for: ", "")[:30]]
+            # Ensure we have valid tags
+            audience_tags = [tag[:30] for tag in audience_tags[:4] if tag]
+
             return ResearchDigest(
                 one_liner=data.get("one_liner", "Research finding")[:200],
                 key_benefits=key_benefits,
-                who_benefits=data.get("who_benefits", "Fitness enthusiasts")[:200],
+                audience_tags=audience_tags if audience_tags else ["Research Readers"],
                 tldr=data.get("tldr", "")[:500],
             )
 
@@ -160,7 +182,7 @@ class ResearchSummarizer:
                     description="Read the full abstract for detailed findings.",
                 )
             ],
-            who_benefits="Those interested in health and fitness research",
+            audience_tags=["Research Readers"],
             tldr="This research paper explores health and wellness topics. View the full study for detailed findings.",
         )
 
@@ -168,7 +190,16 @@ class ResearchSummarizer:
 class MockSummarizer:
     """
     Mock summarizer for testing and development without API calls.
+    Returns topic-specific audience tags for realistic testing.
     """
+
+    # Topic-specific audience tags for mock responses
+    TOPIC_AUDIENCE_TAGS = {
+        "intermittent_fasting": ["16:8 Fasters", "Weight Loss Focus", "Metabolic Health"],
+        "hiit": ["HIIT Enthusiasts", "Time-Crunched Exercisers", "Fat Loss Goals"],
+        "nutrition": ["Clean Eaters", "Performance Focused", "Macro Trackers"],
+        "sleep": ["Recovery Focused", "Shift Workers", "Performance Athletes"],
+    }
 
     async def summarize(
         self,
@@ -176,7 +207,16 @@ class MockSummarizer:
         abstract: str,
         topic_context: str | None = None,
     ) -> ResearchDigest:
-        """Return a mock digest."""
+        """Return a mock digest with topic-specific audience tags."""
+        # Determine audience tags based on topic context
+        audience_tags = ["Research Readers", "Evidence Seekers"]
+        if topic_context:
+            topic_key = topic_context.lower().replace(" ", "_")
+            for key, tags in self.TOPIC_AUDIENCE_TAGS.items():
+                if key in topic_key:
+                    audience_tags = tags
+                    break
+
         return ResearchDigest(
             one_liner=f"Key finding from: {title[:50]}...",
             key_benefits=[
@@ -196,6 +236,6 @@ class MockSummarizer:
                     description="Benefits observed with reasonable time investment.",
                 ),
             ],
-            who_benefits="Best for: People looking to optimize their health routine",
+            audience_tags=audience_tags,
             tldr=f"This study examines {title[:100]}. The findings suggest practical benefits for health and fitness goals.",
         )

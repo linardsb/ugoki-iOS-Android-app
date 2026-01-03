@@ -24,8 +24,10 @@ export interface KeyBenefit {
 export interface ResearchDigest {
   one_liner: string;
   key_benefits: KeyBenefit[];
-  who_benefits: string;
+  audience_tags: string[];
   tldr: string;
+  /** @deprecated Use audience_tags instead */
+  who_benefits?: string;
 }
 
 // =============================================================================
