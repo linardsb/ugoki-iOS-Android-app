@@ -155,6 +155,8 @@ eas build --platform all                   # Production build
 | `docs/MOBILE_GUIDE.md` | Mobile development guide, EAS builds |
 | `docs/FEATURES.md` | Feature docs (Research, Bloodwork, Social, Costs) |
 | `docs/CHANGELOG.md` | Development session logs |
+| `docs/UGOKI_Architecture_v2_BlackBox_Design.md` | Full black box architecture design |
+| `docs/1_2_Ugoki_implementation.md` | Original requirements (reference only) |
 
 ---
 
