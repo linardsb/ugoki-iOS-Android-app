@@ -27,6 +27,7 @@ from src.modules.content.service import ContentService
 from src.modules.event_journal.service import EventJournalService
 from src.modules.progression.service import ProgressionService
 from src.modules.progression.models import StreakType
+from src.modules.social.service import SocialService
 
 router = APIRouter(tags=["content"])
 
@@ -47,6 +48,13 @@ def get_content_service(
     event_journal: EventJournalService = Depends(get_event_journal_service),
 ) -> ContentService:
     return ContentService(db, event_journal=event_journal)
+
+
+def get_social_service(
+    db: AsyncSession = Depends(get_db),
+    event_journal: EventJournalService = Depends(get_event_journal_service),
+) -> SocialService:
+    return SocialService(db, event_journal=event_journal)
 
 
 # =========================================================================
@@ -167,13 +175,14 @@ async def complete_workout(
     db: AsyncSession = Depends(get_db),
     service: ContentService = Depends(get_content_service),
     progression: ProgressionService = Depends(get_progression_service),
+    social: SocialService = Depends(get_social_service),
 ) -> WorkoutSession:
     """
     Complete a workout session.
 
     Optionally provide actual calories burned.
     Returns the completed session with XP earned.
-    Also updates the user's workout streak.
+    Also updates the user's workout streak and challenge progress.
     """
     try:
         calories = request.calories_burned if request else None
@@ -185,7 +194,10 @@ async def complete_workout(
             streak_type=StreakType.WORKOUT,
         )
 
-        # Ensure streak changes are committed before returning
+        # Update challenge progress for any active challenges
+        await social.update_challenge_progress(session.identity_id)
+
+        # Ensure changes are committed before returning
         await db.commit()
 
         return session

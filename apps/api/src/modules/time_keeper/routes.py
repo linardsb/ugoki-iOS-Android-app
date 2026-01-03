@@ -15,6 +15,7 @@ from src.modules.time_keeper.service import TimeKeeperService
 from src.modules.event_journal.service import EventJournalService
 from src.modules.progression.service import ProgressionService
 from src.modules.progression.models import StreakType
+from src.modules.social.service import SocialService
 
 router = APIRouter(tags=["time_keeper"])
 
@@ -28,6 +29,13 @@ def get_progression_service(
     event_journal: EventJournalService = Depends(get_event_journal_service),
 ) -> ProgressionService:
     return ProgressionService(db, event_journal=event_journal)
+
+
+def get_social_service(
+    db: AsyncSession = Depends(get_db),
+    event_journal: EventJournalService = Depends(get_event_journal_service),
+) -> SocialService:
+    return SocialService(db, event_journal=event_journal)
 
 
 def get_time_keeper_service(
@@ -61,6 +69,7 @@ async def close_window(
     request: CloseWindowRequest,
     service: TimeKeeperService = Depends(get_time_keeper_service),
     progression: ProgressionService = Depends(get_progression_service),
+    social: SocialService = Depends(get_social_service),
 ) -> TimeWindow:
     """Close an active window."""
     try:
@@ -89,6 +98,9 @@ async def close_window(
                     identity_id=window.identity_id,
                     streak_type=streak_type,
                 )
+
+            # Update challenge progress for any active challenges
+            await social.update_challenge_progress(window.identity_id)
 
         return window
     except ValueError as e:
