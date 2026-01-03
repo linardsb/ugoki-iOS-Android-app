@@ -188,164 +188,18 @@ All development session logs, bug fixes, and feature implementations.
 - Biomarkers stored in METRICS table with `biomarker_` prefix
 - AI Coach can query biomarkers for personalized health insights
 
-### December 28, 2025 (Continued) - Critical Scrolling Fix
+### December 28, 2025 (Continued) - Scrolling Fix
 
-**Root Cause Identified:**
-- `react-native-gesture-handler` was missing from dependencies
-- This package is **required** for all touch/scroll gestures in React Native
-- Without it, ScrollView and FlatList components cannot respond to touch events
-
-**Fix Applied:**
-1. Installed `react-native-gesture-handler@2.20.2` (SDK 52 compatible)
-2. Added `GestureHandlerRootView` wrapper to root layout with `style={{ flex: 1 }}`
-
-**Files Modified:**
-- `app/_layout.tsx` - Added GestureHandlerRootView as outermost wrapper:
-  ```tsx
-  import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-  return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        {/* ... rest of providers */}
-      </QueryClientProvider>
-    </GestureHandlerRootView>
-  );
-  ```
-
-**Dependencies Added:**
-- `react-native-gesture-handler@2.20.2` - Essential for touch gestures
-
-**Screens Now Scrollable:**
-- Dashboard (index.tsx)
-- Fasting (fasting.tsx)
-- Workouts (workouts.tsx)
-- Profile (profile.tsx)
-- Coach (coach.tsx)
-- Settings modal (settings.tsx)
-
-**Important Note:**
-After installing `react-native-gesture-handler`, always restart Expo with cache clear:
-```bash
-bunx expo start --clear
-```
-
-### December 28, 2025 (Continued) - ScrollView Gesture Handler Fix
-
-**Issue:**
-Despite adding `GestureHandlerRootView` wrapper, ScrollViews weren't responding to touch events on multiple screens.
-
-**Root Cause:**
-The `ScrollView` component from `react-native` doesn't properly integrate with `react-native-gesture-handler` when nested inside `GestureHandlerRootView`. Must use `ScrollView` from `react-native-gesture-handler` instead.
-
-**Fix Applied:**
-Changed all screens from:
-```tsx
-import { ScrollView, RefreshControl } from 'react-native';
-```
-To:
-```tsx
-import { ScrollView } from 'react-native-gesture-handler';
-import { RefreshControl } from 'react-native';
-```
-
-**Files Modified:**
-- `app/(tabs)/index.tsx` - Dashboard
-- `app/(tabs)/fasting.tsx` - Fasting timer
-- `app/(tabs)/workouts.tsx` - Workouts list
-- `app/(tabs)/profile.tsx` - Profile/settings
-- `app/(tabs)/coach.tsx` - AI Coach chat
-- `app/(modals)/settings.tsx` - Settings modal
-- `app/(modals)/bloodwork.tsx` - Bloodwork upload
-
-**Key Rule (SUPERSEDED - see below):**
-~~Always import `ScrollView` from `react-native-gesture-handler`, NOT from `react-native`, when using Expo Router with gesture handler.~~
-
-### December 28, 2025 (Continued) - Complete ScrollView Fix
-
-**Issue:** Previous ScrollView fix using react-native-gesture-handler didn't resolve scrolling issues.
-
-**Root Cause:** Multiple layout issues preventing proper scroll behavior:
-1. Stack screenOptions missing `flex: 1` in contentStyle
-2. ScrollViews not wrapped in proper flex containers
-3. Missing scroll configuration props
-
-**Complete Fix Applied:**
-
-1. **Root Layout** (`app/_layout.tsx`):
-   - Added `flex: 1` to Stack screenOptions contentStyle:
-   ```tsx
-   contentStyle: { backgroundColor: 'transparent', flex: 1 }
-   ```
-
-2. **All Tab & Modal Screens**:
-   - Use native `ScrollView` from `react-native` (NOT gesture handler)
-   - Wrap in `View` container with `flex: 1`
-   - Add comprehensive scroll props:
-   ```tsx
-   import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
-
-   return (
-     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
-       <ScrollView
-         style={styles.scrollView}
-         contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100 }}
-         showsVerticalScrollIndicator={true}
-         bounces={true}
-         nestedScrollEnabled={true}
-         keyboardShouldPersistTaps="handled"
-         keyboardDismissMode="on-drag"
-         scrollEventThrottle={16}
-         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
-       >
-         {/* Content */}
-       </ScrollView>
-     </View>
-   );
-
-   const styles = StyleSheet.create({
-     container: { flex: 1 },
-     scrollView: { flex: 1 },
-   });
-   ```
-
-**Files Modified:**
-- `app/_layout.tsx` - Added flex: 1 to contentStyle
-- `app/(tabs)/index.tsx` - Dashboard
-- `app/(tabs)/fasting.tsx` - Fasting timer
-- `app/(tabs)/workouts.tsx` - Workouts list (removed stickyHeaderIndices)
-- `app/(tabs)/profile.tsx` - Profile/settings
-- `app/(tabs)/coach.tsx` - AI Coach chat
-- `app/(modals)/settings.tsx` - Settings modal
-- `app/(modals)/bloodwork.tsx` - Bloodwork upload
-
-**Key ScrollView Props:**
-- `bounces={true}` - Enable iOS bounce effect
-- `nestedScrollEnabled={true}` - Allow nested scrolling
-- `keyboardShouldPersistTaps="handled"` - Proper touch handling
-- `keyboardDismissMode="on-drag"` - Dismiss keyboard on scroll
-- `scrollEventThrottle={16}` - Smooth scroll events
-
-**Critical Pattern:**
-Always wrap ScrollView in a View with `flex: 1`, and ensure the ScrollView also has `flex: 1` in its style.
-
-### December 28, 2025 (Continued) - ACTUAL Root Cause: Missing Peer Dependencies
-
-**Issue:** ScrollView/FlatList not responding to touch/scroll gestures in Expo Go, despite all previous fixes.
+**Issue:** ScrollView/FlatList not responding to touch/scroll gestures in Expo Go.
 
 **Root Cause:** Missing required peer dependencies for `expo-router`:
 - `expo-constants` - Required by expo-router
 - `expo-linking` - Required by expo-router
 
-Without these dependencies, expo-router's navigation and gesture handling were broken.
-
 **Fix Applied:**
 ```bash
 npx expo install expo-constants expo-linking
 ```
-
-**Diagnosis Tool:**
-Run `npx expo-doctor@latest` to check for missing peer dependencies and compatibility issues.
 
 **Key Takeaway:**
 When scrolling doesn't work in Expo, run `npx expo-doctor@latest` FIRST to check for missing dependencies before debugging ScrollView configurations.
@@ -1094,17 +948,6 @@ Fixed all navigation icons (X close buttons, arrows, chevrons) that were invisib
   - Tagline: delayed fade in (400ms)
   - Feature badges: staggered slide-in from left (600ms, 750ms, 900ms delays)
 
-**Gender Dropdown Update:**
-
-- **File: `app/(modals)/settings.tsx`**
-  - Replaced emojis with Phosphor gender symbol icons
-  - Options simplified to Male and Female only:
-    | Option | Icon |
-    |--------|------|
-    | Male | `GenderMale` (♂) |
-    | Female | `GenderFemale` (♀) |
-  - Icons: 20px size, `weight="regular"`, white when selected, gray (#6b7280) when not
-
 ### December 31, 2025 - Coach Personality Icons & Fasting Metrics Integration
 
 **Coach Personality Icons Update:**
@@ -1165,12 +1008,6 @@ Mobile pull-to-refresh → useStreaks() + useFastingHistory()
 - **File: `features/coach/components/WelcomeMessage.tsx`**
   - Increased disclaimer font from `fontSize="$1"` to `fontSize="$3"`
   - Increased opacity from 0.7 to 0.8 for better readability
-
-**Gender Dropdown Update:**
-
-- **File: `app/(modals)/settings.tsx`**
-  - Replaced generic icons with Phosphor gender symbols (GenderMale, GenderFemale)
-  - Removed "Other" and "Prefer not to say" options
 
 ### December 31, 2025 (Continued) - Achievements Fix & UI Updates
 
