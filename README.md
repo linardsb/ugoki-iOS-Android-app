@@ -174,25 +174,6 @@ bun run android    # Android emulator
 eas build          # Production build
 ```
 
-## Environment Variables
-
-### Backend (`apps/api/.env`)
-
-```
-DATABASE_URL=sqlite+aiosqlite:///./ugoki.db
-ANTHROPIC_API_KEY=sk-ant-xxxxx
-JWT_SECRET=your-secret-key
-LOGFIRE_TOKEN=
-RESEND_API_KEY=
-EXPO_ACCESS_TOKEN=
-```
-
-### Mobile (`apps/mobile/.env`)
-
-```
-EXPO_PUBLIC_API_URL=http://localhost:8000
-```
-
 ## Documentation
 
 - `CLAUDE.md` - AI context and project instructions
