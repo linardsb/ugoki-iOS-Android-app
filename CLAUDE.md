@@ -3699,3 +3699,155 @@ const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
 **Key Rule Established:**
 - **Theme backgrounds** → use `$color` or computed theme colors
 - **White/light card backgrounds** → use hardcoded colors (`#1f2937` for text on white cards)
+
+### January 3, 2026 - Research Hub & Challenge Fixes
+
+**Audience Tags Database Fix:**
+
+The "WHO IS THIS FOR" section was not displaying in Research paper details because `audience_tags` wasn't being persisted to the database.
+
+**Root Cause Analysis:**
+1. UI code was correct (checking `digest?.audience_tags`)
+2. MockSummarizer was returning `audience_tags` correctly
+3. ORM was missing `audience_tags` column
+4. Service wasn't reading/writing `audience_tags` to/from database
+
+**Fix Applied:**
+
+1. **Added column to ORM** (`src/modules/research/orm.py`):
+```python
+audience_tags: Mapped[str | None] = mapped_column(JSON, nullable=True)  # JSON array of strings
+who_benefits: Mapped[str | None] = mapped_column(Text, nullable=True)  # Deprecated, use audience_tags
+```
+
+2. **Updated service to read audience_tags** (`src/modules/research/service.py`):
+```python
+digest = ResearchDigest(
+    one_liner=orm.one_liner,
+    key_benefits=key_benefits,
+    audience_tags=orm.audience_tags or [],  # Read from ORM
+    who_benefits=orm.who_benefits or "",
+    tldr=orm.tldr or "",
+)
+```
+
+3. **Updated service to write audience_tags**:
+```python
+orm.audience_tags = list(digest.audience_tags) if digest.audience_tags else []
+```
+
+4. **Created migration** (`381d1817ac05_add_audience_tags_to_research_papers.py`):
+```python
+def upgrade() -> None:
+    op.add_column('research_papers', sa.Column('audience_tags', sa.JSON(), nullable=True))
+```
+
+5. **Reset papers for re-summarization**:
+```sql
+UPDATE research_papers SET one_liner = NULL, ai_processed_at = NULL;
+```
+
+---
+
+**Challenge Progress Auto-Update Integration:**
+
+Challenge progress wasn't updating automatically when users completed workouts or fasts. The `update_challenge_progress()` method existed but wasn't being called.
+
+**Fix Applied:**
+
+1. **Added to TIME_KEEPER routes** (`src/modules/time_keeper/routes.py`):
+```python
+from src.modules.social.service import SocialService
+
+def get_social_service(
+    db: AsyncSession = Depends(get_db),
+    event_journal: EventJournalService = Depends(get_event_journal_service),
+) -> SocialService:
+    return SocialService(db, event_journal=event_journal)
+
+@router.post("/windows/{window_id}/close", response_model=TimeWindow)
+async def close_window(
+    ...
+    social: SocialService = Depends(get_social_service),
+) -> TimeWindow:
+    ...
+    if request.end_state == WindowState.COMPLETED:
+        # Update challenge progress for any active challenges
+        await social.update_challenge_progress(window.identity_id)
+```
+
+2. **Added to CONTENT routes** (`src/modules/content/routes.py`):
+```python
+from src.modules.social.service import SocialService
+
+@router.post("/sessions/{session_id}/complete", response_model=WorkoutSession)
+async def complete_workout(
+    ...
+    social: SocialService = Depends(get_social_service),
+) -> WorkoutSession:
+    ...
+    # Update challenge progress for any active challenges
+    await social.update_challenge_progress(session.identity_id)
+```
+
+**Challenge Progress Calculation:**
+
+| Challenge Type | Calculation |
+|----------------|-------------|
+| `fasting_streak` | Count completed FAST windows in challenge period |
+| `workout_count` | Count completed WORKOUT windows + workout sessions |
+| `total_xp` | Sum XP earned from xp_transactions in challenge period |
+| `consistency` | Count unique days with any activity |
+
+---
+
+**Create Challenge Dark Theme Fix:**
+
+Updated Create Challenge screen to use proper dark theme colors instead of white inputs/cards.
+
+**File:** `apps/mobile/app/(modals)/challenges/create.tsx`
+
+**Theme Detection Added:**
+```tsx
+const colorScheme = useColorScheme();
+const { mode: themeMode } = useThemeStore();
+const systemTheme = colorScheme || 'light';
+const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+const isDark = effectiveTheme === 'dark';
+
+// Theme-aware colors
+const backgroundColor = isDark ? '#121216' : '#fafafa';
+const cardBackground = isDark ? '#1c1c1e' : 'white';
+const inputBackground = isDark ? '#2c2c2e' : 'white';
+const borderColor = isDark ? '#3c3c3e' : '#e4e4e7';
+const textColor = isDark ? '#ffffff' : '#1f2937';
+const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+const placeholderColor = isDark ? '#71717a' : '#9ca3af';
+const selectedBg = isDark ? '#14b8a620' : '#d1fae5';
+```
+
+**Elements Updated:**
+- Page container background
+- All TextInput fields (name, description, goal, max participants)
+- Challenge type selection cards
+- Date picker buttons
+- Public toggle switch background
+- Bottom action bar
+
+---
+
+**Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `src/modules/research/orm.py` | Added `audience_tags` JSON column |
+| `src/modules/research/service.py` | Read/write audience_tags to ORM |
+| `alembic/versions/381d1817ac05_*.py` | Migration for audience_tags column |
+| `src/modules/time_keeper/routes.py` | Added SocialService, update challenge progress on close |
+| `src/modules/content/routes.py` | Added SocialService, update challenge progress on complete |
+| `app/(modals)/challenges/create.tsx` | Full dark theme styling |
+
+**Commits:**
+- `Add audience_tags column to research_papers table`
+- `Auto-update challenge progress when completing workouts and fasts`
+- `Update Create Challenge screen to use dark theme colors`
