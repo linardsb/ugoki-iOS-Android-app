@@ -8,11 +8,15 @@ UGOKI helps busy professionals achieve sustainable health optimization in 15-20 
 
 ### Key Features
 
-- **16:8 Fasting Timer** - Track fasting and eating windows
-- **HIIT Workouts** - Curated video library with workout player
-- **AI Coach** - Personalized guidance via Claude integration
-- **Gamification** - Streaks, XP, levels, and achievements
-- **Weight Tracking** - Monitor progress with trend analysis
+- **16:8 Fasting Timer** - Track fasting and eating windows with pause/resume
+- **HIIT Workouts** - 16 curated workouts with video player
+- **AI Coach** - Personalized guidance via Claude integration with safety filtering
+- **Gamification** - Streaks, XP, levels, and 21 achievements
+- **Weight & Metrics** - Track progress with trend analysis
+- **Bloodwork** - Upload blood tests, AI parses biomarkers
+- **Recipes** - 30 curated recipes with nutritional info
+- **Research Hub** - PubMed papers with AI-generated summaries
+- **Social** - Friends, followers, leaderboards, challenges
 - **Push Notifications** - Stay on track with smart reminders
 
 ## Architecture
@@ -34,18 +38,20 @@ UGOKI follows a **black box modular architecture** based on Eskil Steenberg's de
 | `METRIC` | Numeric measurement with timestamp |
 | `PROGRESSION` | Position in ordered sequence (streaks, levels) |
 
-### Modules
+### Modules (11 total)
 
 ```
-IDENTITY       → Authentication, authorization
+IDENTITY       → Authentication, authorization, JWT, anonymous mode
 TIME_KEEPER    → All timers (fasting, workout, eating windows)
 EVENT_JOURNAL  → Immutable event log, GDPR compliance
-METRICS        → Numeric data storage, trends, aggregations
-PROGRESSION    → Streaks, XP, levels, achievements
-CONTENT        → Workout library, recommendations
-NOTIFICATION   → Push, email, scheduling
-PROFILE        → User PII, preferences (GDPR isolated)
-AI_COACH       → Pydantic AI agents, Claude integration
+METRICS        → Weight tracking, biomarkers, bloodwork
+PROGRESSION    → Streaks, XP, levels, 21 achievements
+CONTENT        → 16 workouts, 30 recipes, recommendations
+NOTIFICATION   → Push tokens, preferences, scheduling
+PROFILE        → User PII, goals, health info, GDPR isolated
+AI_COACH       → Chat, insights, safety filtering, Claude integration
+SOCIAL         → Friends, followers, leaderboards, challenges
+RESEARCH       → PubMed integration, AI summaries, 15/day quota
 ```
 
 ## Tech Stack
@@ -68,14 +74,14 @@ AI_COACH       → Pydantic AI agents, Claude integration
 
 ### Frontend
 
-- **Framework:** Expo (React Native)
-- **UI:** Tamagui or NativeWind
+- **Framework:** Expo SDK 52 (React Native)
+- **UI:** Tamagui
 - **State:** Zustand + TanStack Query
 - **Navigation:** Expo Router
 
 ### Infrastructure
 
-- **Hosting:** Fly.io or Railway
+- **Hosting:** Fly.io
 - **Storage:** Cloudflare R2
 - **Push:** Expo Push Notifications
 - **Email:** Resend
@@ -86,22 +92,32 @@ AI_COACH       → Pydantic AI agents, Claude integration
 ```
 ugoki/
 ├── apps/
-│   ├── mobile/              # Expo React Native
-│   │   ├── app/             # Expo Router screens
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   └── stores/          # Zustand
+│   ├── mobile/                    # Expo React Native
+│   │   ├── app/                   # Expo Router screens
+│   │   │   ├── (auth)/            # Auth flow
+│   │   │   ├── (tabs)/            # Main tab navigator
+│   │   │   └── (modals)/          # Modal screens
+│   │   ├── features/              # Feature modules
+│   │   │   ├── auth/
+│   │   │   ├── fasting/
+│   │   │   ├── workouts/
+│   │   │   ├── coach/
+│   │   │   ├── dashboard/
+│   │   │   ├── profile/
+│   │   │   ├── social/
+│   │   │   ├── research/
+│   │   │   └── ...
+│   │   └── shared/                # Shared utilities
 │   │
-│   └── api/                 # Python FastAPI
+│   └── api/                       # Python FastAPI
 │       ├── src/
-│       │   ├── modules/     # Black box modules
+│       │   ├── modules/           # Black box modules (11)
 │       │   ├── db/
 │       │   ├── core/
 │       │   └── main.py
 │       └── tests/
 │
-└── packages/
-    └── interfaces/          # Shared TypeScript types
+└── docs/                          # Documentation
 ```
 
 ## Getting Started
@@ -176,27 +192,40 @@ eas build          # Production build
 
 ## Documentation
 
-- `CLAUDE.md` - AI context and project instructions
-- `UGOKI_Architecture_v2_BlackBox_Design.md` - Full architecture design
-- `1_2_Ugoki_implementation.md` - Original requirements reference
+| Document | Purpose |
+|----------|---------|
+| `docs/ARCHITECTURE.md` | Detailed architecture, patterns, conventions |
+| `docs/MOBILE_GUIDE.md` | Mobile development guide, EAS builds |
+| `docs/FEATURES.md` | Feature docs (Research, Bloodwork, Social, Costs) |
+| `docs/CHANGELOG.md` | Development session logs |
 
 ## Status
 
-**Phase:** Pre-development (Architecture Complete)
+**Phase:** MVP Complete - Ready for Production Deployment
 
-### MVP Roadmap
+### Completed Features
 
-- [ ] OAuth sign-in (Google, Apple, Anonymous)
-- [ ] 16:8 fasting timer
-- [ ] Weight tracking
-- [ ] HIIT workout library
-- [ ] Workout player
-- [ ] Streak tracking
-- [ ] XP and level system
-- [ ] Basic achievements
-- [ ] Push notifications
-- [ ] AI Coach chat
-- [ ] Dashboard
+- [x] OAuth sign-in (Google, Apple, Anonymous)
+- [x] 16:8 fasting timer with pause/resume
+- [x] Weight & metrics tracking
+- [x] Bloodwork upload & AI parsing
+- [x] HIIT workout library (16 workouts)
+- [x] Workout player
+- [x] Recipe library (30 recipes)
+- [x] Streak tracking
+- [x] XP and level system
+- [x] 21 achievements
+- [x] Push notifications
+- [x] AI Coach chat with safety filtering
+- [x] Dashboard
+- [x] Research Hub with PubMed integration
+- [x] Social (friends, leaderboards, challenges)
+
+### Next Steps
+
+1. Deploy backend to production (Fly.io)
+2. Build iOS/Android via EAS
+3. Submit to App Store / Play Store
 
 ## License
 
