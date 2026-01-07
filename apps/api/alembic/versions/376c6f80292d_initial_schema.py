@@ -26,8 +26,8 @@ def upgrade() -> None:
     sa.Column('provider', sa.Enum('GOOGLE', 'APPLE', 'ANONYMOUS', name='authprovider'), nullable=False),
     sa.Column('external_id', sa.String(length=255), nullable=False),
     sa.Column('last_active_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_identities_external_id'), 'identities', ['external_id'], unique=True)
@@ -40,8 +40,8 @@ def upgrade() -> None:
     sa.Column('end_time', sa.DateTime(timezone=True), nullable=True),
     sa.Column('scheduled_end', sa.DateTime(timezone=True), nullable=True),
     sa.Column('window_metadata', sa.JSON(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_time_windows_identity_id'), 'time_windows', ['identity_id'], unique=False)

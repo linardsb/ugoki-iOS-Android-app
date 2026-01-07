@@ -15,7 +15,14 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     # Database
+    # SQLite (dev default): sqlite+aiosqlite:///./ugoki.db
+    # PostgreSQL: postgresql+asyncpg://user:pass@localhost:5432/ugoki
     database_url: str = "sqlite+aiosqlite:///./ugoki.db"
+
+    # PostgreSQL connection pool settings (ignored for SQLite)
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    db_pool_timeout: int = 30
 
     # Security
     jwt_secret: str = "change-me-in-production"

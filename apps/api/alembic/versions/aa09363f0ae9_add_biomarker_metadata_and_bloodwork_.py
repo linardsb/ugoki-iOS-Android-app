@@ -19,11 +19,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Create enum type first (required for PostgreSQL)
+    biomarkerflag_enum = sa.Enum('LOW', 'NORMAL', 'HIGH', 'ABNORMAL', name='biomarkerflag')
+    biomarkerflag_enum.create(op.get_bind(), checkfirst=True)
+
     # Add new columns to metrics table
     op.add_column('metrics', sa.Column('unit', sa.String(length=50), nullable=True))
     op.add_column('metrics', sa.Column('reference_low', sa.Float(), nullable=True))
     op.add_column('metrics', sa.Column('reference_high', sa.Float(), nullable=True))
-    op.add_column('metrics', sa.Column('flag', sa.Enum('LOW', 'NORMAL', 'HIGH', 'ABNORMAL', name='biomarkerflag'), nullable=True))
+    op.add_column('metrics', sa.Column('flag', biomarkerflag_enum, nullable=True))
 
     # Use batch mode for SQLite to alter column type
     with op.batch_alter_table('metrics', schema=None) as batch_op:
@@ -36,9 +40,9 @@ def upgrade() -> None:
     op.create_index('ix_metrics_type_prefix', 'metrics', ['metric_type'], unique=False)
 
     # Add bloodwork_uploaded to onboarding_status with default False
-    # Use batch mode for SQLite to handle NOT NULL with default
+    # Use 'false' for PostgreSQL compatibility (works in both SQLite and PostgreSQL)
     with op.batch_alter_table('onboarding_status', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('bloodwork_uploaded', sa.Boolean(), nullable=False, server_default=sa.text('0')))
+        batch_op.add_column(sa.Column('bloodwork_uploaded', sa.Boolean(), nullable=False, server_default=sa.text('false')))
 
 
 def downgrade() -> None:
