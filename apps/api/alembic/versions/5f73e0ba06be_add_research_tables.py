@@ -18,6 +18,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Create enum types first (required for PostgreSQL)
+    researchtopic_enum = sa.Enum(
+        'intermittent_fasting', 'hiit', 'nutrition', 'sleep',
+        name='researchtopic'
+    )
+    researchtopic_enum.create(op.get_bind(), checkfirst=True)
+
+    researchsource_enum = sa.Enum(
+        'pubmed', 'openalex', 'europepmc',
+        name='researchsource'
+    )
+    researchsource_enum.create(op.get_bind(), checkfirst=True)
+
     # Research papers table
     op.create_table(
         'research_papers',
@@ -28,11 +41,11 @@ def upgrade() -> None:
         sa.Column('authors', sa.JSON, nullable=True),
         sa.Column('journal', sa.String(500), nullable=True),
         sa.Column('publication_date', sa.Date, nullable=True),
-        sa.Column('topic', sa.String(30), nullable=False),
+        sa.Column('topic', researchtopic_enum, nullable=False),
         sa.Column('abstract', sa.Text, nullable=True),
         sa.Column('external_url', sa.String(500), nullable=False),
         sa.Column('open_access', sa.Boolean, default=False, nullable=False),
-        sa.Column('source', sa.String(20), nullable=False, default='pubmed'),
+        sa.Column('source', researchsource_enum, nullable=False, server_default='pubmed'),
         # AI-generated digest
         sa.Column('one_liner', sa.Text, nullable=True),
         sa.Column('key_benefits', sa.JSON, nullable=True),
@@ -80,3 +93,7 @@ def downgrade() -> None:
     op.drop_index('ix_research_papers_pmid', 'research_papers')
     op.drop_index('ix_research_papers_topic', 'research_papers')
     op.drop_table('research_papers')
+
+    # Drop enum types (PostgreSQL)
+    sa.Enum(name='researchsource').drop(op.get_bind(), checkfirst=True)
+    sa.Enum(name='researchtopic').drop(op.get_bind(), checkfirst=True)
