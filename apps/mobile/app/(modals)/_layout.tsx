@@ -28,7 +28,25 @@ export default function ModalsLayout() {
         }}
       />
       <Stack.Screen name="log-weight" />
-      <Stack.Screen name="bloodwork" />
+      {/* Bloodwork Screens */}
+      <Stack.Screen
+        name="bloodwork/index"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="bloodwork/[date]"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
+        name="bloodwork/trend/[biomarker]"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
       <Stack.Screen
         name="achievements"
         options={{

@@ -4,14 +4,20 @@ import type {
   BloodworkUploadResponse,
   SupportedFormatsResponse,
   ParsedBiomarker,
+  BiomarkerTestGroup,
+  Metric,
+  UpdateBiomarkerRequest,
+  AddBiomarkerRequest,
 } from '../types';
-import type { Metric } from '@/features/dashboard';
 
 // Query keys
 export const bloodworkKeys = {
   all: ['bloodwork'] as const,
   biomarkers: () => [...bloodworkKeys.all, 'biomarkers'] as const,
   formats: () => [...bloodworkKeys.all, 'formats'] as const,
+  history: () => [...bloodworkKeys.all, 'history'] as const,
+  forDate: (date: string) => [...bloodworkKeys.all, 'date', date] as const,
+  trend: (biomarker: string) => [...bloodworkKeys.all, 'trend', biomarker] as const,
 };
 
 interface UploadBloodworkParams {
@@ -170,4 +176,155 @@ export function categorizeBiomarkers(biomarkers: ParsedBiomarker[]): Record<stri
   }
 
   return categories;
+}
+
+/**
+ * Hook to get all biomarker tests grouped by date.
+ */
+export function useBloodworkHistory() {
+  return useQuery({
+    queryKey: bloodworkKeys.history(),
+    queryFn: async (): Promise<BiomarkerTestGroup[]> => {
+      try {
+        const response = await apiClient.get<BiomarkerTestGroup[]>('/metrics/biomarkers/grouped');
+        return response.data;
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // Fresh for 5 minutes
+  });
+}
+
+/**
+ * Hook to get biomarkers for a specific test date.
+ */
+export function useBiomarkersForDate(date: string) {
+  return useQuery({
+    queryKey: bloodworkKeys.forDate(date),
+    queryFn: async (): Promise<Metric[]> => {
+      // Use the history endpoint and filter by date
+      const response = await apiClient.get<BiomarkerTestGroup[]>('/metrics/biomarkers/grouped');
+      const group = response.data.find(g => g.test_date.startsWith(date));
+      return group?.biomarkers || [];
+    },
+    enabled: !!date,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Hook to get history for a specific biomarker.
+ */
+export function useBiomarkerTrend(biomarkerName: string, periodDays: number = 365) {
+  return useQuery({
+    queryKey: bloodworkKeys.trend(biomarkerName),
+    queryFn: async () => {
+      const metricType = biomarkerName.startsWith('biomarker_')
+        ? biomarkerName
+        : `biomarker_${biomarkerName}`;
+
+      const [historyRes, trendRes] = await Promise.all([
+        apiClient.get<Metric[]>('/metrics/history', {
+          params: { metric_type: metricType, limit: 100 },
+        }),
+        apiClient.get('/metrics/trend', {
+          params: { metric_type: metricType, period_days: periodDays },
+        }).catch(() => ({ data: null })),
+      ]);
+
+      return {
+        history: historyRes.data,
+        trend: trendRes.data,
+      };
+    },
+    enabled: !!biomarkerName,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+interface UseUpdateBiomarkerOptions {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * Hook to update an existing biomarker.
+ */
+export function useUpdateBiomarker(options?: UseUpdateBiomarkerOptions) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ metricId, data }: { metricId: string; data: UpdateBiomarkerRequest }) => {
+      const response = await apiClient.put<Metric>(`/metrics/${metricId}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bloodworkKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+      options?.onSuccess?.();
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Failed to update biomarker';
+      options?.onError?.(message);
+    },
+  });
+}
+
+interface UseDeleteBiomarkerOptions {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * Hook to delete a biomarker.
+ */
+export function useDeleteBiomarker(options?: UseDeleteBiomarkerOptions) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (metricId: string) => {
+      await apiClient.delete(`/metrics/${metricId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bloodworkKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+      options?.onSuccess?.();
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Failed to delete biomarker';
+      options?.onError?.(message);
+    },
+  });
+}
+
+interface UseAddBiomarkerOptions {
+  onSuccess?: (data: Metric) => void;
+  onError?: (error: string) => void;
+}
+
+/**
+ * Hook to add a biomarker manually.
+ */
+export function useAddBiomarker(options?: UseAddBiomarkerOptions) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: AddBiomarkerRequest) => {
+      const response = await apiClient.post<Metric>('/metrics', data);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: bloodworkKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+      options?.onSuccess?.(data);
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Failed to add biomarker';
+      options?.onError?.(message);
+    },
+  });
 }

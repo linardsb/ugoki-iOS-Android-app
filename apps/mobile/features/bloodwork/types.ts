@@ -62,3 +62,52 @@ export interface BloodworkSummaryResponse {
   overall_status: 'normal' | 'needs_attention';
   last_test_date: string | null;
 }
+
+// Metric from backend (stored biomarker)
+export interface Metric {
+  id: string;
+  identity_id: string;
+  metric_type: string;
+  value: number;
+  timestamp: string;
+  source: 'user_input' | 'calculated' | 'device_sync';
+  note: string | null;
+  unit: string | null;
+  reference_low: number | null;
+  reference_high: number | null;
+  flag: BiomarkerFlag | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Biomarkers grouped by test date
+export interface BiomarkerTestGroup {
+  test_date: string;
+  biomarker_count: number;
+  normal_count: number;
+  abnormal_count: number;
+  biomarkers: Metric[];
+}
+
+// Request to update an existing biomarker
+export interface UpdateBiomarkerRequest {
+  value?: number;
+  unit?: string;
+  reference_low?: number;
+  reference_high?: number;
+  flag?: BiomarkerFlag;
+  note?: string;
+}
+
+// Request to add a new biomarker manually
+export interface AddBiomarkerRequest {
+  metric_type: string;
+  value: number;
+  timestamp?: string;
+  source?: 'user_input' | 'calculated' | 'device_sync';
+  note?: string;
+  unit?: string;
+  reference_low?: number;
+  reference_high?: number;
+  flag?: BiomarkerFlag;
+}

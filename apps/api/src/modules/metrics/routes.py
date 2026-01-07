@@ -9,6 +9,8 @@ from src.modules.metrics.models import (
     MetricAggregate,
     MetricSummary,
     RecordMetricRequest,
+    UpdateMetricRequest,
+    BiomarkerTestGroup,
 )
 from src.modules.metrics.service import MetricsService
 from src.modules.event_journal.service import EventJournalService
@@ -174,6 +176,20 @@ async def get_metric_summary(
     return await service.get_summary(identity_id, metric_type)
 
 
+@router.get("/biomarkers/grouped", response_model=list[BiomarkerTestGroup])
+async def get_biomarkers_grouped(
+    identity_id: str,
+    service: MetricsService = Depends(get_metrics_service),
+) -> list[BiomarkerTestGroup]:
+    """
+    Get all biomarkers grouped by test date.
+
+    Returns a list of test dates with their biomarkers, counts, and status summary.
+    Useful for displaying bloodwork history timeline.
+    """
+    return await service.get_biomarkers_grouped(identity_id)
+
+
 @router.get("/{metric_id}", response_model=Metric)
 async def get_metric(
     metric_id: str,
@@ -181,6 +197,27 @@ async def get_metric(
 ) -> Metric:
     """Get a specific metric by ID."""
     metric = await service.get_metric(metric_id)
+    if not metric:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Metric not found",
+        )
+    return metric
+
+
+@router.put("/{metric_id}", response_model=Metric)
+async def update_metric(
+    metric_id: str,
+    request: UpdateMetricRequest,
+    service: MetricsService = Depends(get_metrics_service),
+) -> Metric:
+    """
+    Update a specific metric entry.
+
+    Only provided fields will be updated (partial update).
+    Useful for correcting AI-parsed biomarker values.
+    """
+    metric = await service.update_metric(metric_id, request)
     if not metric:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
