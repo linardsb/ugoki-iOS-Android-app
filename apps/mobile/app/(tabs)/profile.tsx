@@ -1,4 +1,5 @@
 import { View, ScrollView, RefreshControl, Alert, Linking, StyleSheet } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { YStack, XStack, Text, Button } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +19,8 @@ import {
   Trash,
   ClockCounterClockwise,
   Drop,
+  Bug,
+  Copy,
 } from 'phosphor-react-native';
 import {
   useProfile,
@@ -38,6 +41,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const identity = useAuthStore((state) => state.identity);
   const mutedIconColor = theme.colorMuted.val;
   const primaryColor = theme.primary.val;
   const secondaryColor = theme.secondary.val;
@@ -113,6 +117,13 @@ export default function ProfileScreen() {
 
   const toggleSounds = (value: boolean) => {
     updatePreferences.mutate({ sound_effects: value });
+  };
+
+  const handleCopyIdentityId = async () => {
+    if (identity?.id) {
+      await Clipboard.setStringAsync(identity.id);
+      Alert.alert('Copied', 'Identity ID copied to clipboard');
+    }
   };
 
   return (
@@ -229,6 +240,23 @@ export default function ProfileScreen() {
                 destructive
               />
             </SettingsSection>
+
+            {/* Debug Section - Dev Only */}
+            {__DEV__ && (
+              <SettingsSection title="Developer">
+                <SettingsItem
+                  icon={<Bug size={20} color="#8b5cf6" weight="thin" />}
+                  label="Identity ID"
+                  value={identity?.id ? `${identity.id.slice(0, 8)}...` : 'Not set'}
+                  onPress={handleCopyIdentityId}
+                />
+                <SettingsItem
+                  icon={<Copy size={20} color="#8b5cf6" weight="thin" />}
+                  label="Identity Type"
+                  value={identity?.type || 'Unknown'}
+                />
+              </SettingsSection>
+            )}
 
             {/* App Info */}
             <YStack alignItems="center" paddingTop="$4">
