@@ -6,6 +6,56 @@ All development session logs, bug fixes, and feature implementations.
 
 ## Development Log
 
+### January 8, 2026 - Bloodwork History & Dark Mode
+
+**Bloodwork History Feature:**
+- Added bloodwork history view showing all blood tests grouped by date
+- Added trend tracking for individual biomarkers over time
+- New screens:
+  - `app/(modals)/bloodwork/index.tsx` - Main hub with Upload/History tabs
+  - `app/(modals)/bloodwork/[date].tsx` - View all biomarkers from a specific test
+  - `app/(modals)/bloodwork/trend/[biomarker].tsx` - Trend chart for individual biomarkers
+- New React Query hooks in `features/bloodwork/hooks/useBloodwork.ts`:
+  - `useBloodworkHistory()` - Fetches all tests grouped by date
+  - `useBiomarkersForDate(date)` - Fetches biomarkers for specific test
+  - `useBiomarkerTrend(name)` - Fetches historical trend data
+  - `useUpdateBiomarker()` - Edit biomarker values
+  - `useDeleteBiomarker()` - Remove biomarkers
+  - `useAddBiomarker()` - Manually add biomarkers
+- Backend endpoint: `GET /api/v1/metrics/biomarkers/grouped`
+
+**Bloodwork Upload API:**
+- Uses Claude Sonnet 4 for image/PDF analysis
+- Extracts biomarkers with standardized names, values, units, reference ranges
+- Flags abnormal values (low/high)
+- Endpoint: `POST /api/v1/uploads/bloodwork`
+
+**Dark Mode Support:**
+- Added dark mode theming to user profile modal (`app/(modals)/user/[id].tsx`)
+- Uses `useThemeStore` for system/manual theme selection
+
+**Developer Debug Section:**
+- Added "Developer" section to Profile screen (only visible in `__DEV__` mode)
+- Shows current Identity ID (tap to copy) and Identity Type
+- Helps with testing data flow between backend and mobile app
+- File: `app/(tabs)/profile.tsx`
+
+**iOS Simulator Workaround:**
+- Camera won't work in simulator (expected)
+- Photo Library uploads work if photos exist in simulator
+- For testing, use curl to upload bloodwork to specific identity:
+  ```bash
+  curl -X POST "http://localhost:8000/api/v1/uploads/bloodwork?identity_id=YOUR_ID" \
+    -F "file=@bloodwork/image.jpg"
+  ```
+
+**Cache & Refresh:**
+- Pull-to-refresh on History tab invalidates cache and fetches fresh data
+- React Query stale time: 5 minutes
+- Cache invalidation on upload/update/delete mutations
+
+---
+
 ### December 28, 2025 - Mobile App Testing & Fixes
 
 **Storage Migration (MMKV → AsyncStorage):**

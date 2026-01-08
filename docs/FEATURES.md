@@ -94,14 +94,20 @@ Papers are cached in `research_papers` table to minimize API calls.
 
 ## Bloodwork Feature
 
-Users can upload blood test results (PDF or image) during onboarding or at any time. The system parses biomarkers using Claude's vision capabilities and stores them in METRICS for AI coach analysis.
+Users can upload blood test results (PDF or image) during onboarding or at any time. The system parses biomarkers using Claude's vision capabilities and stores them in METRICS for AI coach analysis. Users can view their complete bloodwork history, track individual biomarkers over time, and see trends.
 
 ### Endpoints
 
 ```
-POST /api/v1/uploads/bloodwork     # Upload PDF/JPG/PNG blood test
-GET  /api/v1/uploads/bloodwork/supported-formats
+POST /api/v1/uploads/bloodwork                     # Upload PDF/JPG/PNG blood test
+GET  /api/v1/uploads/bloodwork/supported-formats   # Get supported file types
+GET  /api/v1/metrics/biomarkers/grouped            # All tests grouped by date
 GET  /api/v1/metrics/by-prefix?prefix=biomarker_   # Query all biomarkers
+GET  /api/v1/metrics/history?metric_type=X         # Historical values for a biomarker
+GET  /api/v1/metrics/trend?metric_type=X           # Trend analysis (up/down/stable)
+PUT  /api/v1/metrics/{id}                          # Update a biomarker
+DELETE /api/v1/metrics/{id}                        # Delete a biomarker
+POST /api/v1/metrics                               # Add biomarker manually
 ```
 
 ### How It Works
@@ -115,13 +121,29 @@ GET  /api/v1/metrics/by-prefix?prefix=biomarker_   # Query all biomarkers
 4. **Store** - Saved in METRICS table with `biomarker_` prefix
 5. **Analyze** - AI Coach tools query biomarkers for personalized insights
 
-### Key Files
+### Key Files (Backend)
 
 ```
-src/services/bloodwork_parser.py       # PDF/image parsing with Claude
+src/services/bloodwork_parser.py       # PDF/image parsing with Claude Sonnet 4
 src/routes/uploads.py                  # Upload endpoint
-src/modules/metrics/service.py         # get_by_type_prefix() for biomarkers
+src/modules/metrics/service.py         # get_by_type_prefix(), get_biomarkers_grouped()
 src/modules/ai_coach/tools/fitness_tools.py  # Biomarker tools for AI coach
+```
+
+### Key Files (Mobile)
+
+```
+features/bloodwork/
+├── types.ts                           # TypeScript types (Metric, BiomarkerTestGroup, etc.)
+├── hooks/useBloodwork.ts              # React Query hooks (8 hooks)
+├── components/
+│   └── BloodworkResults.tsx           # Categorized biomarker display
+└── index.ts                           # Re-exports
+
+app/(modals)/bloodwork/
+├── index.tsx                          # Main hub (Upload + History tabs)
+├── [date].tsx                         # View biomarkers for specific test date
+└── trend/[biomarker].tsx              # Trend chart for individual biomarker
 ```
 
 ### AI Coach Biomarker Tools
@@ -146,6 +168,31 @@ The PROFILE module tracks `bloodwork_uploaded` as an optional onboarding step. U
 - Upload during registration
 - Skip and upload later from settings
 - Upload multiple times (new tests update the record)
+
+### History & Trend Tracking
+
+**Bloodwork History View:**
+- Groups all biomarker tests by date
+- Shows count of normal vs flagged biomarkers per test
+- Pull-to-refresh to update data
+- Tap a test date to see all biomarkers from that test
+
+**Biomarker Trend View:**
+- Historical chart of values over time
+- Trend direction indicator (up/down/stable)
+- Percentage change calculation
+- Reference range overlay on chart
+
+**Data Structure:**
+```typescript
+interface BiomarkerTestGroup {
+  test_date: string;          // ISO date
+  biomarker_count: number;    // Total biomarkers in test
+  normal_count: number;       // Within reference range
+  abnormal_count: number;     // Flagged low/high
+  biomarkers: Metric[];       // Full biomarker details
+}
+```
 
 ---
 
