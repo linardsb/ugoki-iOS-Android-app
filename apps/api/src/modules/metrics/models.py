@@ -128,3 +128,22 @@ class GetAggregateRequest(BaseModel):
     operation: str = "avg"  # sum, avg, min, max, count
     start_time: datetime | None = None
     end_time: datetime | None = None
+
+
+class UpdateMetricRequest(BaseModel):
+    """Request to update an existing metric."""
+    value: float | None = None
+    unit: str | None = None
+    reference_low: float | None = None
+    reference_high: float | None = None
+    flag: BiomarkerFlag | None = None
+    note: str | None = None
+
+
+class BiomarkerTestGroup(BaseModel):
+    """Biomarkers grouped by test date."""
+    test_date: datetime
+    biomarker_count: int
+    normal_count: int
+    abnormal_count: int
+    biomarkers: list[Metric]

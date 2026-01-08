@@ -17,6 +17,7 @@ import {
   SignOut,
   Trash,
   ClockCounterClockwise,
+  Drop,
 } from 'phosphor-react-native';
 import {
   useProfile,
@@ -159,6 +160,11 @@ export default function ProfileScreen() {
                 icon={<Scales size={20} color="#3b82f6" weight="thin" />}
                 label="Log Weight"
                 onPress={() => router.push('/(modals)/log-weight')}
+              />
+              <SettingsItem
+                icon={<Drop size={20} color="#ef4444" weight="thin" />}
+                label="Bloodwork"
+                onPress={() => router.push('/(modals)/bloodwork')}
               />
               <SettingsItem
                 icon={<ClockCounterClockwise size={20} color="#6366f1" weight="thin" />}

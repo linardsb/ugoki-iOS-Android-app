@@ -14,6 +14,8 @@ from src.modules.metrics.models import (
     MetricSummary,
     TrendDirection,
     BiomarkerFlag,
+    UpdateMetricRequest,
+    BiomarkerTestGroup,
 )
 from src.modules.metrics.orm import MetricORM
 
@@ -385,3 +387,75 @@ class MetricsService(MetricsInterface):
             source=EventSource.API,
             metadata=metadata,
         )
+
+    async def update_metric(
+        self,
+        metric_id: str,
+        request: UpdateMetricRequest,
+    ) -> Metric | None:
+        """Update an existing metric entry."""
+        result = await self._db.execute(
+            select(MetricORM).where(MetricORM.id == metric_id)
+        )
+        orm = result.scalar_one_or_none()
+
+        if not orm:
+            return None
+
+        # Update only provided fields
+        if request.value is not None:
+            orm.value = request.value
+        if request.unit is not None:
+            orm.unit = request.unit
+        if request.reference_low is not None:
+            orm.reference_low = request.reference_low
+        if request.reference_high is not None:
+            orm.reference_high = request.reference_high
+        if request.flag is not None:
+            orm.flag = request.flag
+        if request.note is not None:
+            orm.note = request.note
+
+        orm.updated_at = datetime.now(UTC)
+        await self._db.flush()
+
+        return self._to_model(orm)
+
+    async def get_biomarkers_grouped(
+        self,
+        identity_id: str,
+    ) -> list[BiomarkerTestGroup]:
+        """Get all biomarkers grouped by test date."""
+        # Get all biomarkers for this identity
+        biomarkers = await self.get_by_type_prefix(
+            identity_id=identity_id,
+            prefix="biomarker_",
+            limit=5000,
+        )
+
+        if not biomarkers:
+            return []
+
+        # Group by date (ignoring time component)
+        from collections import defaultdict
+        groups: dict[str, list[Metric]] = defaultdict(list)
+
+        for biomarker in biomarkers:
+            date_key = biomarker.timestamp.date().isoformat()
+            groups[date_key].append(biomarker)
+
+        # Convert to BiomarkerTestGroup models
+        result = []
+        for date_str, markers in sorted(groups.items(), reverse=True):
+            normal_count = sum(1 for m in markers if m.flag == BiomarkerFlag.NORMAL)
+            abnormal_count = len(markers) - normal_count
+
+            result.append(BiomarkerTestGroup(
+                test_date=datetime.fromisoformat(date_str).replace(tzinfo=UTC),
+                biomarker_count=len(markers),
+                normal_count=normal_count,
+                abnormal_count=abnormal_count,
+                biomarkers=markers,
+            ))
+
+        return result

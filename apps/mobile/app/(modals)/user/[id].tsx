@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +29,7 @@ import {
   Medal,
 } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
+import { useThemeStore } from '@/shared/stores/theme';
 import {
   usePublicProfile,
   useSendFriendRequest,
@@ -51,12 +53,27 @@ export default function UserProfileModal() {
   const unfollowUser = useUnfollowUser();
   const blockUser = useBlockUser();
 
+  // Theme - compute effective theme same as root layout
+  const colorScheme = useColorScheme();
+  const { mode: themeMode } = useThemeStore();
+  const systemTheme = colorScheme || 'light';
+  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
+  const isDark = effectiveTheme === 'dark';
+
+  // Theme-aware colors
+  const cardBackground = isDark ? '#1c1c1e' : 'white';
+  const textColor = isDark ? '#ffffff' : '#1f2937';
+  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  const bioColor = isDark ? '#d1d5db' : '#4b5563';
+  const buttonBackground = isDark ? '#2c2c2e' : 'white';
+  const pendingBackground = isDark ? '#3a3a3c' : '#f3f4f6';
+
   if (!userId) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background.val }]}>
         <ScreenHeader title="Profile" />
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <Text color="#6b7280">User not found</Text>
+          <Text color={mutedColor}>User not found</Text>
         </YStack>
       </View>
     );
@@ -139,7 +156,7 @@ export default function UserProfileModal() {
       <View style={[styles.container, { backgroundColor: theme.background.val }]}>
         <ScreenHeader title="Profile" />
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <Text color="#6b7280">Loading...</Text>
+          <Text color={mutedColor}>Loading...</Text>
         </YStack>
       </View>
     );
@@ -174,7 +191,7 @@ export default function UserProfileModal() {
               {name}
             </Text>
             {profile.username && (
-              <Text fontSize={15} color="#6b7280">
+              <Text fontSize={15} color={mutedColor}>
                 @{profile.username}
               </Text>
             )}
@@ -196,7 +213,7 @@ export default function UserProfileModal() {
           {profile.bio && (
             <Text
               fontSize={15}
-              color="#4b5563"
+              color={bioColor}
               textAlign="center"
               paddingHorizontal="$6"
             >
@@ -208,7 +225,7 @@ export default function UserProfileModal() {
         {/* Stats */}
         <XStack
           marginHorizontal="$4"
-          backgroundColor="white"
+          backgroundColor={cardBackground}
           borderRadius="$4"
           padding="$4"
           justifyContent="space-around"
@@ -219,7 +236,7 @@ export default function UserProfileModal() {
               <Text fontSize={20} fontWeight="700" color="$color">
                 {profile.level}
               </Text>
-              <Text fontSize={12} color="#6b7280">
+              <Text fontSize={12} color={mutedColor}>
                 Level
               </Text>
             </YStack>
@@ -233,7 +250,7 @@ export default function UserProfileModal() {
                   <Text fontSize={20} fontWeight="700" color="$color">
                     {profile.streaks.fasting}
                   </Text>
-                  <Text fontSize={12} color="#6b7280">
+                  <Text fontSize={12} color={mutedColor}>
                     Fast Streak
                   </Text>
                 </YStack>
@@ -244,7 +261,7 @@ export default function UserProfileModal() {
                   <Text fontSize={20} fontWeight="700" color="$color">
                     {profile.streaks.workout}
                   </Text>
-                  <Text fontSize={12} color="#6b7280">
+                  <Text fontSize={12} color={mutedColor}>
                     Workout Streak
                   </Text>
                 </YStack>
@@ -258,7 +275,7 @@ export default function UserProfileModal() {
               <Text fontSize={20} fontWeight="700" color="$color">
                 {profile.achievement_count}
               </Text>
-              <Text fontSize={12} color="#6b7280">
+              <Text fontSize={12} color={mutedColor}>
                 Achievements
               </Text>
             </YStack>
@@ -276,8 +293,8 @@ export default function UserProfileModal() {
               </Text>
             </TouchableOpacity>
           ) : profile.friendship_status === 'pending' ? (
-            <View style={styles.pendingButton}>
-              <Text color="#6b7280" fontWeight="600">
+            <View style={[styles.pendingButton, { backgroundColor: pendingBackground }]}>
+              <Text color={mutedColor} fontWeight="600">
                 Friend Request Pending
               </Text>
             </View>
@@ -297,13 +314,16 @@ export default function UserProfileModal() {
           {/* Follow Button */}
           <TouchableOpacity
             onPress={handleFollow}
-            style={profile.is_following ? styles.secondaryButton : styles.outlineButton}
+            style={[
+              profile.is_following ? styles.secondaryButton : styles.outlineButton,
+              !profile.is_following && { backgroundColor: buttonBackground },
+            ]}
             disabled={followUser.isPending || unfollowUser.isPending}
           >
             {profile.is_following ? (
               <>
-                <EyeSlash size={20} color="#6b7280" weight="bold" />
-                <Text color="#6b7280" fontWeight="600" marginLeft={8}>
+                <EyeSlash size={20} color={mutedColor} weight="bold" />
+                <Text color={mutedColor} fontWeight="600" marginLeft={8}>
                   Unfollow
                 </Text>
               </>
@@ -318,7 +338,7 @@ export default function UserProfileModal() {
           </TouchableOpacity>
 
           {/* Block Button */}
-          <TouchableOpacity onPress={handleBlock} style={styles.dangerButton}>
+          <TouchableOpacity onPress={handleBlock} style={[styles.dangerButton, { backgroundColor: buttonBackground }]}>
             <ShieldSlash size={20} color="#ef4444" weight="bold" />
             <Text color="#ef4444" fontWeight="600" marginLeft={8}>
               Block User
