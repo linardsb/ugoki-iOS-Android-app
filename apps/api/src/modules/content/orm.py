@@ -9,7 +9,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.base import Base, TimestampMixin
-from src.modules.content.models import DifficultyLevel, WorkoutType, SessionStatus, MealType
+from src.modules.content.models import DifficultyLevel, WorkoutType, SessionStatus, MealType, BodyFocus
 
 
 class WorkoutCategoryORM(Base, TimestampMixin):
@@ -85,12 +85,21 @@ class ExerciseORM(Base):
     thumbnail_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     calories_per_minute: Mapped[float] = mapped_column(Float, default=5.0, nullable=False)
     order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    body_focus: Mapped[BodyFocus | None] = mapped_column(
+        SQLEnum(BodyFocus), nullable=True
+    )
+    difficulty: Mapped[DifficultyLevel | None] = mapped_column(
+        SQLEnum(DifficultyLevel), nullable=True
+    )
+    equipment_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships
     workout: Mapped[WorkoutORM] = relationship(back_populates="exercises")
 
     __table_args__ = (
         Index("ix_exercises_workout", "workout_id"),
+        Index("ix_exercises_body_focus", "body_focus"),
+        Index("ix_exercises_difficulty", "difficulty"),
     )
 
 

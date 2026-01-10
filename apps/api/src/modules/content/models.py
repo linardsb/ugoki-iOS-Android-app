@@ -28,6 +28,14 @@ class SessionStatus(str, Enum):
     ABANDONED = "abandoned"
 
 
+class BodyFocus(str, Enum):
+    """Body focus for exercises."""
+    UPPER_BODY = "upper_body"
+    LOWER_BODY = "lower_body"
+    FULL_BODY = "full_body"
+    CORE = "core"
+
+
 class WorkoutCategory(BaseModel):
     """A category for organizing workouts."""
     id: str
@@ -49,6 +57,9 @@ class Exercise(BaseModel):
     thumbnail_url: str | None = None
     calories_per_minute: float = Field(5.0, gt=0)
     order: int = Field(0, ge=0, description="Order in workout")
+    body_focus: BodyFocus | None = None
+    difficulty: DifficultyLevel | None = None
+    equipment_required: bool = False
 
 
 class Workout(BaseModel):
@@ -101,9 +112,18 @@ class WorkoutFilter(BaseModel):
     workout_type: WorkoutType | None = None
     difficulty: DifficultyLevel | None = None
     category_id: str | None = None
+    body_focus: BodyFocus | None = None
     min_duration: int | None = None
     max_duration: int | None = None
     is_featured: bool | None = None
+    search: str | None = None
+
+
+class ExerciseFilter(BaseModel):
+    """Filters for listing exercises."""
+    body_focus: BodyFocus | None = None
+    difficulty: DifficultyLevel | None = None
+    equipment_required: bool | None = None
     search: str | None = None
 
 

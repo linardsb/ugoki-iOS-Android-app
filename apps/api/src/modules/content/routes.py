@@ -6,13 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db import get_db
 from src.modules.content.models import (
     Workout,
+    Exercise,
     WorkoutCategory,
     WorkoutSession,
     WorkoutFilter,
+    ExerciseFilter,
     WorkoutRecommendation,
     WorkoutStats,
     WorkoutType,
     DifficultyLevel,
+    BodyFocus,
     StartWorkoutRequest,
     CompleteWorkoutRequest,
     Recipe,
@@ -136,6 +139,38 @@ async def get_workout(
     if not workout:
         raise HTTPException(status_code=404, detail="Workout not found")
     return workout
+
+
+# =========================================================================
+# Exercises
+# =========================================================================
+
+@router.get("/exercises", response_model=list[Exercise])
+async def list_exercises(
+    body_focus: BodyFocus | None = None,
+    difficulty: DifficultyLevel | None = None,
+    equipment_required: bool | None = None,
+    search: str | None = None,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    service: ContentService = Depends(get_content_service),
+) -> list[Exercise]:
+    """
+    List unique exercises with optional filtering.
+
+    Filters:
+    - body_focus: upper_body, lower_body, full_body, core
+    - difficulty: beginner, intermediate, advanced
+    - equipment_required: true/false
+    - search: Search in name and description
+    """
+    filters = ExerciseFilter(
+        body_focus=body_focus,
+        difficulty=difficulty,
+        equipment_required=equipment_required,
+        search=search,
+    )
+    return await service.list_exercises(filters, limit, offset)
 
 
 # =========================================================================

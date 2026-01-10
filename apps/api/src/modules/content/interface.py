@@ -9,6 +9,7 @@ from src.modules.content.models import (
     WorkoutSession,
     WorkoutFilter,
     WorkoutRecommendation,
+    ExerciseFilter,
 )
 
 
@@ -110,6 +111,20 @@ class ContentInterface(ABC):
         limit: int = 5,
     ) -> list[WorkoutRecommendation]:
         """Get personalized workout recommendations."""
+        pass
+
+    # =========================================================================
+    # Exercises
+    # =========================================================================
+
+    @abstractmethod
+    async def list_exercises(
+        self,
+        filters: ExerciseFilter | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[Exercise]:
+        """List unique exercises with optional filtering."""
         pass
 
     # =========================================================================

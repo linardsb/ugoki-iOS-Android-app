@@ -29,6 +29,8 @@ from src.modules.content.models import (
     UserSavedRecipe,
     MealType,
     DietTag,
+    ExerciseFilter,
+    BodyFocus,
 )
 from src.modules.content.orm import (
     WorkoutORM,
@@ -88,6 +90,9 @@ class ContentService(ContentInterface):
             thumbnail_url=orm.thumbnail_url,
             calories_per_minute=orm.calories_per_minute,
             order=orm.order,
+            body_focus=orm.body_focus,
+            difficulty=orm.difficulty,
+            equipment_required=orm.equipment_required,
         )
 
     def _workout_to_model(
@@ -517,6 +522,46 @@ class ContentService(ContentInterface):
                     )
 
         return recommendations[:limit]
+
+    # =========================================================================
+    # Exercises
+    # =========================================================================
+
+    async def list_exercises(
+        self,
+        filters: ExerciseFilter | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[Exercise]:
+        """List unique exercises with optional filtering."""
+        query = select(ExerciseORM)
+
+        if filters:
+            conditions = []
+            if filters.body_focus:
+                conditions.append(ExerciseORM.body_focus == filters.body_focus)
+            if filters.difficulty:
+                conditions.append(ExerciseORM.difficulty == filters.difficulty)
+            if filters.equipment_required is not None:
+                conditions.append(ExerciseORM.equipment_required == filters.equipment_required)
+            if filters.search:
+                search_term = f"%{filters.search}%"
+                conditions.append(
+                    or_(
+                        ExerciseORM.name.ilike(search_term),
+                        ExerciseORM.description.ilike(search_term),
+                    )
+                )
+            if conditions:
+                query = query.where(and_(*conditions))
+
+        # Get distinct exercises by name
+        query = query.distinct(ExerciseORM.name)
+        query = query.order_by(ExerciseORM.name, ExerciseORM.id)
+        query = query.limit(limit).offset(offset)
+
+        result = await self._db.execute(query)
+        return [self._exercise_to_model(orm) for orm in result.scalars().all()]
 
     # =========================================================================
     # Stats
