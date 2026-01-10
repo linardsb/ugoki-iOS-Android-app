@@ -40,7 +40,7 @@ class ResearchPaperORM(Base, TimestampMixin):
     audience_tags: Mapped[str | None] = mapped_column(JSON, nullable=True)  # JSON array of strings
     who_benefits: Mapped[str | None] = mapped_column(Text, nullable=True)  # Deprecated, use audience_tags
     tldr: Mapped[str | None] = mapped_column(Text, nullable=True)
-    ai_processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    ai_processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     saved_by: Mapped[list["UserSavedResearchORM"]] = relationship(
@@ -66,7 +66,7 @@ class UserSavedResearchORM(Base):
         String(36), ForeignKey("research_papers.id"), nullable=False
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    saved_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    saved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     # Relationships
     paper: Mapped[ResearchPaperORM] = relationship(back_populates="saved_by")
@@ -84,5 +84,5 @@ class UserSearchQuotaORM(Base):
 
     identity_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     searches_today: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    last_search_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    quota_resets_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    last_search_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    quota_resets_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
