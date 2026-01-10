@@ -44,3 +44,22 @@ class CapabilityORM(Base):
 
     # Relationships
     identity: Mapped[IdentityORM] = relationship(back_populates="capabilities")
+
+
+class RevokedTokenORM(Base, TimestampMixin):
+    """
+    Database model for revoked JWT tokens.
+
+    Tokens are added here on logout to invalidate them before expiry.
+    Old entries can be cleaned up after their expires_at passes.
+    """
+
+    __tablename__ = "revoked_tokens"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    jti: Mapped[str] = mapped_column(String(36), unique=True, index=True, nullable=False)
+    identity_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("identities.id", ondelete="CASCADE"), index=True
+    )
+    token_type: Mapped[str] = mapped_column(String(20), nullable=False)  # "access" or "refresh"
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
 from src.modules.profile.models import (
     UserProfile, UserPreferences, UserGoals, HealthProfile,
     DietaryProfile, WorkoutRestrictions, SocialProfile,
@@ -27,8 +28,8 @@ def get_profile_service(db: AsyncSession = Depends(get_db)) -> ProfileService:
 
 @router.post("", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
 async def create_profile(
-    identity_id: str,
     request: CreateProfileRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserProfile:
     """Create a new user profile."""
@@ -40,7 +41,7 @@ async def create_profile(
 
 @router.get("", response_model=UserProfile)
 async def get_profile(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserProfile:
     """Get user profile."""
@@ -52,8 +53,8 @@ async def get_profile(
 
 @router.patch("", response_model=UserProfile)
 async def update_profile(
-    identity_id: str,
     request: UpdateProfileRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserProfile:
     """Update user profile."""
@@ -62,7 +63,7 @@ async def update_profile(
 
 @router.get("/complete", response_model=CompleteProfile)
 async def get_complete_profile(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> CompleteProfile:
     """Get complete profile with all sections."""
@@ -78,7 +79,7 @@ async def get_complete_profile(
 
 @router.get("/goals", response_model=UserGoals)
 async def get_goals(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserGoals:
     """Get user goals."""
@@ -87,8 +88,8 @@ async def get_goals(
 
 @router.patch("/goals", response_model=UserGoals)
 async def update_goals(
-    identity_id: str,
     request: UpdateGoalsRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserGoals:
     """Update user goals."""
@@ -101,7 +102,7 @@ async def update_goals(
 
 @router.get("/health", response_model=HealthProfile)
 async def get_health_profile(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> HealthProfile:
     """Get health profile."""
@@ -110,8 +111,8 @@ async def get_health_profile(
 
 @router.patch("/health", response_model=HealthProfile)
 async def update_health_profile(
-    identity_id: str,
     request: UpdateHealthRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> HealthProfile:
     """Update health profile."""
@@ -120,7 +121,7 @@ async def update_health_profile(
 
 @router.get("/health/fasting-safety")
 async def check_fasting_safety(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> dict:
     """Check if fasting is safe based on health conditions."""
@@ -134,7 +135,7 @@ async def check_fasting_safety(
 
 @router.get("/dietary", response_model=DietaryProfile)
 async def get_dietary_profile(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> DietaryProfile:
     """Get dietary preferences."""
@@ -143,8 +144,8 @@ async def get_dietary_profile(
 
 @router.patch("/dietary", response_model=DietaryProfile)
 async def update_dietary_profile(
-    identity_id: str,
     request: UpdateDietaryRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> DietaryProfile:
     """Update dietary preferences."""
@@ -157,7 +158,7 @@ async def update_dietary_profile(
 
 @router.get("/workout-restrictions", response_model=WorkoutRestrictions)
 async def get_workout_restrictions(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> WorkoutRestrictions:
     """Get workout restrictions."""
@@ -166,8 +167,8 @@ async def get_workout_restrictions(
 
 @router.patch("/workout-restrictions", response_model=WorkoutRestrictions)
 async def update_workout_restrictions(
-    identity_id: str,
     request: UpdateWorkoutRestrictionsRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> WorkoutRestrictions:
     """Update workout restrictions."""
@@ -176,7 +177,7 @@ async def update_workout_restrictions(
 
 @router.get("/workout-restrictions/safe-exercises")
 async def get_safe_exercises(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> dict:
     """Get exercise recommendations based on restrictions."""
@@ -189,7 +190,7 @@ async def get_safe_exercises(
 
 @router.get("/social", response_model=SocialProfile)
 async def get_social_profile(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> SocialProfile:
     """Get social profile."""
@@ -198,8 +199,8 @@ async def get_social_profile(
 
 @router.patch("/social", response_model=SocialProfile)
 async def update_social_profile(
-    identity_id: str,
     request: UpdateSocialRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> SocialProfile:
     """Update social profile."""
@@ -237,7 +238,7 @@ async def find_by_friend_code(
 
 @router.get("/preferences", response_model=UserPreferences)
 async def get_preferences(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserPreferences:
     """Get user preferences."""
@@ -246,8 +247,8 @@ async def get_preferences(
 
 @router.patch("/preferences", response_model=UserPreferences)
 async def update_preferences(
-    identity_id: str,
     request: UpdatePreferencesRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> UserPreferences:
     """Update user preferences."""
@@ -260,7 +261,7 @@ async def update_preferences(
 
 @router.get("/onboarding", response_model=OnboardingStatus)
 async def get_onboarding_status(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> OnboardingStatus:
     """Get onboarding progress."""
@@ -269,8 +270,8 @@ async def get_onboarding_status(
 
 @router.post("/onboarding/{step}/complete", response_model=OnboardingStatus)
 async def complete_onboarding_step(
-    identity_id: str,
     step: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> OnboardingStatus:
     """Mark an onboarding step as complete."""
@@ -279,8 +280,8 @@ async def complete_onboarding_step(
 
 @router.post("/onboarding/{step}/skip", response_model=OnboardingStatus)
 async def skip_onboarding_step(
-    identity_id: str,
     step: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> OnboardingStatus:
     """Skip an onboarding step."""
@@ -293,7 +294,7 @@ async def skip_onboarding_step(
 
 @router.get("/export", response_model=GDPRExport)
 async def export_data(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> GDPRExport:
     """Export all user data (GDPR)."""
@@ -302,8 +303,8 @@ async def export_data(
 
 @router.delete("/all-data")
 async def delete_all_data(
-    identity_id: str,
     confirm: bool = False,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> dict:
     """Delete all user data (GDPR right to erasure)."""
@@ -315,7 +316,7 @@ async def delete_all_data(
 
 @router.post("/anonymize")
 async def anonymize_data(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: ProfileService = Depends(get_profile_service),
 ) -> dict:
     """Anonymize user data while keeping aggregate statistics."""

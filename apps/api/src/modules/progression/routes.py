@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
 from src.modules.progression.models import (
     Streak,
     StreakType,
@@ -39,8 +40,8 @@ def get_progression_service(
 
 @router.post("/activity", response_model=StreakResponse, status_code=status.HTTP_201_CREATED)
 async def record_activity(
-    identity_id: str,  # TODO: Extract from JWT
     request: RecordActivityRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> StreakResponse:
     """
@@ -61,7 +62,7 @@ async def record_activity(
 
 @router.get("/streaks", response_model=list[Streak])
 async def get_all_streaks(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> list[Streak]:
     """Get all streaks for the user."""
@@ -70,8 +71,8 @@ async def get_all_streaks(
 
 @router.get("/streaks/{streak_type}", response_model=Streak)
 async def get_streak(
-    identity_id: str,  # TODO: Extract from JWT
     streak_type: StreakType,
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> Streak:
     """Get a specific streak by type."""
@@ -84,7 +85,7 @@ async def get_streak(
 
 @router.get("/level", response_model=UserLevel)
 async def get_level(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> UserLevel:
     """
@@ -100,8 +101,8 @@ async def get_level(
 
 @router.post("/xp", response_model=UserLevel, status_code=status.HTTP_201_CREATED)
 async def award_xp(
-    identity_id: str,  # TODO: Extract from JWT
     request: AwardXPRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> UserLevel:
     """
@@ -120,9 +121,9 @@ async def award_xp(
 
 @router.get("/xp/history", response_model=list[XPTransaction])
 async def get_xp_history(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> list[XPTransaction]:
     """Get XP transaction history."""
@@ -144,8 +145,8 @@ async def get_achievements(
 
 @router.get("/achievements/mine", response_model=list[UserAchievement])
 async def get_user_achievements(
-    identity_id: str,  # TODO: Extract from JWT
     unlocked_only: bool = Query(False),
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> list[UserAchievement]:
     """Get user's achievements with progress."""
@@ -154,7 +155,7 @@ async def get_user_achievements(
 
 @router.post("/achievements/check", response_model=list[Achievement])
 async def check_achievements(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> list[Achievement]:
     """
@@ -171,7 +172,7 @@ async def check_achievements(
 
 @router.get("/overview", response_model=UserProgression)
 async def get_progression(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ProgressionService = Depends(get_progression_service),
 ) -> UserProgression:
     """

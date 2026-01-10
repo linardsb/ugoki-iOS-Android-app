@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
 from src.modules.notification.models import (
     Notification,
     NotificationPreferences,
@@ -28,8 +29,8 @@ def get_notification_service(db: AsyncSession = Depends(get_db)) -> Notification
 
 @router.post("/send", response_model=Notification, status_code=status.HTTP_201_CREATED)
 async def send_notification(
-    identity_id: str,  # TODO: Extract from JWT
     request: SendNotificationRequest,
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> Notification:
     """
@@ -43,10 +44,10 @@ async def send_notification(
 
 @router.get("", response_model=list[Notification])
 async def get_notifications(
-    identity_id: str,  # TODO: Extract from JWT
     unread_only: bool = Query(False),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> list[Notification]:
     """Get notification history."""
@@ -55,7 +56,7 @@ async def get_notifications(
 
 @router.get("/unread-count", response_model=int)
 async def get_unread_count(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> int:
     """Get count of unread notifications."""
@@ -76,7 +77,7 @@ async def mark_as_read(
 
 @router.post("/read-all", response_model=dict)
 async def mark_all_as_read(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> dict:
     """Mark all notifications as read."""
@@ -90,8 +91,8 @@ async def mark_all_as_read(
 
 @router.post("/devices", response_model=DeviceToken, status_code=status.HTTP_201_CREATED)
 async def register_device(
-    identity_id: str,  # TODO: Extract from JWT
     request: RegisterDeviceRequest,
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> DeviceToken:
     """
@@ -104,8 +105,8 @@ async def register_device(
 
 @router.delete("/devices/{token}")
 async def unregister_device(
-    identity_id: str,  # TODO: Extract from JWT
     token: str,
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> dict:
     """Unregister a device token."""
@@ -117,7 +118,7 @@ async def unregister_device(
 
 @router.get("/devices", response_model=list[DeviceToken])
 async def get_devices(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> list[DeviceToken]:
     """Get all registered devices for the user."""
@@ -130,7 +131,7 @@ async def get_devices(
 
 @router.get("/preferences", response_model=NotificationPreferences)
 async def get_preferences(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> NotificationPreferences:
     """Get notification preferences."""
@@ -139,8 +140,8 @@ async def get_preferences(
 
 @router.patch("/preferences", response_model=NotificationPreferences)
 async def update_preferences(
-    identity_id: str,  # TODO: Extract from JWT
     request: UpdatePreferencesRequest,
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> NotificationPreferences:
     """
@@ -158,7 +159,7 @@ async def update_preferences(
 
 @router.get("/stats", response_model=NotificationStats)
 async def get_stats(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: NotificationService = Depends(get_notification_service),
 ) -> NotificationStats:
     """Get notification statistics."""

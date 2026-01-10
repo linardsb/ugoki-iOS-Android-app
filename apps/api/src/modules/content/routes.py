@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity, get_optional_identity
 from src.modules.content.models import (
     Workout,
     Exercise,
@@ -179,8 +180,8 @@ async def list_exercises(
 
 @router.post("/sessions", response_model=WorkoutSession, status_code=status.HTTP_201_CREATED)
 async def start_workout(
-    identity_id: str,  # TODO: Extract from JWT
     request: StartWorkoutRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> WorkoutSession:
     """
@@ -196,7 +197,7 @@ async def start_workout(
 
 @router.get("/sessions/active", response_model=WorkoutSession | None)
 async def get_active_session(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> WorkoutSession | None:
     """Get the user's currently active workout session."""
@@ -255,9 +256,9 @@ async def abandon_workout(
 
 @router.get("/sessions/history", response_model=list[WorkoutSession])
 async def get_workout_history(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> list[WorkoutSession]:
     """Get user's workout history."""
@@ -270,8 +271,8 @@ async def get_workout_history(
 
 @router.get("/recommendations", response_model=list[WorkoutRecommendation])
 async def get_recommendations(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(5, ge=1, le=10),
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> list[WorkoutRecommendation]:
     """
@@ -288,7 +289,7 @@ async def get_recommendations(
 
 @router.get("/stats", response_model=WorkoutStats)
 async def get_workout_stats(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> dict:
     """
@@ -309,7 +310,6 @@ async def get_workout_stats(
 
 @router.get("/recipes", response_model=list[RecipeSummary])
 async def list_recipes(
-    identity_id: str | None = None,  # Optional for showing saved status
     meal_type: MealType | None = None,
     diet_tags: list[DietTag] | None = Query(None),
     max_prep_time: int | None = Query(None, ge=1),
@@ -319,10 +319,13 @@ async def list_recipes(
     search: str | None = None,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str | None = Depends(get_optional_identity),
     service: ContentService = Depends(get_content_service),
 ) -> list[RecipeSummary]:
     """
     List recipes with optional filtering.
+
+    If authenticated, includes saved status for each recipe.
 
     Filters:
     - meal_type: breakfast, lunch, dinner, snack
@@ -359,8 +362,8 @@ async def get_recipe(
 
 @router.post("/recipes/saved", response_model=UserSavedRecipe, status_code=status.HTTP_201_CREATED)
 async def save_recipe(
-    identity_id: str,  # TODO: Extract from JWT
     request: SaveRecipeRequest,
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> UserSavedRecipe:
     """Save a recipe to user's saved recipes."""
@@ -373,7 +376,7 @@ async def save_recipe(
 @router.delete("/recipes/saved/{recipe_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def unsave_recipe(
     recipe_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> None:
     """Remove a recipe from user's saved recipes."""
@@ -385,9 +388,9 @@ async def unsave_recipe(
 
 @router.get("/recipes/saved/list", response_model=list[RecipeSummary])
 async def get_saved_recipes(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: ContentService = Depends(get_content_service),
 ) -> list[RecipeSummary]:
     """Get user's saved recipes."""

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity, verify_resource_ownership
 from src.modules.metrics.models import (
     Metric,
     MetricTrend,
@@ -31,8 +32,8 @@ def get_metrics_service(
 
 @router.post("", response_model=Metric, status_code=status.HTTP_201_CREATED)
 async def record_metric(
-    identity_id: str,  # TODO: Extract from JWT
     request: RecordMetricRequest,
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> Metric:
     """
@@ -64,8 +65,8 @@ async def record_metric(
 
 @router.get("/latest", response_model=Metric | None)
 async def get_latest_metric(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str = Query(..., description="Type of metric (e.g., 'weight_kg', 'biomarker_haemoglobin')"),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> Metric | None:
     """Get the most recent value for a metric type."""
@@ -74,12 +75,12 @@ async def get_latest_metric(
 
 @router.get("/history", response_model=list[Metric])
 async def get_metric_history(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str = Query(..., description="Type of metric"),
     start_time: datetime | None = Query(None),
     end_time: datetime | None = Query(None),
     limit: int = Query(100, le=1000),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> list[Metric]:
     """Get metric history with optional time filters."""
@@ -95,11 +96,11 @@ async def get_metric_history(
 
 @router.get("/by-prefix", response_model=list[Metric])
 async def get_metrics_by_prefix(
-    identity_id: str,
     prefix: str = Query(..., description="Type prefix to match (e.g., 'biomarker_')"),
     start_time: datetime | None = Query(None),
     end_time: datetime | None = Query(None),
     limit: int = Query(1000, le=5000),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> list[Metric]:
     """
@@ -118,9 +119,9 @@ async def get_metrics_by_prefix(
 
 @router.get("/trend", response_model=MetricTrend | None)
 async def get_metric_trend(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str = Query(..., description="Type of metric"),
     period_days: int = Query(7, ge=1, le=365),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> MetricTrend | None:
     """
@@ -138,11 +139,11 @@ async def get_metric_trend(
 
 @router.get("/aggregate", response_model=MetricAggregate | None)
 async def get_metric_aggregate(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str = Query(..., description="Type of metric"),
     operation: str = Query("avg", pattern="^(sum|avg|min|max|count)$"),
     start_time: datetime | None = Query(None),
     end_time: datetime | None = Query(None),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> MetricAggregate | None:
     """
@@ -164,8 +165,8 @@ async def get_metric_aggregate(
 
 @router.get("/summary", response_model=MetricSummary)
 async def get_metric_summary(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str = Query(..., description="Type of metric"),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> MetricSummary:
     """
@@ -178,7 +179,7 @@ async def get_metric_summary(
 
 @router.get("/biomarkers/grouped", response_model=list[BiomarkerTestGroup])
 async def get_biomarkers_grouped(
-    identity_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> list[BiomarkerTestGroup]:
     """
@@ -193,6 +194,7 @@ async def get_biomarkers_grouped(
 @router.get("/{metric_id}", response_model=Metric)
 async def get_metric(
     metric_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> Metric:
     """Get a specific metric by ID."""
@@ -202,6 +204,8 @@ async def get_metric(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Metric not found",
         )
+    # Verify the metric belongs to the requesting user
+    verify_resource_ownership(metric.identity_id, identity_id, "Metric")
     return metric
 
 
@@ -209,6 +213,7 @@ async def get_metric(
 async def update_metric(
     metric_id: str,
     request: UpdateMetricRequest,
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> Metric:
     """
@@ -217,34 +222,43 @@ async def update_metric(
     Only provided fields will be updated (partial update).
     Useful for correcting AI-parsed biomarker values.
     """
-    metric = await service.update_metric(metric_id, request)
-    if not metric:
+    # First check ownership before allowing update
+    existing = await service.get_metric(metric_id)
+    if not existing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Metric not found",
         )
+    verify_resource_ownership(existing.identity_id, identity_id, "Metric")
+
+    metric = await service.update_metric(metric_id, request)
     return metric
 
 
 @router.delete("/{metric_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_metric(
     metric_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> None:
     """Delete a specific metric entry."""
-    deleted = await service.delete_metric(metric_id)
-    if not deleted:
+    # First check ownership before allowing delete
+    existing = await service.get_metric(metric_id)
+    if not existing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Metric not found",
         )
+    verify_resource_ownership(existing.identity_id, identity_id, "Metric")
+
+    await service.delete_metric(metric_id)
 
 
 @router.delete("", status_code=status.HTTP_200_OK)
 async def delete_metrics(
-    identity_id: str,  # TODO: Extract from JWT
     metric_type: str | None = Query(None, description="Type of metric to delete"),
     before: datetime | None = Query(None),
+    identity_id: str = Depends(get_current_identity),
     service: MetricsService = Depends(get_metrics_service),
 ) -> dict[str, int]:
     """

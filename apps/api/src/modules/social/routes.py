@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
 from src.modules.social.models import (
     FriendshipStatus,
     ChallengeType,
@@ -68,8 +69,8 @@ def get_social_service(
 
 @router.post("/friends/request", response_model=Friendship, status_code=status.HTTP_201_CREATED)
 async def send_friend_request(
-    identity_id: str,  # TODO: Extract from JWT
     request: SendFriendRequestRequest,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Friendship:
     """
@@ -93,7 +94,7 @@ async def send_friend_request(
 
 @router.get("/friends/requests/incoming", response_model=list[FriendRequest])
 async def get_incoming_friend_requests(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[FriendRequest]:
     """Get pending friend requests received by the user."""
@@ -102,7 +103,7 @@ async def get_incoming_friend_requests(
 
 @router.get("/friends/requests/outgoing", response_model=list[FriendRequest])
 async def get_outgoing_friend_requests(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[FriendRequest]:
     """Get pending friend requests sent by the user."""
@@ -112,8 +113,8 @@ async def get_outgoing_friend_requests(
 @router.post("/friends/requests/{request_id}/respond", response_model=Friendship | None)
 async def respond_to_friend_request(
     request_id: str,
-    identity_id: str,  # TODO: Extract from JWT
     request: RespondFriendRequestRequest,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Friendship | None:
     """
@@ -129,8 +130,8 @@ async def respond_to_friend_request(
 
 @router.get("/friends", response_model=list[Friendship])
 async def get_friends(
-    identity_id: str,  # TODO: Extract from JWT
     status: FriendshipStatus | None = None,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[Friendship]:
     """
@@ -145,7 +146,7 @@ async def get_friends(
 @router.delete("/friends/{friend_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_friend(
     friend_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """Remove a friend."""
@@ -158,7 +159,7 @@ async def remove_friend(
 @router.post("/friends/{user_id}/block", status_code=status.HTTP_204_NO_CONTENT)
 async def block_user(
     user_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """
@@ -175,7 +176,7 @@ async def block_user(
 @router.delete("/friends/{user_id}/block", status_code=status.HTTP_204_NO_CONTENT)
 async def unblock_user(
     user_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """Unblock a user."""
@@ -192,7 +193,7 @@ async def unblock_user(
 @router.post("/follow/{user_id}", response_model=Follow, status_code=status.HTTP_201_CREATED)
 async def follow_user(
     user_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Follow:
     """
@@ -211,7 +212,7 @@ async def follow_user(
 @router.delete("/follow/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def unfollow_user(
     user_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """Unfollow a user."""
@@ -223,9 +224,9 @@ async def unfollow_user(
 
 @router.get("/followers", response_model=list[Follow])
 async def get_followers(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[Follow]:
     """Get users who follow this user."""
@@ -234,9 +235,9 @@ async def get_followers(
 
 @router.get("/following", response_model=list[Follow])
 async def get_following(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[Follow]:
     """Get users this user follows."""
@@ -250,7 +251,7 @@ async def get_following(
 @router.get("/users/{user_id}", response_model=PublicUserProfile)
 async def get_public_profile(
     user_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> PublicUserProfile:
     """
@@ -266,8 +267,8 @@ async def get_public_profile(
 @router.get("/users/search", response_model=list[PublicUserProfile])
 async def search_users(
     query: str,
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(20, ge=1, le=50),
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[PublicUserProfile]:
     """
@@ -286,9 +287,9 @@ async def search_users(
 @router.get("/leaderboards/{leaderboard_type}", response_model=Leaderboard)
 async def get_leaderboard(
     leaderboard_type: LeaderboardType,
-    identity_id: str,  # TODO: Extract from JWT
     period: LeaderboardPeriod = LeaderboardPeriod.WEEK,
     limit: int = Query(100, ge=1, le=200),
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Leaderboard:
     """
@@ -314,8 +315,8 @@ async def get_leaderboard(
 
 @router.post("/challenges", response_model=Challenge, status_code=status.HTTP_201_CREATED)
 async def create_challenge(
-    identity_id: str,  # TODO: Extract from JWT
     request: CreateChallengeRequest,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Challenge:
     """
@@ -349,9 +350,9 @@ async def create_challenge(
 
 @router.get("/challenges", response_model=list[Challenge])
 async def list_challenges(
-    identity_id: str,  # TODO: Extract from JWT
     include_public: bool = True,
     active_only: bool = True,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[Challenge]:
     """
@@ -368,8 +369,8 @@ async def list_challenges(
 
 @router.get("/challenges/mine", response_model=list[Challenge])
 async def get_my_challenges(
-    identity_id: str,  # TODO: Extract from JWT
     active_only: bool = True,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[Challenge]:
     """Get challenges the user is participating in."""
@@ -379,7 +380,7 @@ async def get_my_challenges(
 @router.get("/challenges/{challenge_id}", response_model=Challenge)
 async def get_challenge(
     challenge_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> Challenge:
     """Get a specific challenge."""
@@ -392,7 +393,7 @@ async def get_challenge(
 @router.post("/challenges/{challenge_id}/join", response_model=ChallengeParticipant, status_code=status.HTTP_201_CREATED)
 async def join_challenge(
     challenge_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> ChallengeParticipant:
     """Join a challenge by ID."""
@@ -405,7 +406,7 @@ async def join_challenge(
 @router.post("/challenges/join/{code}", response_model=ChallengeParticipant, status_code=status.HTTP_201_CREATED)
 async def join_challenge_by_code(
     code: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> ChallengeParticipant:
     """Join a challenge using its join code."""
@@ -418,7 +419,7 @@ async def join_challenge_by_code(
 @router.delete("/challenges/{challenge_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
 async def leave_challenge(
     challenge_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """Leave a challenge. Challenge creators cannot leave their own challenge."""
@@ -431,7 +432,7 @@ async def leave_challenge(
 @router.get("/challenges/{challenge_id}/leaderboard", response_model=list[ChallengeParticipant])
 async def get_challenge_leaderboard(
     challenge_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> list[ChallengeParticipant]:
     """Get the leaderboard for a challenge."""
@@ -440,7 +441,7 @@ async def get_challenge_leaderboard(
 
 @router.post("/challenges/update-progress", status_code=status.HTTP_204_NO_CONTENT)
 async def update_challenge_progress(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> None:
     """
@@ -458,8 +459,8 @@ async def update_challenge_progress(
 
 @router.post("/share/generate", response_model=ShareContent)
 async def generate_share_content(
-    identity_id: str,  # TODO: Extract from JWT
     request: GenerateShareContentRequest,
+    identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
 ) -> ShareContent:
     """

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity, verify_resource_ownership
 from src.modules.time_keeper.models import (
     TimeWindow,
     WindowType,
@@ -47,8 +48,8 @@ def get_time_keeper_service(
 
 @router.post("/windows", response_model=TimeWindow, status_code=status.HTTP_201_CREATED)
 async def open_window(
-    identity_id: str,  # TODO: Extract from JWT
     request: OpenWindowRequest,
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
 ) -> TimeWindow:
     """Open a new time window (fast, eating, workout, etc.)."""
@@ -67,6 +68,7 @@ async def open_window(
 async def close_window(
     window_id: str,
     request: CloseWindowRequest,
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
     progression: ProgressionService = Depends(get_progression_service),
     social: SocialService = Depends(get_social_service),
@@ -77,6 +79,9 @@ async def close_window(
         window_info = await service.get_window(window_id)
         if not window_info:
             raise ValueError("Window not found")
+
+        # Verify ownership before allowing close
+        verify_resource_ownership(window_info.identity_id, identity_id, "Window")
 
         # Close the window
         window = await service.close_window(
@@ -111,10 +116,17 @@ async def close_window(
 async def extend_window(
     window_id: str,
     request: ExtendWindowRequest,
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
 ) -> TimeWindow:
     """Extend a window's scheduled end time."""
     try:
+        # Verify ownership before allowing extend
+        window = await service.get_window(window_id)
+        if not window:
+            raise ValueError("Window not found")
+        verify_resource_ownership(window.identity_id, identity_id, "Window")
+
         return await service.extend_window(window_id, request.new_end)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -122,8 +134,8 @@ async def extend_window(
 
 @router.get("/windows/active", response_model=TimeWindow | None)
 async def get_active_window(
-    identity_id: str,  # TODO: Extract from JWT
     window_type: WindowType | None = Query(None),
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
 ) -> TimeWindow | None:
     """Get the currently active window."""
@@ -133,23 +145,26 @@ async def get_active_window(
 @router.get("/windows/{window_id}", response_model=TimeWindow)
 async def get_window(
     window_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
 ) -> TimeWindow:
     """Get a specific window by ID."""
     window = await service.get_window(window_id)
     if not window:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Window not found")
+    # Verify ownership
+    verify_resource_ownership(window.identity_id, identity_id, "Window")
     return window
 
 
 @router.get("/windows", response_model=list[TimeWindow])
 async def get_windows(
-    identity_id: str,  # TODO: Extract from JWT
     window_type: WindowType | None = Query(None),
     start_time: datetime | None = Query(None),
     end_time: datetime | None = Query(None),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
 ) -> list[TimeWindow]:
     """Get windows with optional filters."""

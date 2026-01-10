@@ -13,7 +13,7 @@ from src.modules.identity.models import (
     AuthResult,
     AuthProvider,
 )
-from src.modules.identity.orm import IdentityORM, CapabilityORM
+from src.modules.identity.orm import IdentityORM, CapabilityORM, RevokedTokenORM
 
 
 class IdentityService(IdentityInterface):
@@ -74,16 +74,53 @@ class IdentityService(IdentityInterface):
             expires_at=expires_at,
         )
 
-    async def logout(self, identity_id: str) -> None:
-        # In a production system, you'd invalidate refresh tokens here
-        # For now, we just update last_active
+    async def logout(
+        self,
+        identity_id: str,
+        jti: str | None = None,
+        token_type: str = "access",
+        expires_at: datetime | None = None,
+    ) -> None:
+        """
+        Logout user by revoking their token.
+
+        Args:
+            identity_id: The user's identity ID
+            jti: The JWT ID to revoke (if provided)
+            token_type: "access" or "refresh"
+            expires_at: When the token expires (for cleanup)
+        """
+        # Add token to revocation list if JTI provided
+        if jti:
+            # Default expiry if not provided (7 days from now)
+            if expires_at is None:
+                expires_at = datetime.now(UTC) + timedelta(days=7)
+
+            revoked = RevokedTokenORM(
+                id=str(uuid4()),
+                jti=jti,
+                identity_id=identity_id,
+                token_type=token_type,
+                expires_at=expires_at,
+            )
+            self._db.add(revoked)
+
+        # Update last active
         result = await self._db.execute(
             select(IdentityORM).where(IdentityORM.id == identity_id)
         )
         orm = result.scalar_one_or_none()
         if orm:
             orm.last_active_at = datetime.now(UTC)
-            await self._db.flush()
+
+        await self._db.flush()
+
+    async def is_token_revoked(self, jti: str) -> bool:
+        """Check if a token has been revoked."""
+        result = await self._db.execute(
+            select(RevokedTokenORM).where(RevokedTokenORM.jti == jti)
+        )
+        return result.scalar_one_or_none() is not None
 
     async def has_capability(self, identity_id: str, capability: str) -> bool:
         result = await self._db.execute(
@@ -210,20 +247,26 @@ class IdentityService(IdentityInterface):
         )
 
     def _generate_access_token(self, identity_id: str) -> tuple[str, datetime]:
-        expires_at = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(minutes=settings.jwt_expire_minutes)
         payload = {
             "sub": identity_id,
             "exp": expires_at,
             "type": "access",
+            "jti": str(uuid4()),  # JWT ID for revocation
+            "iat": now,  # Issued at
         }
         token = jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         return token, expires_at
 
     def _generate_refresh_token(self, identity_id: str) -> str:
-        expires_at = datetime.now(UTC) + timedelta(days=30)
+        now = datetime.now(UTC)
+        expires_at = now + timedelta(days=30)
         payload = {
             "sub": identity_id,
             "exp": expires_at,
             "type": "refresh",
+            "jti": str(uuid4()),  # JWT ID for revocation
+            "iat": now,  # Issued at
         }
         return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)

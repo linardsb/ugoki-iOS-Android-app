@@ -6,10 +6,12 @@ Recording events is typically done internally by other modules.
 """
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity, verify_resource_ownership
+from src.core.rate_limit import limiter, RateLimits
 from src.modules.event_journal.models import (
     ActivityEvent,
     ActivityEventSummary,
@@ -35,10 +37,10 @@ def get_event_journal_service(db: AsyncSession = Depends(get_db)) -> EventJourna
 
 @router.get("/feed", response_model=list[EventFeedItem])
 async def get_activity_feed(
-    identity_id: str,  # TODO: Extract from JWT
     category: EventCategory | None = Query(None, description="Filter by category"),
     limit: int = Query(20, le=100, description="Maximum number of events"),
     before: datetime | None = Query(None, description="Get events before this timestamp (for pagination)"),
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> list[EventFeedItem]:
     """
@@ -65,13 +67,13 @@ async def get_activity_feed(
 
 @router.get("", response_model=list[ActivityEvent])
 async def get_events(
-    identity_id: str,  # TODO: Extract from JWT
     category: EventCategory | None = Query(None, description="Filter by category"),
     event_type: EventType | None = Query(None, description="Filter by event type"),
     start_time: datetime | None = Query(None, description="Filter from this time"),
     end_time: datetime | None = Query(None, description="Filter until this time"),
     limit: int = Query(50, le=500, description="Maximum results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> list[ActivityEvent]:
     """
@@ -96,6 +98,7 @@ async def get_events(
 async def get_events_by_related(
     related_id: str = Query(..., description="Related resource ID"),
     related_type: str | None = Query(None, description="Related resource type"),
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> list[ActivityEvent]:
     """
@@ -103,18 +106,20 @@ async def get_events_by_related(
 
     Useful for getting event history for a fasting window,
     workout session, or other trackable resource.
+    Only returns events belonging to the authenticated user.
     """
     return await service.get_events_by_related(
         related_id=related_id,
         related_type=related_type,
+        identity_id=identity_id,
     )
 
 
 @router.get("/summary", response_model=ActivityEventSummary)
 async def get_event_summary(
-    identity_id: str,  # TODO: Extract from JWT
     start_time: datetime = Query(..., description="Period start"),
     end_time: datetime = Query(..., description="Period end"),
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> ActivityEventSummary:
     """
@@ -132,10 +137,10 @@ async def get_event_summary(
 
 @router.get("/count", response_model=dict)
 async def get_event_count(
-    identity_id: str,  # TODO: Extract from JWT
     event_type: EventType = Query(..., description="Event type to count"),
     start_time: datetime | None = Query(None, description="Period start"),
     end_time: datetime | None = Query(None, description="Period end"),
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> dict:
     """
@@ -155,6 +160,7 @@ async def get_event_count(
 @router.get("/{event_id}", response_model=ActivityEvent)
 async def get_event(
     event_id: str,
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> ActivityEvent:
     """Get a specific event by ID."""
@@ -164,6 +170,8 @@ async def get_event(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Event not found",
         )
+    # Verify ownership
+    verify_resource_ownership(event.identity_id, identity_id, "Event")
     return event
 
 
@@ -174,8 +182,8 @@ async def get_event(
 
 @router.post("", response_model=ActivityEvent, status_code=status.HTTP_201_CREATED)
 async def record_event(
-    identity_id: str,  # TODO: Extract from JWT
     request: RecordEventRequest,
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> ActivityEvent:
     """
@@ -202,35 +210,43 @@ async def record_event(
 
 
 @router.get("/export/all", response_model=list[ActivityEvent])
+@limiter.limit(RateLimits.GDPR)
 async def export_events(
-    identity_id: str,  # TODO: Extract from JWT + verify ownership
+    request: Request,
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> list[ActivityEvent]:
     """
     Export all events for GDPR data portability.
 
     Returns complete event history for the identity.
+    Rate limited to 5/hour due to resource intensity.
     """
     return await service.export_events(identity_id)
 
 
 @router.delete("/gdpr/delete", status_code=status.HTTP_200_OK)
+@limiter.limit(RateLimits.GDPR)
 async def delete_all_events(
-    identity_id: str,  # TODO: Extract from JWT + verify ownership
+    request: Request,
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> dict:
     """
     Delete all events for GDPR erasure.
 
     WARNING: This permanently deletes all event history.
+    Rate limited to 5/hour due to sensitivity.
     """
     count = await service.delete_events(identity_id)
     return {"deleted": count, "identity_id": identity_id}
 
 
 @router.post("/gdpr/anonymize", status_code=status.HTTP_200_OK)
+@limiter.limit(RateLimits.GDPR)
 async def anonymize_events(
-    identity_id: str,  # TODO: Extract from JWT + verify ownership
+    request: Request,
+    identity_id: str = Depends(get_current_identity),
     service: EventJournalService = Depends(get_event_journal_service),
 ) -> dict:
     """
@@ -238,6 +254,7 @@ async def anonymize_events(
 
     Replaces identity with a hash and clears PII from metadata.
     Preserves event data for aggregate analytics.
+    Rate limited to 5/hour due to sensitivity.
     """
     count = await service.anonymize_events(identity_id)
     return {"anonymized": count, "identity_id": identity_id}

@@ -119,6 +119,7 @@ class EventJournalService(EventJournalInterface):
         self,
         related_id: str,
         related_type: str | None = None,
+        identity_id: str | None = None,
     ) -> list[ActivityEvent]:
         query = select(ActivityEventORM).where(
             ActivityEventORM.related_id == related_id
@@ -126,6 +127,10 @@ class EventJournalService(EventJournalInterface):
 
         if related_type:
             query = query.where(ActivityEventORM.related_type == related_type)
+
+        # Filter by identity if provided (security: users only see their own events)
+        if identity_id:
+            query = query.where(ActivityEventORM.identity_id == identity_id)
 
         query = query.order_by(ActivityEventORM.timestamp.asc())
 

@@ -1,9 +1,11 @@
 """FastAPI routes for RESEARCH module."""
 
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
+from src.core.rate_limit import limiter, RateLimits
 from src.modules.research.models import (
     ResearchTopic,
     ResearchPaper,
@@ -29,11 +31,13 @@ def get_research_service(db: AsyncSession = Depends(get_db)) -> ResearchService:
 # =============================================================================
 
 @router.get("/search", response_model=SearchResponse)
+@limiter.limit(RateLimits.SEARCH)
 async def search_research(
-    identity_id: str,  # TODO: Extract from JWT
+    request: Request,
     query: str | None = Query(None, min_length=2, max_length=200, description="Search query"),
     topic: ResearchTopic | None = Query(None, description="Filter by topic"),
     limit: int = Query(10, ge=1, le=20, description="Max results"),
+    identity_id: str = Depends(get_current_identity),
     service: ResearchService = Depends(get_research_service),
 ) -> SearchResponse:
     """
@@ -106,9 +110,9 @@ async def get_paper(
 
 @router.get("/saved", response_model=list[SavedResearch])
 async def get_saved_research(
-    identity_id: str,  # TODO: Extract from JWT
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    identity_id: str = Depends(get_current_identity),
     service: ResearchService = Depends(get_research_service),
 ) -> list[SavedResearch]:
     """
@@ -124,7 +128,7 @@ async def get_saved_research(
 @router.post("/saved", response_model=SavedResearch, status_code=status.HTTP_201_CREATED)
 async def save_research(
     request: SaveResearchRequest,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ResearchService = Depends(get_research_service),
 ) -> SavedResearch:
     """
@@ -146,7 +150,7 @@ async def save_research(
 @router.delete("/saved/{saved_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def unsave_research(
     saved_id: str,
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ResearchService = Depends(get_research_service),
 ) -> None:
     """
@@ -169,7 +173,7 @@ async def unsave_research(
 
 @router.get("/quota", response_model=UserSearchQuota)
 async def get_quota(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: ResearchService = Depends(get_research_service),
 ) -> UserSearchQuota:
     """

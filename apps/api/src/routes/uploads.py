@@ -5,13 +5,15 @@ Endpoints for file uploads: bloodwork, avatars, etc.
 """
 
 import io
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Query
+from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Query, Request
 from typing import Optional
 from datetime import date
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
+from src.core.rate_limit import limiter, RateLimits
 from src.services.bloodwork_parser import BloodworkParserService, BloodworkResult, ParsedBiomarker
 from src.services.storage import storage_service
 from src.modules.metrics.service import MetricsService
@@ -75,10 +77,12 @@ def get_bloodwork_parser(
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/bloodwork", response_model=BloodworkUploadResponse)
+@limiter.limit(RateLimits.UPLOAD)
 async def upload_bloodwork(
-    identity_id: str = Query(..., description="User identity ID"),
+    request: Request,
     file: UploadFile = File(..., description="PDF or image of blood test results"),
     test_date: Optional[date] = Query(None, description="Override test date from document"),
+    identity_id: str = Depends(get_current_identity),
     parser: BloodworkParserService = Depends(get_bloodwork_parser)
 ):
     """
@@ -188,9 +192,11 @@ def get_profile_service(db: AsyncSession = Depends(get_db)) -> ProfileService:
 
 
 @router.post("/avatar", response_model=AvatarUploadResponse)
+@limiter.limit(RateLimits.UPLOAD)
 async def upload_avatar(
-    identity_id: str = Query(..., description="User identity ID"),
+    request: Request,
     file: UploadFile = File(..., description="Avatar image (JPG or PNG)"),
+    identity_id: str = Depends(get_current_identity),
     db: AsyncSession = Depends(get_db),
     profile_service: ProfileService = Depends(get_profile_service),
 ):
@@ -280,7 +286,7 @@ async def upload_avatar(
 
 @router.delete("/avatar")
 async def delete_avatar(
-    identity_id: str = Query(..., description="User identity ID"),
+    identity_id: str = Depends(get_current_identity),
     profile_service: ProfileService = Depends(get_profile_service),
 ):
     """

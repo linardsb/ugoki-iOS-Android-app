@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Literal
+from pydantic import model_validator
+from typing import Literal, Self
 
 
 class Settings(BaseSettings):
@@ -13,6 +14,16 @@ class Settings(BaseSettings):
     app_name: str = "UGOKI API"
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
+
+    # Environment - controls security validation and CORS behavior
+    # Set ENVIRONMENT=production in production deployments
+    environment: Literal["development", "staging", "production"] = "development"
+
+    # CORS Origins - list of allowed origins for cross-origin requests
+    # In development, empty list allows all origins (*)
+    # In production, this MUST be set to specific origins
+    # Example: CORS_ORIGINS='["https://app.ugoki.com", "https://ugoki.com"]'
+    cors_origins: list[str] = []
 
     # Database
     # SQLite (dev default): sqlite+aiosqlite:///./ugoki.db
@@ -59,6 +70,30 @@ class Settings(BaseSettings):
     r2_secret_access_key: str = ""
     r2_bucket_name: str = "ugoki-assets"
     r2_public_url: str = ""  # e.g., https://pub-xxx.r2.dev
+
+    @model_validator(mode="after")
+    def validate_production_settings(self) -> Self:
+        """
+        Fail fast if production environment is misconfigured.
+
+        This prevents deploying to production with insecure defaults:
+        - JWT_SECRET must be changed from the default value
+        - CORS_ORIGINS must be explicitly configured
+
+        Generate a secure JWT secret with: openssl rand -hex 32
+        """
+        if self.environment == "production":
+            if self.jwt_secret == "change-me-in-production":
+                raise ValueError(
+                    "CRITICAL: JWT_SECRET must be changed in production! "
+                    "Generate a secure secret with: openssl rand -hex 32"
+                )
+            if not self.cors_origins:
+                raise ValueError(
+                    "CORS_ORIGINS must be set in production. "
+                    'Example: CORS_ORIGINS=\'["https://app.ugoki.com"]\''
+                )
+        return self
 
 
 settings = Settings()

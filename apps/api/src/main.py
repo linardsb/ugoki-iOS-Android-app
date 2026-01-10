@@ -1,10 +1,14 @@
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from src.core.config import settings
+from src.core.rate_limit import limiter
 from src.modules.identity.routes import router as identity_router
 from src.modules.time_keeper.routes import router as time_keeper_router
 from src.modules.metrics.routes import router as metrics_router
@@ -33,13 +37,32 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS middleware
+# Rate limiting - attach limiter to app state and register exception handler
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS middleware - environment-aware configuration
+def get_cors_origins() -> list[str]:
+    """
+    Get CORS origins based on environment configuration.
+
+    - If cors_origins is set in config, use those specific origins
+    - In development with no cors_origins set, allow all origins (*)
+    - In production, cors_origins MUST be set (enforced by config validator)
+    """
+    if settings.cors_origins:
+        return settings.cors_origins
+    if settings.environment == "development":
+        return ["*"]  # Allow all origins only in development
+    return []  # Production requires explicit config (validator prevents this)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly for production
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 

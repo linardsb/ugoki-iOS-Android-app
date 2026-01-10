@@ -1,9 +1,11 @@
 """FastAPI routes for AI_COACH module."""
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db import get_db
+from src.core.auth import get_current_identity
+from src.core.rate_limit import limiter, RateLimits
 from src.modules.ai_coach.models import (
     ChatRequest,
     ChatResponse,
@@ -21,9 +23,11 @@ def get_coach_service(db: AsyncSession = Depends(get_db)) -> AICoachService:
 
 
 @router.post("/chat", response_model=ChatResponse)
+@limiter.limit(RateLimits.AI_CHAT)
 async def chat(
-    identity_id: str,  # TODO: Extract from JWT
-    request: ChatRequest,
+    request: Request,
+    chat_request: ChatRequest,
+    identity_id: str = Depends(get_current_identity),
     service: AICoachService = Depends(get_coach_service),
 ) -> ChatResponse:
     """
@@ -45,12 +49,12 @@ async def chat(
 
     **Note:** This coach provides general wellness guidance only, not medical advice.
     """
-    return await service.chat(identity_id, request)
+    return await service.chat(identity_id, chat_request)
 
 
 @router.get("/context", response_model=UserContext)
 async def get_context(
-    identity_id: str,  # TODO: Extract from JWT
+    identity_id: str = Depends(get_current_identity),
     service: AICoachService = Depends(get_coach_service),
 ) -> UserContext:
     """
@@ -67,8 +71,10 @@ async def get_context(
 
 
 @router.get("/insight", response_model=CoachingInsight)
+@limiter.limit(RateLimits.AI_INSIGHT)
 async def get_daily_insight(
-    identity_id: str,  # TODO: Extract from JWT
+    request: Request,
+    identity_id: str = Depends(get_current_identity),
     service: AICoachService = Depends(get_coach_service),
 ) -> CoachingInsight:
     """
@@ -82,8 +88,8 @@ async def get_daily_insight(
 
 @router.get("/motivation", response_model=str)
 async def get_motivation(
-    identity_id: str,  # TODO: Extract from JWT
     context: str | None = Query(None, description="Optional context like 'completed fast'"),
+    identity_id: str = Depends(get_current_identity),
     service: AICoachService = Depends(get_coach_service),
 ) -> str:
     """
@@ -99,8 +105,8 @@ async def get_motivation(
 
 @router.put("/personality")
 async def set_personality(
-    identity_id: str,  # TODO: Extract from JWT
     personality: CoachPersonality,
+    identity_id: str = Depends(get_current_identity),
     service: AICoachService = Depends(get_coach_service),
 ) -> dict:
     """

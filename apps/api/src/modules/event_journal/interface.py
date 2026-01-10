@@ -122,6 +122,7 @@ class EventJournalInterface(ABC):
         self,
         related_id: str,
         related_type: str | None = None,
+        identity_id: str | None = None,
     ) -> list[ActivityEvent]:
         """
         Get all events related to a specific resource.
@@ -131,6 +132,7 @@ class EventJournalInterface(ABC):
         Args:
             related_id: The related resource ID
             related_type: Optional filter by related type
+            identity_id: Optional filter by identity (security)
 
         Returns:
             List of ActivityEvents ordered by timestamp
