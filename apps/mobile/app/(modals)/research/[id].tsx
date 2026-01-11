@@ -26,6 +26,7 @@ import {
   useUnsaveResearch,
 } from '@/features/research/hooks';
 import { BenefitBadge, openResearchLink } from '@/features/research/components';
+import { AbstractBullets } from '@/features/research/components/AbstractBullets';
 import { TOPIC_METADATA } from '@/features/research/types';
 import { getStatusColors } from '@/features/research/colors';
 
@@ -293,6 +294,16 @@ export default function ResearchDetailScreen() {
         {/* Research Insights Section */}
         {digest && (
           <YStack gap="$4">
+            {/* At a Glance - Abstract Bullet Summary */}
+            {digest.abstract_bullets && digest.abstract_bullets.length > 0 && (
+              <YStack gap="$2">
+                <Text fontSize={14} fontWeight="700" style={{ color: textColor }}>
+                  At a Glance
+                </Text>
+                <AbstractBullets bullets={digest.abstract_bullets} />
+              </YStack>
+            )}
+
             {/* Key Takeaways */}
             {digest.key_benefits && digest.key_benefits.length > 0 && (
               <YStack gap="$2">

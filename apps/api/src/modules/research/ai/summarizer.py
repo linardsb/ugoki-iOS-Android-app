@@ -34,8 +34,23 @@ OUTPUT FORMAT (JSON):
         {"emoji": "🧠", "title": "Third Point", "description": "Why this matters"}
     ],
     "audience_tags": ["Tag 1", "Tag 2", "Tag 3"],
-    "tldr": "2-3 sentence plain English summary of the research and its implications"
+    "tldr": "2-3 sentence plain English summary of the research and its implications",
+    "abstract_bullets": [
+        "First key point - what was studied or the main objective",
+        "Second point - key methodology or approach (simplified)",
+        "Third point - main finding or result",
+        "Fourth point - practical implication or why it matters"
+    ]
 }
+
+ABSTRACT BULLETS GUIDELINES:
+- Generate 3-5 bullet points that summarize the abstract's key points
+- Each bullet should be 1 sentence max (15-25 words)
+- Use plain language (8th grade level) - no jargon
+- Cover: objective, method (simplified), key result, practical meaning
+- Start each bullet with an action verb or clear subject
+- Focus on WHAT was found, not detailed methodology
+- Make each bullet standalone and understandable without context
 
 AUDIENCE TAGS GUIDELINES:
 Generate 2-4 specific, short tags (2-4 words each) describing WHO would benefit most.
@@ -160,11 +175,20 @@ class ResearchSummarizer:
             # Ensure we have valid tags
             audience_tags = [tag[:30] for tag in audience_tags[:4] if tag]
 
+            # Parse abstract bullets
+            abstract_bullets = data.get("abstract_bullets", [])
+            # Ensure we have valid bullets (strings, max 5, max 150 chars each)
+            abstract_bullets = [
+                bullet[:150] for bullet in abstract_bullets[:5]
+                if bullet and isinstance(bullet, str)
+            ]
+
             return ResearchDigest(
                 one_liner=data.get("one_liner", "Research finding")[:200],
                 key_benefits=key_benefits,
                 audience_tags=audience_tags if audience_tags else ["Research Readers"],
                 tldr=data.get("tldr", "")[:500],
+                abstract_bullets=abstract_bullets,
             )
 
         except (json.JSONDecodeError, KeyError, TypeError) as e:
@@ -184,6 +208,7 @@ class ResearchSummarizer:
             ],
             audience_tags=["Research Readers"],
             tldr="This research paper explores health and wellness topics. View the full study for detailed findings.",
+            abstract_bullets=[],
         )
 
 
@@ -238,4 +263,10 @@ class MockSummarizer:
             ],
             audience_tags=audience_tags,
             tldr=f"This study examines {title[:100]}. The findings suggest practical benefits for health and fitness goals.",
+            abstract_bullets=[
+                "Researchers investigated the effects of this intervention on health outcomes",
+                "Study used a controlled methodology with measurable endpoints",
+                "Results showed significant improvements in key health markers",
+                "Findings suggest practical applications for daily health routines",
+            ],
         )

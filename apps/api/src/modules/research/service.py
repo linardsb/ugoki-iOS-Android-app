@@ -104,6 +104,7 @@ class ResearchService(ResearchInterface):
                 audience_tags=orm.audience_tags or [],
                 who_benefits=orm.who_benefits or "",
                 tldr=orm.tldr or "",
+                abstract_bullets=orm.abstract_bullets or [],
             )
 
         return ResearchPaper(
@@ -181,9 +182,12 @@ class ResearchService(ResearchInterface):
         return orm
 
     async def _ensure_digest(self, orm: ResearchPaperORM) -> None:
-        """Generate AI digest if not already present."""
-        if orm.one_liner:
-            # Already has digest
+        """Generate AI digest if not already present or if abstract_bullets missing."""
+        # Check if we need to regenerate (has digest but missing abstract_bullets)
+        needs_bullets = orm.one_liner and not orm.abstract_bullets
+
+        if orm.one_liner and not needs_bullets:
+            # Already has complete digest with bullets
             return
 
         if not orm.abstract:
@@ -208,6 +212,7 @@ class ResearchService(ResearchInterface):
             orm.audience_tags = list(digest.audience_tags) if digest.audience_tags else []
             orm.who_benefits = digest.who_benefits  # Deprecated, kept for backwards compat
             orm.tldr = digest.tldr
+            orm.abstract_bullets = list(digest.abstract_bullets) if digest.abstract_bullets else []
             orm.ai_processed_at = datetime.now(UTC)
             orm.updated_at = datetime.now(UTC)
 

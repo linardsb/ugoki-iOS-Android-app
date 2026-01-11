@@ -40,6 +40,7 @@ class ResearchPaperORM(Base, TimestampMixin):
     audience_tags: Mapped[str | None] = mapped_column(JSON, nullable=True)  # JSON array of strings
     who_benefits: Mapped[str | None] = mapped_column(Text, nullable=True)  # Deprecated, use audience_tags
     tldr: Mapped[str | None] = mapped_column(Text, nullable=True)
+    abstract_bullets: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)  # JSON array of bullet points
     ai_processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships

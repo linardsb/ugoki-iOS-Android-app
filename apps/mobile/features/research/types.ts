@@ -26,6 +26,7 @@ export interface ResearchDigest {
   key_benefits: KeyBenefit[];
   audience_tags: string[];
   tldr: string;
+  abstract_bullets: string[];
   /** @deprecated Use audience_tags instead */
   who_benefits?: string;
 }

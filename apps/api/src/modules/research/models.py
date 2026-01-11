@@ -37,6 +37,7 @@ class ResearchDigest(BaseModel):
     key_benefits: list[KeyBenefit] = Field(default_factory=list, description="3-5 main benefit points")
     audience_tags: list[str] = Field(default_factory=list, description="2-4 specific audience tags")
     tldr: str = Field(..., description="2-3 sentence plain English summary")
+    abstract_bullets: list[str] = Field(default_factory=list, description="3-5 bullet points summarizing the abstract")
 
     # Deprecated field - kept for backwards compatibility with existing data
     who_benefits: str | None = Field(None, description="Deprecated: use audience_tags instead")
