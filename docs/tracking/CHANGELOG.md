@@ -23,6 +23,10 @@ Types of changes:
 - Documentation restructure with PRD, architecture docs, feature specs
 - Exercise library with body focus filtering (upper, lower, core, full_body)
 - Exercise difficulty metadata (beginner, intermediate, advanced)
+- **Abstract Bullets** - Research papers now include 3-5 scannable bullet points ("At a Glance" view)
+  - AI-generated via Claude Haiku during paper summarization
+  - New `AbstractBullets` component on mobile paper detail screen
+  - Backfill support for existing cached papers
 
 ### Security
 - **JWT Authentication** - All protected endpoints now validate Bearer tokens

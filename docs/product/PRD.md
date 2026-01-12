@@ -122,6 +122,7 @@ The only app combining IF + HIIT with AI-powered personalization through a coach
 **Capabilities:**
 - PubMed integration for scientific papers
 - AI-generated summaries (Claude Haiku)
+- Abstract bullet points ("At a Glance" view)
 - Topic browsing (IF, HIIT, Nutrition, Sleep)
 - Paper saving functionality
 - 15 searches/day quota

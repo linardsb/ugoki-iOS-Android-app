@@ -6,6 +6,33 @@ Detailed logs of development sessions. For summarized changes, see [CHANGELOG.md
 
 ## January 2026
 
+### January 11, 2026 - Abstract Bullets Feature
+
+**Focus:** Add scannable bullet-point summaries to research paper abstracts
+
+**Completed:**
+- Added `abstract_bullets` field to ResearchDigest (3-5 bullet points per paper)
+- Updated Claude Haiku prompt with guidelines for bullet generation
+- Created database migration for `abstract_bullets` JSON column
+- Implemented backfill logic for existing cached papers
+- Built `AbstractBullets` React Native component with theme support
+- Integrated component into paper detail screen
+
+**Files Created:**
+- `apps/api/alembic/versions/b7c8d9e0f1a2_add_abstract_bullets_to_research_papers.py`
+- `apps/mobile/features/research/components/AbstractBullets.tsx`
+
+**Files Modified:**
+- `apps/api/src/modules/research/orm.py` - Added abstract_bullets column
+- `apps/api/src/modules/research/models.py` - Added abstract_bullets to ResearchDigest
+- `apps/api/src/modules/research/ai/summarizer.py` - Enhanced AI prompt, parsing, mock data
+- `apps/api/src/modules/research/service.py` - ORM conversion, backfill logic
+- `apps/mobile/features/research/types.ts` - Added abstract_bullets to TypeScript types
+- `apps/mobile/features/research/components/index.ts` - Export AbstractBullets
+- `apps/mobile/app/(modals)/research/[id].tsx` - Integrated AbstractBullets component
+
+---
+
 ### January 10, 2026 - Documentation Restructure
 
 **Focus:** Documentation reorganization for better development flow

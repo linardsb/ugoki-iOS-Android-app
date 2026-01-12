@@ -75,6 +75,7 @@ The Research Hub allows users to browse and search scientific research on health
 | `apps/mobile/features/research/components/TopicPill.tsx` | Topic selector |
 | `apps/mobile/features/research/components/ResearchCard.tsx` | Paper card |
 | `apps/mobile/features/research/components/QuotaIndicator.tsx` | Quota display |
+| `apps/mobile/features/research/components/AbstractBullets.tsx` | "At a Glance" bullet points |
 | `apps/mobile/app/(modals)/research/index.tsx` | Research hub screen |
 | `apps/mobile/app/(modals)/research/[id].tsx` | Paper detail screen |
 
@@ -90,6 +91,7 @@ interface ResearchDigest {
   key_benefits: Benefit[]; // Array of takeaways
   audience_tags: string[]; // Who benefits
   tldr: string; // 2-3 sentence summary
+  abstract_bullets: string[]; // 3-5 scannable bullet points (At a Glance)
 }
 
 interface Benefit {
@@ -98,6 +100,8 @@ interface Benefit {
   description: string;
 }
 ```
+
+The `abstract_bullets` field provides a quick "At a Glance" view of the paper's key points, making long abstracts more digestible for users scanning through research.
 
 ---
 
