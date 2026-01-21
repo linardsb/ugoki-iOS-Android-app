@@ -50,6 +50,7 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
     finalizeStreaming,
     setCurrentSession,
     setStreaming,
+    isStreaming: storeIsStreaming,
   } = useChatStore();
 
   // Cleanup typing timer on unmount
@@ -60,6 +61,17 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
       }
     };
   }, []);
+
+  // Stop typing animation if chat is cleared (isStreaming becomes false externally)
+  useEffect(() => {
+    if (!storeIsStreaming && typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+      textBufferRef.current = '';
+      displayedIndexRef.current = 0;
+      isCompleteRef.current = false;
+    }
+  }, [storeIsStreaming]);
 
   // Process the text buffer character by character
   const processTypingBuffer = useCallback(() => {
