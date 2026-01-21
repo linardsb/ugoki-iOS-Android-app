@@ -67,7 +67,7 @@ async def open_window(
 @router.post("/windows/{window_id}/close", response_model=TimeWindow)
 async def close_window(
     window_id: str,
-    request: CloseWindowRequest,
+    request: CloseWindowRequest | None = None,
     identity_id: str = Depends(get_current_identity),
     service: TimeKeeperService = Depends(get_time_keeper_service),
     progression: ProgressionService = Depends(get_progression_service),
@@ -75,6 +75,10 @@ async def close_window(
 ) -> TimeWindow:
     """Close an active window."""
     try:
+        # Use defaults if no request body provided
+        if request is None:
+            request = CloseWindowRequest()
+
         # Get window info before closing (for identity_id and type)
         window_info = await service.get_window(window_id)
         if not window_info:

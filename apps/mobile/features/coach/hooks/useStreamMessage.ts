@@ -72,7 +72,7 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            query: message,
+            message: message,
             session_id: currentSessionId,
             personality: overridePersonality || personality,
           }),

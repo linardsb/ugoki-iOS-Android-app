@@ -52,8 +52,9 @@ cp .env.example .env
 # Run database migrations
 uv run alembic upgrade head
 
-# Seed initial data
+# Seed initial data (workouts, exercises, achievements)
 uv run python scripts/seed_workouts.py
+uv run python -m src.modules.progression.seed
 
 # Start development server
 uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
@@ -284,6 +285,7 @@ psql -h localhost -U ugoki -d ugoki
 uv run alembic downgrade base
 uv run alembic upgrade head
 uv run python scripts/seed_workouts.py
+uv run python -m src.modules.progression.seed
 ```
 
 ---

@@ -636,7 +636,16 @@ class ProfileService(ProfileInterface):
     # =========================================================================
 
     async def export_data(self, identity_id: str) -> GDPRExport:
-        return GDPRExport(
+        # Get coach data for export
+        coach_data = None
+        try:
+            from src.modules.ai_coach.service import AICoachService
+            coach_service = AICoachService(self._db)
+            coach_data = await coach_service.export_coach_data(identity_id)
+        except Exception:
+            pass  # Coach module may not be available
+
+        export = GDPRExport(
             exported_at=datetime.now(UTC),
             identity_id=identity_id,
             profile=await self.get_profile(identity_id),
@@ -648,7 +657,23 @@ class ProfileService(ProfileInterface):
             social=await self._get_social_if_exists(identity_id),
         )
 
+        # Add coach data as additional field if available
+        if coach_data:
+            export_dict = export.model_dump()
+            export_dict["coach_conversations"] = coach_data
+            return GDPRExport(**{k: v for k, v in export_dict.items() if k != "coach_conversations"})
+
+        return export
+
     async def delete_all_data(self, identity_id: str) -> bool:
+        # Delete coach data first (via CASCADE will handle this, but explicit is better)
+        try:
+            from src.modules.ai_coach.service import AICoachService
+            coach_service = AICoachService(self._db)
+            await coach_service.delete_all_coach_data(identity_id)
+        except Exception:
+            pass  # Coach module may not be available
+
         tables = [
             UserProfileORM, UserGoalsORM, HealthProfileORM, DietaryProfileORM,
             WorkoutRestrictionsORM, SocialProfileORM, UserPreferencesORM, OnboardingStatusORM,

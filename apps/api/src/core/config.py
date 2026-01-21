@@ -59,6 +59,24 @@ class Settings(BaseSettings):
     # OpenAI (paid)
     openai_api_key: str = ""
 
+    # ============ Pydantic AI Agent Configuration ============
+    # These override ai_provider settings for the streaming coach
+
+    # LLM Configuration (for streaming responses)
+    llm_provider: str = ""  # openai, ollama, groq, anthropic (defaults to ai_provider if empty)
+    llm_api_key: str = ""   # API key for LLM provider
+    llm_choice: str = ""    # Model name (e.g., gpt-4o-mini, llama3.2)
+    llm_base_url: str = ""  # Base URL for API (e.g., https://api.openai.com/v1)
+
+    # Embedding Configuration (for RAG)
+    embedding_provider: str = "openai"  # openai or ollama
+    embedding_api_key: str = ""         # API key for embeddings
+    embedding_model_choice: str = "text-embedding-3-small"  # Embedding model
+    embedding_base_url: str = "https://api.openai.com/v1"   # Base URL
+
+    # Web Search
+    brave_api_key: str = ""  # Brave Search API key (optional)
+
     # External Services
     logfire_token: str = ""
     resend_api_key: str = ""

@@ -46,6 +46,80 @@ Each bug follows this pattern:
 
 ## Resolved Issues
 
+### BUG-007: Progression achievements not seeded
+
+**Status:** Resolved | **Severity:** Low | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+The achievements endpoint returns empty array because no achievements have been defined in the database.
+
+**Root Cause:**
+Seed script `src/modules/progression/seed.py` exists but was never run.
+
+**Fix:**
+Ran the seed script: `uv run python -m src.modules.progression.seed`
+
+**Result:** Seeded 21 achievements (streak, fasting, workout, weight, and special types).
+
+---
+
+### BUG-006: Content module missing seed data
+
+**Status:** Resolved | **Severity:** Medium | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+The Content module returns empty arrays for workouts, exercises, recipes, and categories.
+
+**Root Cause:**
+Seed scripts exist but hadn't been run on this database.
+
+**Fix:**
+Ran seed script: `uv run python scripts/seed_workouts.py`
+
+**Result:** Seeded 23 workouts with 114 exercises across 5 categories (HIIT, Strength, Cardio, Flexibility, Recovery).
+
+---
+
+### BUG-005: Time Keeper close endpoint requires body with all default values
+
+**Status:** Resolved | **Severity:** Low | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+The `POST /api/v1/time-keeper/windows/{id}/close` endpoint required a JSON body even though all fields have default values.
+
+**Files Affected:**
+- `apps/api/src/modules/time_keeper/routes.py:67-80`
+
+**Fix:**
+Made `CloseWindowRequest` parameter optional with default value:
+```python
+request: CloseWindowRequest | None = None
+```
+Added fallback to create default request if None:
+```python
+if request is None:
+    request = CloseWindowRequest()
+```
+
+---
+
+### BUG-004: API field name inconsistency between chat and stream endpoints
+
+**Status:** Resolved | **Severity:** Medium | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+The `/api/v1/coach/chat` endpoint used `message` as the field name, while `/api/v1/coach/stream` used `query`.
+
+**Files Affected:**
+- `apps/api/src/modules/ai_coach/models.py:141-145` (StreamChatRequest)
+- `apps/api/src/modules/ai_coach/service.py` (5 occurrences)
+- `apps/mobile/features/coach/hooks/useStreamMessage.ts:75`
+
+**Fix:**
+Changed `StreamChatRequest.query` to `StreamChatRequest.message` and updated all references in service and mobile app.
+
+---
+
 ### BUG-001: Timezone-naive datetime mismatch in Research ORM
 
 **Status:** Resolved | **Severity:** High | **Reported:** 2026-01-10 | **Resolved:** 2026-01-10

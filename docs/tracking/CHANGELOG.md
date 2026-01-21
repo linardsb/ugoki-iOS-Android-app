@@ -38,6 +38,12 @@ Types of changes:
 
 ### Fixed
 - Research ORM datetime columns now timezone-aware (commit `0ce18294`)
+- **BUG-004:** AI Coach `/stream` endpoint now uses `message` field (consistent with `/chat`)
+- **BUG-005:** Time Keeper `/close` endpoint now accepts optional body (defaults to `COMPLETED` state)
+
+### Database Seeding
+- Seeded 23 workouts with 114 exercises across 5 categories
+- Seeded 21 achievements (streak, fasting, workout, weight, special types)
 
 ---
 
@@ -99,7 +105,7 @@ MVP Complete - Ready for Production Deployment
 - **TIME_KEEPER** - Fasting/workout timers with pause/resume
 - **METRICS** - Weight tracking, biomarkers, trends
 - **PROGRESSION** - XP, levels, streaks, 21 achievements
-- **CONTENT** - 16 workouts, 30 recipes, exercise library
+- **CONTENT** - 23 workouts, 114 exercises, 30 recipes
 - **AI_COACH** - Claude integration, safety filtering, tools
 - **NOTIFICATION** - Push token management, preferences
 - **PROFILE** - User data, goals, GDPR compliance

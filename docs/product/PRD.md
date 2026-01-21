@@ -74,7 +74,7 @@ The only app combining IF + HIIT with AI-powered personalization through a coach
 | Spec | [features/workouts.md](../features/workouts.md) |
 
 **Capabilities:**
-- 16 workout programs (10-20 min sessions)
+- 23 workout programs (8-25 min sessions)
 - Video player with exercise instructions
 - Exercise library with body focus filtering
 - Difficulty levels (beginner/intermediate/advanced)
@@ -271,7 +271,7 @@ The only app combining IF + HIIT with AI-powered personalization through a coach
 | TIME_KEEPER | Complete | Fasting/workout timers, pause/resume |
 | METRICS | Complete | Weight tracking, biomarkers, bloodwork |
 | PROGRESSION | Complete | Streaks, XP, levels, 21 achievements |
-| CONTENT | Complete | 16 workouts, 30 recipes, exercise library |
+| CONTENT | Complete | 23 workouts, 114 exercises, 30 recipes |
 | AI_COACH | Complete | Chat, insights, safety filtering |
 | NOTIFICATION | Complete | Push tokens, preferences |
 | PROFILE | Complete | Goals, health, GDPR compliance |

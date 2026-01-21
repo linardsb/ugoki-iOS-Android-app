@@ -6,7 +6,7 @@ Workout library with video player, exercise catalog, and body focus filtering.
 
 ## Overview
 
-UGOKI provides a curated library of HIIT workouts designed for busy professionals. Workouts are 10-20 minutes with video instructions. The exercise library includes body focus filtering (upper, lower, core, full body) and difficulty levels.
+UGOKI provides a curated library of workouts designed for busy professionals. Workouts are 8-25 minutes with exercise instructions. The exercise library includes body focus filtering (upper, lower, core, full body) and difficulty levels.
 
 ---
 
@@ -33,8 +33,13 @@ UGOKI provides a curated library of HIIT workouts designed for busy professional
 
 | Category | Count | Duration |
 |----------|-------|----------|
-| HIIT | 16 | 10-20 min |
-| Exercises | 50+ | Varies |
+| HIIT | 10 | 10-20 min |
+| Strength | 3 | 15-20 min |
+| Cardio | 3 | 12-25 min |
+| Flexibility | 3 | 10-25 min |
+| Recovery | 4 | 8-15 min |
+| **Total** | **23** | 8-25 min |
+| **Exercises** | **114** | Varies |
 
 ---
 

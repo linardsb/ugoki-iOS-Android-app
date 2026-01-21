@@ -25,10 +25,11 @@ The AI Coach is a Pydantic AI-powered conversational assistant that provides per
 
 | Component | Status |
 |-----------|--------|
-| Backend | Complete (v2.0) |
-| Mobile | Complete (v2.0) |
+| Backend | Complete (v2.1) |
+| Mobile | Complete (v2.1) |
 | Streaming | Complete |
 | Conversations | Complete |
+| RAG | Complete |
 | Tests | Partial |
 
 ---
@@ -193,12 +194,12 @@ Coach can discuss:
 
 ## Data Models
 
-### Streaming Request (v2.0)
+### Streaming Request (v2.1)
 
 ```typescript
 interface StreamChatRequest {
-  query: string;
-  session_id?: string;  // null = new conversation
+  message: string;       // User's message (consistent with /chat endpoint)
+  session_id?: string;   // null = new conversation
   personality?: "motivational" | "calm" | "tough" | "friendly";
 }
 ```

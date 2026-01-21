@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
@@ -10,6 +11,12 @@ class MessageRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
     SYSTEM = "system"
+
+
+class MessageType(str, Enum):
+    """Type of message in a conversation."""
+    HUMAN = "human"
+    AI = "ai"
 
 
 class CoachPersonality(str, Enum):
@@ -96,3 +103,73 @@ class ChatResponse(BaseModel):
     context_summary: str | None = None
     quick_actions: list[QuickAction] = []
     safety_redirected: bool = False  # True if response was safety-filtered
+
+
+# ============ Conversation Models ============
+
+
+class ConversationSession(BaseModel):
+    """A conversation session with the AI coach."""
+    session_id: str
+    identity_id: str
+    title: str | None = None
+    created_at: datetime
+    last_message_at: datetime
+    is_archived: bool = False
+    message_count: int = 0
+
+
+class ConversationMessage(BaseModel):
+    """A single message in a conversation."""
+    id: int
+    session_id: str
+    message_type: MessageType
+    content: str
+    created_at: datetime
+    files: list[str] | None = None
+
+
+class ConversationDetail(BaseModel):
+    """Full conversation with messages."""
+    session: ConversationSession
+    messages: list[ConversationMessage]
+
+
+# ============ Streaming Models ============
+
+
+class StreamChatRequest(BaseModel):
+    """Request for streaming chat with the AI coach."""
+    message: str = Field(..., min_length=1, max_length=10000)
+    session_id: str | None = None  # None = new conversation
+    personality: CoachPersonality | None = None
+
+
+class StreamChunk(BaseModel):
+    """A chunk of streaming response."""
+    text: str
+    session_id: str | None = None  # Sent with first chunk of new conversation
+    conversation_title: str | None = None  # Sent when title is generated
+    complete: bool = False
+    error: str | None = None
+
+
+# ============ Conversation Management ============
+
+
+class ConversationListResponse(BaseModel):
+    """List of conversations for a user."""
+    conversations: list[ConversationSession]
+    total: int
+    has_more: bool
+
+
+class CreateConversationRequest(BaseModel):
+    """Request to create a new conversation."""
+    title: str | None = None
+
+
+class UpdateConversationRequest(BaseModel):
+    """Request to update a conversation."""
+    title: str | None = None
+    is_archived: bool | None = None

@@ -1,8 +1,14 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// API base URL - use environment variable or default to localhost
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+// API base URL - hardcoded for local development
+// TODO: Use env variable in production
+const API_BASE_URL = 'http://192.168.1.12:8000';
+
+// Get the full API base URL (with /api/v1 prefix)
+export function getApiBaseUrl(): string {
+  return `${API_BASE_URL}/api/v1`;
+}
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({

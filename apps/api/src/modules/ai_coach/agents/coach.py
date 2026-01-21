@@ -1,11 +1,21 @@
 """Main coaching agent using Pydantic AI."""
 
+import logging
 from dataclasses import dataclass
+from typing import AsyncIterator
+
 from pydantic_ai import Agent, RunContext
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.models.openai import OpenAIModel
 
 from src.modules.ai_coach.models import CoachResponse, CoachPersonality
 from src.modules.ai_coach.tools.fitness_tools import FitnessTools
+from src.modules.ai_coach.agents.deps import UgokiAgentDeps
+from src.modules.ai_coach.agents.prompt import get_personalized_prompt
+from src.modules.ai_coach.agents.clients import get_llm_config
 from src.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -135,14 +145,14 @@ def get_model_name() -> str:
 
 def create_coach_agent(personality: CoachPersonality = CoachPersonality.MOTIVATIONAL) -> Agent[CoachDependencies, CoachResponse]:
     """Create a coach agent with the specified personality."""
-    
+
     model_name = get_model_name()
     system_prompt = get_system_prompt(personality)
-    
+
     agent = Agent(
         model_name,
         deps_type=CoachDependencies,
-        result_type=CoachResponse,
+        output_type=CoachResponse,
         system_prompt=system_prompt,
     )
 
@@ -227,3 +237,189 @@ def create_coach_agent(personality: CoachPersonality = CoachPersonality.MOTIVATI
         return await ctx.deps.fitness_tools.get_bloodwork_summary()
 
     return agent
+
+
+# ============ Streaming Agent Functions ============
+
+
+def _get_streaming_model() -> OpenAIModel:
+    """Get the configured LLM model for streaming responses."""
+    config = get_llm_config()
+
+    if config["provider"] == "openai":
+        return OpenAIModel(
+            config["model"],
+            provider=OpenAIProvider(
+                base_url=config.get("base_url", "https://api.openai.com/v1"),
+                api_key=config["api_key"],
+            )
+        )
+    elif config["provider"] == "ollama":
+        return OpenAIModel(
+            config["model"],
+            provider=OpenAIProvider(
+                base_url=config.get("base_url", "http://localhost:11434") + "/v1",
+                api_key="ollama",
+            )
+        )
+    elif config["provider"] == "groq":
+        return OpenAIModel(
+            config["model"],
+            provider=OpenAIProvider(
+                base_url="https://api.groq.com/openai/v1",
+                api_key=config["api_key"],
+            )
+        )
+    else:
+        # Default fallback to ollama
+        logger.warning(f"Using fallback model for provider: {config['provider']}")
+        return OpenAIModel(
+            "llama3.2",
+            provider=OpenAIProvider(
+                base_url="http://localhost:11434/v1",
+                api_key="ollama",
+            )
+        )
+
+
+def _create_streaming_agent(personality: str = "motivational") -> Agent[UgokiAgentDeps, str]:
+    """Create an agent configured for streaming with web search and RAG tools."""
+    model = _get_streaming_model()
+    system_prompt = get_personalized_prompt(personality)
+
+    agent = Agent(
+        model,
+        deps_type=UgokiAgentDeps,
+        output_type=str,
+        system_prompt=system_prompt,
+        retries=2,
+    )
+
+    # Add dynamic system prompts
+    @agent.system_prompt
+    def add_memories(ctx: RunContext[UgokiAgentDeps]) -> str:
+        if ctx.deps.memories:
+            return f"\n\n## User Memories\n{ctx.deps.memories}"
+        return ""
+
+    @agent.system_prompt
+    def add_user_context(ctx: RunContext[UgokiAgentDeps]) -> str:
+        if ctx.deps.user_context:
+            return f"\n\n## User Context\n{ctx.deps.user_context}"
+        return ""
+
+    @agent.system_prompt
+    def add_health_context(ctx: RunContext[UgokiAgentDeps]) -> str:
+        if ctx.deps.health_context:
+            return f"\n\n## Health Considerations\n{ctx.deps.health_context}"
+        return ""
+
+    # Add web search tool
+    @agent.tool
+    async def web_search(ctx: RunContext[UgokiAgentDeps], query: str) -> str:
+        """
+        Search the web for current fitness, nutrition, or wellness information.
+
+        Use this when users ask about:
+        - Recent research or studies
+        - Current recommendations or guidelines
+        - Information not in your training data
+
+        Args:
+            ctx: The agent context with dependencies
+            query: The search query
+
+        Returns:
+            Formatted search results
+        """
+        from src.modules.ai_coach.tools.web_search import perform_web_search
+
+        logger.info(f"Coach agent calling web_search: {query[:50]}...")
+        return await perform_web_search(
+            query=query,
+            http_client=ctx.deps.http_client,
+            brave_api_key=ctx.deps.brave_api_key,
+        )
+
+    # Add document retrieval tool
+    @agent.tool
+    async def retrieve_relevant_documents(ctx: RunContext[UgokiAgentDeps], user_query: str) -> str:
+        """
+        Search the knowledge base for relevant wellness content using RAG.
+
+        Use this for:
+        - Detailed information about fasting protocols
+        - Exercise techniques and workout information
+        - Nutrition guidelines and recipes
+        - Scientific explanations of wellness concepts
+
+        Args:
+            ctx: The agent context with dependencies
+            user_query: The user's question or topic
+
+        Returns:
+            Relevant document chunks from the knowledge base
+        """
+        from src.modules.ai_coach.tools.documents import retrieve_documents
+
+        logger.info(f"Coach agent calling RAG: {user_query[:50]}...")
+        return await retrieve_documents(
+            query=user_query,
+            db=ctx.deps.db,
+            embedding_client=ctx.deps.embedding_client,
+        )
+
+    return agent
+
+
+async def stream_coach_response(
+    query: str,
+    deps: UgokiAgentDeps,
+    personality: str = "motivational",
+) -> AsyncIterator[str]:
+    """
+    Stream responses from the coach agent.
+
+    Args:
+        query: User's message
+        deps: Agent dependencies
+        personality: Coach personality style
+
+    Yields:
+        Text chunks as they're generated
+    """
+    agent = _create_streaming_agent(personality)
+
+    try:
+        async with agent.run_stream(query, deps=deps) as result:
+            async for text in result.stream_text():
+                yield text
+    except Exception as e:
+        logger.error(f"Error streaming coach response: {e}")
+        yield f"I'm having trouble connecting right now. Please try again in a moment."
+
+
+async def run_coach_response(
+    query: str,
+    deps: UgokiAgentDeps,
+    personality: str = "motivational",
+) -> str:
+    """
+    Run the coach agent and return the full response.
+
+    Args:
+        query: User's message
+        deps: Agent dependencies
+        personality: Coach personality style
+
+    Returns:
+        Complete response from the coach
+    """
+    agent = _create_streaming_agent(personality)
+
+    try:
+        result = await agent.run(query, deps=deps)
+        return result.output
+    except Exception as e:
+        logger.error(f"Error running coach response: {e}")
+        return "I'm having trouble connecting right now. Please try again in a moment."

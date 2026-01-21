@@ -688,7 +688,7 @@ class AICoachService(AICoachInterface):
         personality = request.personality or self._get_personality(identity_id)
 
         # Safety check first
-        safety_result = check_message_safety(request.query)
+        safety_result = check_message_safety(request.message)
 
         if safety_result.action == SafetyAction.BLOCK:
             yield StreamChunk(
@@ -704,7 +704,7 @@ class AICoachService(AICoachInterface):
         if is_new_conversation:
             conversation = await self.create_conversation(identity_id)
             session_id = conversation.session_id
-            title = await self._generate_title(request.query)
+            title = await self._generate_title(request.message)
             # Update title
             await self.update_conversation(identity_id, session_id, title=title)
         else:
@@ -724,7 +724,7 @@ class AICoachService(AICoachInterface):
             title = None
 
         # Save user message
-        await self._save_message(session_id, "human", request.query)
+        await self._save_message(session_id, "human", request.message)
 
         # Get agent dependencies
         deps = await self._get_agent_deps(identity_id)
@@ -735,7 +735,7 @@ class AICoachService(AICoachInterface):
 
         try:
             async for text_chunk in stream_coach_response(
-                query=request.query,
+                query=request.message,
                 deps=deps,
                 personality=personality.value if personality else "motivational",
             ):
@@ -780,7 +780,7 @@ class AICoachService(AICoachInterface):
         except Exception as e:
             logger.error(f"Error streaming chat: {e}")
             # Fall back to pattern matching
-            fallback_response = self._simple_response(request.query, personality)
+            fallback_response = self._simple_response(request.message, personality)
             await self._save_message(session_id, "ai", fallback_response.message)
             await self._update_conversation_timestamp(session_id)
 
