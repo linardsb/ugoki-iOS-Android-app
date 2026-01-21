@@ -25,13 +25,15 @@ class ResearchPaperORM(Base, TimestampMixin):
     journal: Mapped[str | None] = mapped_column(String(500), nullable=True)
     publication_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     topic: Mapped[ResearchTopic] = mapped_column(
-        SQLEnum(ResearchTopic), nullable=False
+        SQLEnum(ResearchTopic, values_callable=lambda x: [e.value for e in x]),
+        nullable=False
     )
     abstract: Mapped[str | None] = mapped_column(Text, nullable=True)
     external_url: Mapped[str] = mapped_column(String(500), nullable=False)
     open_access: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     source: Mapped[ResearchSource] = mapped_column(
-        SQLEnum(ResearchSource), nullable=False, default=ResearchSource.PUBMED
+        SQLEnum(ResearchSource, values_callable=lambda x: [e.value for e in x]),
+        nullable=False, default=ResearchSource.PUBMED
     )
 
     # AI-generated digest (cached)
