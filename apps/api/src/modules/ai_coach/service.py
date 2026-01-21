@@ -1,9 +1,13 @@
 """Service implementation for AI_COACH module."""
 
+import json
 import logging
 import random
+import secrets
 from datetime import datetime, UTC
+from typing import AsyncIterator
 
+from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import settings
@@ -16,12 +20,30 @@ from src.modules.ai_coach.models import (
     UserContext,
     CoachPersonality,
     QuickAction,
+    ConversationSession,
+    ConversationMessage,
+    ConversationListResponse,
+    StreamChatRequest,
+    StreamChunk,
+    MessageType,
+)
+from src.modules.ai_coach.orm import (
+    CoachConversationORM,
+    CoachMessageORM,
 )
 from src.modules.ai_coach.safety import (
     check_message_safety,
     SafetyAction,
     get_safety_disclaimer,
     filter_ai_response,
+)
+from src.modules.ai_coach.agents import (
+    UgokiAgentDeps,
+    stream_coach_response,
+    run_coach_response,
+    get_embedding_client,
+    get_http_client,
+    get_brave_api_key,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,18 +96,43 @@ class AICoachService(AICoachInterface):
             )
 
         # === NORMAL PROCESSING ===
-        # Simple pattern matching for mock mode
-        response = self._simple_response(request.message, personality)
+        # Use LLM for intelligent responses with pattern matching fallback
+        try:
+            deps = await self._get_agent_deps(identity_id)
+            llm_response = await run_coach_response(
+                query=request.message,
+                deps=deps,
+                personality=personality.value if personality else "motivational",
+            )
 
-        # REDIRECT: Add disclaimer to response
-        if safety_result.action == SafetyAction.REDIRECT:
-            response.message += get_safety_disclaimer()
+            # REDIRECT: Add disclaimer to response
+            if safety_result.action == SafetyAction.REDIRECT:
+                llm_response += get_safety_disclaimer()
 
-        # Post-response filter: Check if AI response contains medical advice
-        filtered_message, was_filtered = filter_ai_response(response.message)
-        if was_filtered:
-            response.message = filtered_message
-            logger.info("Post-response safety filter added disclaimer")
+            # Post-response filter: Check if AI response contains medical advice
+            filtered_message, was_filtered = filter_ai_response(llm_response)
+            if was_filtered:
+                llm_response = filtered_message
+                logger.info("Post-response safety filter added disclaimer")
+
+            response = CoachResponse(
+                message=llm_response,
+                suggestions=["Ask about fasting", "Get workout tips", "Check my progress"],
+                encouragement=None,
+            )
+        except Exception as e:
+            logger.error(f"LLM call failed: {e}")
+            # Fall back to pattern matching
+            response = self._simple_response(request.message, personality)
+
+            # REDIRECT: Add disclaimer to response
+            if safety_result.action == SafetyAction.REDIRECT:
+                response.message += get_safety_disclaimer()
+
+            # Post-response filter for fallback
+            filtered_message, was_filtered = filter_ai_response(response.message)
+            if was_filtered:
+                response.message = filtered_message
 
         # Generate quick actions
         quick_actions = self._get_safe_quick_actions()
@@ -379,3 +426,421 @@ class AICoachService(AICoachInterface):
     ) -> None:
         """Set the coach personality for a user."""
         _user_personalities[identity_id] = personality
+
+    # ============ Conversation Management Methods ============
+
+    def _generate_session_id(self, identity_id: str) -> str:
+        """Generate a unique session ID in the format {identity_id}~{random_10_chars}."""
+        random_part = secrets.token_urlsafe(8)[:10]
+        return f"{identity_id}~{random_part}"
+
+    async def create_conversation(
+        self,
+        identity_id: str,
+        title: str | None = None,
+    ) -> ConversationSession:
+        """Create a new conversation session."""
+        session_id = self._generate_session_id(identity_id)
+        now = datetime.now(UTC)
+
+        conversation = CoachConversationORM(
+            session_id=session_id,
+            identity_id=identity_id,
+            title=title,
+            last_message_at=now,
+            is_archived=False,
+            metadata={},
+        )
+
+        self._db.add(conversation)
+        await self._db.commit()
+        await self._db.refresh(conversation)
+
+        return ConversationSession(
+            session_id=conversation.session_id,
+            identity_id=conversation.identity_id,
+            title=conversation.title,
+            created_at=conversation.created_at,
+            last_message_at=conversation.last_message_at,
+            is_archived=conversation.is_archived,
+            message_count=0,
+        )
+
+    async def get_conversations(
+        self,
+        identity_id: str,
+        limit: int = 20,
+        offset: int = 0,
+        include_archived: bool = False,
+    ) -> ConversationListResponse:
+        """Get list of conversations for a user."""
+        # Build query
+        query = select(CoachConversationORM).where(
+            CoachConversationORM.identity_id == identity_id
+        )
+
+        if not include_archived:
+            query = query.where(CoachConversationORM.is_archived == False)
+
+        # Get total count
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await self._db.execute(count_query)
+        total = total_result.scalar() or 0
+
+        # Get paginated results
+        query = query.order_by(CoachConversationORM.last_message_at.desc())
+        query = query.offset(offset).limit(limit)
+
+        result = await self._db.execute(query)
+        conversations = result.scalars().all()
+
+        # Get message counts for each conversation
+        session_ids = [c.session_id for c in conversations]
+        if session_ids:
+            count_query = select(
+                CoachMessageORM.session_id,
+                func.count(CoachMessageORM.id).label("count")
+            ).where(
+                CoachMessageORM.session_id.in_(session_ids)
+            ).group_by(CoachMessageORM.session_id)
+
+            count_result = await self._db.execute(count_query)
+            counts = {row[0]: row[1] for row in count_result.fetchall()}
+        else:
+            counts = {}
+
+        return ConversationListResponse(
+            conversations=[
+                ConversationSession(
+                    session_id=c.session_id,
+                    identity_id=c.identity_id,
+                    title=c.title,
+                    created_at=c.created_at,
+                    last_message_at=c.last_message_at,
+                    is_archived=c.is_archived,
+                    message_count=counts.get(c.session_id, 0),
+                )
+                for c in conversations
+            ],
+            total=total,
+            has_more=(offset + limit) < total,
+        )
+
+    async def get_conversation_messages(
+        self,
+        identity_id: str,
+        session_id: str,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[ConversationMessage]:
+        """Get messages for a specific conversation."""
+        # Verify ownership
+        conv = await self._db.execute(
+            select(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id,
+                CoachConversationORM.identity_id == identity_id,
+            )
+        )
+        if not conv.scalar_one_or_none():
+            return []
+
+        # Get messages
+        query = select(CoachMessageORM).where(
+            CoachMessageORM.session_id == session_id
+        ).order_by(CoachMessageORM.created_at.asc())
+        query = query.offset(offset).limit(limit)
+
+        result = await self._db.execute(query)
+        messages = result.scalars().all()
+
+        return [
+            ConversationMessage(
+                id=m.id,
+                session_id=m.session_id,
+                message_type=MessageType(m.message.get("type", "human")),
+                content=m.message.get("content", ""),
+                created_at=m.created_at,
+                files=m.message.get("files"),
+            )
+            for m in messages
+        ]
+
+    async def delete_conversation(
+        self,
+        identity_id: str,
+        session_id: str,
+    ) -> bool:
+        """Delete a conversation and all its messages (GDPR compliant)."""
+        # Verify ownership and delete
+        result = await self._db.execute(
+            delete(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id,
+                CoachConversationORM.identity_id == identity_id,
+            )
+        )
+        await self._db.commit()
+        return result.rowcount > 0
+
+    async def update_conversation(
+        self,
+        identity_id: str,
+        session_id: str,
+        title: str | None = None,
+        is_archived: bool | None = None,
+    ) -> ConversationSession | None:
+        """Update a conversation's metadata."""
+        query = select(CoachConversationORM).where(
+            CoachConversationORM.session_id == session_id,
+            CoachConversationORM.identity_id == identity_id,
+        )
+        result = await self._db.execute(query)
+        conversation = result.scalar_one_or_none()
+
+        if not conversation:
+            return None
+
+        if title is not None:
+            conversation.title = title
+        if is_archived is not None:
+            conversation.is_archived = is_archived
+
+        await self._db.commit()
+        await self._db.refresh(conversation)
+
+        return ConversationSession(
+            session_id=conversation.session_id,
+            identity_id=conversation.identity_id,
+            title=conversation.title,
+            created_at=conversation.created_at,
+            last_message_at=conversation.last_message_at,
+            is_archived=conversation.is_archived,
+            message_count=0,
+        )
+
+    # ============ Streaming Chat Methods ============
+
+    async def _save_message(
+        self,
+        session_id: str,
+        message_type: str,
+        content: str,
+        message_data: str | None = None,
+    ) -> None:
+        """Save a message to the database."""
+        message = CoachMessageORM(
+            session_id=session_id,
+            message={
+                "type": message_type,
+                "content": content,
+            },
+            message_data=message_data,
+        )
+        self._db.add(message)
+        await self._db.commit()
+
+    async def _update_conversation_timestamp(self, session_id: str) -> None:
+        """Update the last_message_at timestamp for a conversation."""
+        query = select(CoachConversationORM).where(
+            CoachConversationORM.session_id == session_id
+        )
+        result = await self._db.execute(query)
+        conversation = result.scalar_one_or_none()
+        if conversation:
+            conversation.last_message_at = datetime.now(UTC)
+            await self._db.commit()
+
+    async def _generate_title(self, query: str) -> str:
+        """Generate a short title from the first message."""
+        # Simple title generation - take first 50 chars
+        title = query[:50].strip()
+        if len(query) > 50:
+            title += "..."
+        return title
+
+    async def _get_agent_deps(self, identity_id: str) -> UgokiAgentDeps:
+        """Create agent dependencies for streaming."""
+        return UgokiAgentDeps(
+            db=self._db,
+            identity_id=identity_id,
+            embedding_client=get_embedding_client(),
+            http_client=get_http_client(),
+            brave_api_key=get_brave_api_key(),
+            memories="",  # TODO: Integrate Mem0
+            user_context="",  # TODO: Build from user profile
+            health_context="",  # TODO: Build from health profile
+        )
+
+    async def stream_chat(
+        self,
+        identity_id: str,
+        request: StreamChatRequest,
+    ) -> AsyncIterator[StreamChunk]:
+        """
+        Stream a chat response from the AI coach.
+
+        Args:
+            identity_id: User's identity ID
+            request: Stream chat request with query and optional session_id
+
+        Yields:
+            StreamChunk objects with text and metadata
+        """
+        personality = request.personality or self._get_personality(identity_id)
+
+        # Safety check first
+        safety_result = check_message_safety(request.query)
+
+        if safety_result.action == SafetyAction.BLOCK:
+            yield StreamChunk(
+                text=safety_result.redirect_message or self._get_default_safety_message(),
+                complete=True,
+            )
+            return
+
+        # Create or get conversation
+        session_id = request.session_id
+        is_new_conversation = session_id is None
+
+        if is_new_conversation:
+            conversation = await self.create_conversation(identity_id)
+            session_id = conversation.session_id
+            title = await self._generate_title(request.query)
+            # Update title
+            await self.update_conversation(identity_id, session_id, title=title)
+        else:
+            # Verify ownership
+            query = select(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id,
+                CoachConversationORM.identity_id == identity_id,
+            )
+            result = await self._db.execute(query)
+            if not result.scalar_one_or_none():
+                yield StreamChunk(
+                    text="Conversation not found.",
+                    error="conversation_not_found",
+                    complete=True,
+                )
+                return
+            title = None
+
+        # Save user message
+        await self._save_message(session_id, "human", request.query)
+
+        # Get agent dependencies
+        deps = await self._get_agent_deps(identity_id)
+
+        # Stream response from agent
+        full_response = ""
+        first_chunk = True
+
+        try:
+            async for text_chunk in stream_coach_response(
+                query=request.query,
+                deps=deps,
+                personality=personality.value if personality else "motivational",
+            ):
+                full_response += text_chunk
+
+                # Send chunk with session info on first chunk
+                if first_chunk:
+                    yield StreamChunk(
+                        text=text_chunk,
+                        session_id=session_id if is_new_conversation else None,
+                        conversation_title=title if is_new_conversation else None,
+                        complete=False,
+                    )
+                    first_chunk = False
+                else:
+                    yield StreamChunk(
+                        text=text_chunk,
+                        complete=False,
+                    )
+
+            # Apply post-response safety filter
+            filtered_response, was_filtered = filter_ai_response(full_response)
+            if was_filtered:
+                # Add disclaimer at the end
+                disclaimer = get_safety_disclaimer()
+                yield StreamChunk(
+                    text=disclaimer,
+                    complete=False,
+                )
+                full_response = filtered_response
+
+            # Save AI response
+            await self._save_message(session_id, "ai", full_response)
+            await self._update_conversation_timestamp(session_id)
+
+            # Final chunk to signal completion
+            yield StreamChunk(
+                text="",
+                complete=True,
+            )
+
+        except Exception as e:
+            logger.error(f"Error streaming chat: {e}")
+            # Fall back to pattern matching
+            fallback_response = self._simple_response(request.query, personality)
+            await self._save_message(session_id, "ai", fallback_response.message)
+            await self._update_conversation_timestamp(session_id)
+
+            yield StreamChunk(
+                text=fallback_response.message,
+                session_id=session_id if is_new_conversation else None,
+                conversation_title=title if is_new_conversation else None,
+                complete=True,
+            )
+
+    # ============ GDPR Export Methods ============
+
+    async def export_coach_data(self, identity_id: str) -> dict:
+        """Export all coach data for GDPR compliance."""
+        # Get all conversations
+        conversations_result = await self._db.execute(
+            select(CoachConversationORM).where(
+                CoachConversationORM.identity_id == identity_id
+            )
+        )
+        conversations = conversations_result.scalars().all()
+
+        export_data = {
+            "conversations": [],
+            "exported_at": datetime.now(UTC).isoformat(),
+        }
+
+        for conv in conversations:
+            # Get messages for this conversation
+            messages_result = await self._db.execute(
+                select(CoachMessageORM).where(
+                    CoachMessageORM.session_id == conv.session_id
+                ).order_by(CoachMessageORM.created_at.asc())
+            )
+            messages = messages_result.scalars().all()
+
+            export_data["conversations"].append({
+                "session_id": conv.session_id,
+                "title": conv.title,
+                "created_at": conv.created_at.isoformat(),
+                "last_message_at": conv.last_message_at.isoformat(),
+                "is_archived": conv.is_archived,
+                "messages": [
+                    {
+                        "type": m.message.get("type"),
+                        "content": m.message.get("content"),
+                        "created_at": m.created_at.isoformat(),
+                    }
+                    for m in messages
+                ],
+            })
+
+        return export_data
+
+    async def delete_all_coach_data(self, identity_id: str) -> int:
+        """Delete all coach data for GDPR compliance. Returns count of deleted conversations."""
+        result = await self._db.execute(
+            delete(CoachConversationORM).where(
+                CoachConversationORM.identity_id == identity_id
+            )
+        )
+        await self._db.commit()
+        return result.rowcount

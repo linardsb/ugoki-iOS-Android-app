@@ -6,6 +6,7 @@ export * from './types';
 // Hooks
 export {
   useSendMessage,
+  useStreamMessage,
   useCoachContext,
   useDailyInsight,
   useMotivation,

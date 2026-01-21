@@ -41,6 +41,53 @@ Types of changes:
 
 ---
 
+## [2.1.0] - 2026-01-21
+
+AI Coach Full Upgrade: LLM + RAG + Streaming
+
+### Added
+
+#### AI Coach Enhancements
+- **LLM in /chat Endpoint** - Real LLM responses with pattern-matching fallback
+  - Uses `run_coach_response()` from Pydantic AI agent
+  - Automatic fallback to pattern matching on LLM failure
+- **RAG Document Retrieval** - pgvector-powered semantic search
+  - New `coach_documents` table with Vector(1536) embeddings
+  - HNSW index for fast cosine similarity search
+  - `retrieve_relevant_documents` tool for agent
+- **Embedding Cache** - In-memory TTL cache for query embeddings
+  - 1-hour TTL, 1000 entry max size
+  - ~100x speedup on cache hits
+  - `get_embedding_cache_stats()` and `clear_embedding_cache()` utilities
+- **Document Ingestion Script** - CLI for populating knowledge base
+  - `scripts/ingest_documents.py` with chunking and overlap
+  - Supports .md, .txt, .py, .rst, .json files
+- **Mobile Streaming** - Coach screen now uses streaming responses
+  - Switched from `useSendMessage` to `useStreamMessage`
+  - Real-time character-by-character display
+
+#### Database
+- **Migration:** `d2e3f4a5b6c7_add_coach_documents.py`
+  - pgvector extension enabled
+  - `coach_documents` table with vector embeddings
+  - HNSW index for similarity search
+
+#### Dependencies
+- Added `pgvector>=0.2.4` to backend dependencies
+
+### Changed
+- Mobile coach screen imports `useStreamMessage` instead of `useSendMessage`
+- Scroll behavior updated to follow streaming content
+- `.env.example` updated with LLM/embedding configuration
+
+### Performance
+| Metric | Before | After (cache hit) |
+|--------|--------|-------------------|
+| RAG retrieval | ~105ms | ~6ms |
+| Embedding | ~100ms | ~0.1ms |
+
+---
+
 ## [1.0.0] - 2026-01-10
 
 MVP Complete - Ready for Production Deployment

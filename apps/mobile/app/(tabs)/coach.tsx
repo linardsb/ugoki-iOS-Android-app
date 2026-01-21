@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Gear, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
 import {
-  useSendMessage,
+  useStreamMessage,
   useChatStore,
   ChatBubble,
   ChatInput,
@@ -35,41 +35,35 @@ export default function CoachScreen() {
     personality,
     quickActions,
     isTyping,
-    addUserMessage,
-    addAssistantMessage,
+    isStreaming,
+    streamingMessage,
     setQuickActions,
     setTyping,
     clearMessages,
   } = useChatStore();
 
-  const sendMessage = useSendMessage({
-    onSuccess: (response) => {
-      addAssistantMessage(response.response.message);
-      setQuickActions(response.quick_actions);
-    },
+  const { sendMessage, isLoading, cancel } = useStreamMessage({
+    onComplete: () => setTyping(false),
     onError: (error) => {
       setTyping(false);
-      // Add error message to chat so user sees feedback
-      addAssistantMessage("Sorry, I couldn't process that request. Please try again.");
       Alert.alert('Connection Error', 'Failed to send message. Please check your connection and try again.');
     },
   });
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or streaming updates
   useEffect(() => {
-    if (messages.length > 0 || isTyping) {
+    if (messages.length > 0 || isTyping || isStreaming) {
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
     }
-  }, [messages.length, isTyping]);
+  }, [messages.length, isTyping, isStreaming, streamingMessage]);
 
   const handleSend = useCallback((message: string) => {
-    addUserMessage(message);
     setTyping(true);
     setQuickActions([]);
-    sendMessage.mutate({ message, personality });
-  }, [personality, addUserMessage, setTyping, setQuickActions, sendMessage]);
+    sendMessage(message, personality);
+  }, [personality, setTyping, setQuickActions, sendMessage]);
 
   const handleQuickAction = useCallback((action: QuickAction) => {
     // For now, just send the label as a message
@@ -181,7 +175,18 @@ export default function CoachScreen() {
                 {messages.map((message) => (
                   <ChatBubble key={message.id} message={message} userGender={userGender} />
                 ))}
-                {isTyping && <TypingIndicator />}
+                {isStreaming && streamingMessage && (
+                  <ChatBubble
+                    message={{
+                      id: 'streaming',
+                      role: 'assistant',
+                      content: streamingMessage,
+                      timestamp: new Date().toISOString(),
+                    }}
+                    userGender={userGender}
+                  />
+                )}
+                {isTyping && !isStreaming && <TypingIndicator />}
               </ScrollView>
             )}
 
@@ -195,7 +200,7 @@ export default function CoachScreen() {
           {/* Input */}
           <ChatInput
             onSend={handleSend}
-            disabled={sendMessage.isPending}
+            disabled={isLoading}
           />
         </View>
       </KeyboardAvoidingView>

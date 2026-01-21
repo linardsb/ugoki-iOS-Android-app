@@ -27,6 +27,9 @@ from src.modules.profile.orm import (  # noqa: F401
     UserProfileORM, UserGoalsORM, HealthProfileORM, DietaryProfileORM,
     WorkoutRestrictionsORM, SocialProfileORM, UserPreferencesORM, OnboardingStatusORM
 )
+from src.modules.ai_coach.orm import (  # noqa: F401
+    CoachConversationORM, CoachMessageORM, CoachRequestORM, CoachDocumentORM
+)
 
 config = context.config
 

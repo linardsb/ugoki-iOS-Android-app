@@ -18,12 +18,15 @@ dependencies = [
     "httpx>=0.28.0",
     "pydantic-ai>=0.0.15",
     "anthropic>=0.40.0",
+    "openai>=1.0.0",
+    "mem0ai>=0.1.0",
     "logfire>=2.0.0",
     "pdfplumber>=0.11.8",
     "boto3>=1.35.0",
     "pillow>=11.0.0",
     "python-multipart>=0.0.9",
     "slowapi>=0.1.9",
+    "pgvector>=0.2.4",
 ]
 
 [project.optional-dependencies]
