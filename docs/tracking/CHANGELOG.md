@@ -47,6 +47,49 @@ Types of changes:
 
 ---
 
+## [2.1.1] - 2026-01-21
+
+AI Coach Streaming Fixes & Production Configuration
+
+### Fixed
+
+#### Streaming Issues
+- **BUG-008:** Fixed streaming text duplication in mobile app
+  - Root cause: Pydantic AI `stream_text()` returns cumulative text, not deltas
+  - Fix: Added delta extraction in `service.py:744-748`
+- **BUG-009:** Fixed React Native SSE compatibility
+  - Replaced native `fetch` with `react-native-sse` library for proper SSE support
+- **BUG-010:** Fixed slow response times (20-40s with Ollama)
+  - Added Groq as cloud LLM provider (0.3s response time)
+  - Updated model to `llama-3.3-70b-versatile`
+- **BUG-011:** Fixed RAG tools failing without API keys
+  - Disabled web search and RAG tools by default
+  - Tools must be explicitly enabled after configuring API keys
+
+### Changed
+
+#### Configuration
+- **Production LLM Provider**: Switched from Ollama to Groq for fast inference
+- **Development/Production Split**: Documented separate configurations for dev vs prod
+- **RAG Tools Disabled**: Web search and document retrieval disabled by default to prevent errors when API keys not configured
+
+#### Documentation
+- Added production configuration guide to `docs/features/ai-coach.md`
+- Added RAG limitations section for medical documents
+- Documented provider comparison (Ollama vs Groq vs OpenAI)
+- Added resolved issues section with root cause analysis
+
+### Dependencies
+- Added `react-native-sse` to mobile app for SSE streaming support
+
+### Architecture Decisions
+- **DEC-025:** Standard RAG is NOT suitable for medical document interpretation
+  - Use dedicated tools with safety filters for bloodwork data
+  - RAG limited to general wellness content only
+  - See `docs/features/ai-coach.md#rag-limitations-for-medical-documents`
+
+---
+
 ## [2.1.0] - 2026-01-21
 
 AI Coach Full Upgrade: LLM + RAG + Streaming

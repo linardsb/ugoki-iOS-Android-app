@@ -294,6 +294,60 @@ None currently tracked.
 
 ---
 
+## Resolved Issues (Jan 2026)
+
+### BUG-008: Streaming text duplication (Resolved)
+
+**Problem:** Mobile app displayed duplicate text because the streaming hook didn't properly handle cumulative text from Pydantic AI's `stream_text()`.
+
+**Root Cause:** Pydantic AI's `stream_text()` returns cumulative text, not deltas. The service was sending full cumulative text with each chunk.
+
+**Fix:** Added delta extraction in `service.py:744-748`:
+```python
+full_response = text_chunk
+delta = text_chunk[prev_length:]
+prev_length = len(text_chunk)
+```
+
+**File:** `apps/api/src/modules/ai_coach/service.py:744-748`
+
+---
+
+### BUG-009: React Native fetch SSE incompatibility (Resolved)
+
+**Problem:** Native `fetch` API in React Native doesn't properly support Server-Sent Events streaming.
+
+**Fix:** Replaced native fetch with `react-native-sse` library.
+
+**File:** `apps/mobile/features/coach/hooks/useStreamMessage.ts`
+
+---
+
+### BUG-010: Slow response times with local Ollama (Resolved)
+
+**Problem:** AI Coach responses took 20-40 seconds with local Ollama inference.
+
+**Fix:** Added Groq as a cloud LLM provider option, reducing response times to ~0.3 seconds.
+
+**Configuration:**
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
+---
+
+### BUG-011: RAG tools failing without API keys (Resolved)
+
+**Problem:** Agent would error when web search or RAG tools attempted to call external APIs without configured keys.
+
+**Fix:** Disabled RAG tools by default in `agents/coach.py`. Tools are commented out and must be explicitly enabled after configuring API keys.
+
+**File:** `apps/api/src/modules/ai_coach/agents/coach.py:317-330`
+
+---
+
 ## Database Schema (v2.1)
 
 ### coach_conversations
@@ -383,22 +437,86 @@ from src.modules.ai_coach.tools.documents import (
 
 ## Configuration (v2.1)
 
-Environment variables for LLM and embeddings:
+### Development vs Production
+
+| Environment | LLM Provider | Embeddings | Web Search |
+|-------------|--------------|------------|------------|
+| **Development** | Ollama (local) | None (disabled) | None (disabled) |
+| **Production** | Groq (cloud) | OpenAI | Brave API |
+
+### Development Configuration
+
+For local development, use Ollama (free, runs locally):
 
 ```env
-# LLM Provider (openai, ollama, groq, anthropic)
-LLM_PROVIDER=openai
-LLM_API_KEY=sk-...
-LLM_CHOICE=gpt-4o-mini
-LLM_BASE_URL=https://api.openai.com/v1
+# LLM Provider - Local Ollama
+LLM_PROVIDER=ollama
+LLM_CHOICE=llama3.2
+LLM_BASE_URL=http://localhost:11434
 
-# Embeddings (for RAG)
+# Embeddings - DISABLED (no local embeddings)
+EMBEDDING_PROVIDER=
+EMBEDDING_API_KEY=
+EMBEDDING_MODEL_CHOICE=
+
+# Web Search - DISABLED
+BRAVE_API_KEY=
+```
+
+**Note:** When API keys are not configured, RAG (document retrieval) and web search tools are automatically disabled. The agent operates with simplified functionality using only fitness data tools.
+
+### Production Configuration
+
+For production deployment, use cloud providers:
+
+```env
+# LLM Provider - Groq (fast, free tier available)
+LLM_PROVIDER=groq
+LLM_API_KEY=gsk_...  # Groq API key
+LLM_CHOICE=llama-3.3-70b-versatile
+# Or use Groq-specific settings
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Embeddings - OpenAI (cheap, high quality)
 EMBEDDING_PROVIDER=openai
-EMBEDDING_API_KEY=sk-...
+EMBEDDING_API_KEY=sk-...  # OpenAI API key
 EMBEDDING_MODEL_CHOICE=text-embedding-3-small
 
-# Web Search (optional)
-BRAVE_API_KEY=...
+# Web Search - Brave (1,000 free queries/month)
+BRAVE_API_KEY=BSA...
+```
+
+### Provider Comparison
+
+| Provider | Cost | Speed | Quality | Use Case |
+|----------|------|-------|---------|----------|
+| **Ollama** | Free | Slow (~30s) | Good | Development |
+| **Groq** | Free tier | Fast (~0.3s) | Excellent | Production |
+| **OpenAI** | ~$3/1M tokens | Medium | Excellent | Production |
+| **Anthropic** | ~$3/1M tokens | Medium | Excellent | Alternative |
+
+### Enabling RAG Tools
+
+RAG tools (web search, document retrieval) are **disabled by default** in `agents/coach.py`. To enable:
+
+1. Set required API keys in `.env`
+2. Uncomment the tool definitions in `apps/api/src/modules/ai_coach/agents/coach.py:317-330`
+3. Restart the API server
+
+```python
+# In agents/coach.py, uncomment these:
+@agent.tool
+async def web_search(ctx: RunContext[UgokiAgentDeps], query: str) -> str:
+    """Search the web for fitness/wellness information."""
+    from src.modules.ai_coach.tools.web_search import perform_web_search
+    return await perform_web_search(query, ctx.deps.http_client, ctx.deps.brave_api_key)
+
+@agent.tool
+async def retrieve_relevant_documents(ctx: RunContext[UgokiAgentDeps], user_query: str) -> str:
+    """Search knowledge base using RAG."""
+    from src.modules.ai_coach.tools.documents import retrieve_documents
+    return await retrieve_documents(user_query, ctx.deps.db, ctx.deps.embedding_client)
 ```
 
 ---
@@ -422,6 +540,65 @@ uv run python scripts/ingest_documents.py --source ../docs --verify
 ```
 
 **Supported File Types:** `.md`, `.txt`, `.py`, `.rst`, `.json`
+
+---
+
+## RAG Limitations for Medical Documents
+
+> **Important:** Standard RAG is NOT suitable for medical document interpretation.
+
+### Why Standard RAG Falls Short for Medical Content
+
+| Issue | Impact |
+|-------|--------|
+| **Embedding quality** | General-purpose embeddings (OpenAI, Cohere) may miss medical terminology nuances |
+| **Chunking problems** | Fixed-size splitting can separate conditions from contraindications |
+| **Hallucination risk** | LLMs may confidently generate incorrect medical information |
+| **Retrieval accuracy** | May retrieve partially relevant content while missing critical caveats |
+
+### Medical-Grade RAG Requirements
+
+| Component | Standard RAG | Medical-Grade |
+|-----------|-------------|---------------|
+| Embeddings | OpenAI text-embedding-3-small | PubMedBERT, MedCPT, or medical-tuned models |
+| Chunking | Fixed-size (500-1000 tokens) | Semantic/section-aware |
+| LLM | General-purpose | Medical fine-tuned or with strict guardrails |
+| Verification | None | Citation + confidence scoring |
+
+### UGOKI's Approach
+
+For UGOKI's wellness use case (fasting, workouts), standard RAG is acceptable.
+
+**RAG IS USED FOR:**
+- General wellness content
+- Fasting protocols and benefits
+- Workout guidance
+- Nutrition tips
+
+**RAG IS NOT USED FOR:**
+- Bloodwork interpretation (handled by dedicated tools with safety filters)
+- Medical condition advice (blocked by safety filter)
+- Drug/supplement interactions (blocked by safety filter)
+
+### Bloodwork Handling
+
+Bloodwork data is accessed through dedicated tools (`get_latest_biomarkers`, `get_biomarker_trend`, `get_bloodwork_summary`) that:
+
+1. Query structured data from the METRICS module
+2. Return values with reference ranges
+3. Trigger safety filters for medical interpretation
+4. Never use RAG retrieval for medical documents
+
+### Liability Considerations
+
+The AI Coach includes multiple safety layers:
+
+1. **Pre-filter**: Blocks medical condition queries before LLM processing
+2. **Post-filter**: Adds disclaimers if AI response contains medical-adjacent content
+3. **Emergency redirect**: Immediately redirects emergency symptoms to 911
+4. **Safe topic guidance**: System prompt restricts coach to wellness-only advice
+
+**Do not** use RAG to ingest personal medical documents (lab reports, diagnoses) into the knowledge base.
 
 ---
 

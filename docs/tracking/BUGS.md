@@ -46,6 +46,90 @@ Each bug follows this pattern:
 
 ## Resolved Issues
 
+### BUG-011: RAG tools failing without API keys
+
+**Status:** Resolved | **Severity:** Medium | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+Web search and RAG document retrieval tools would throw errors when attempting to call external APIs without configured API keys.
+
+**Files Affected:**
+- `apps/api/src/modules/ai_coach/agents/coach.py:317-330`
+
+**Root Cause:**
+Tools attempted to use embedding client and Brave Search API without checking for valid credentials.
+
+**Fix:**
+Disabled RAG tools by default. Tools are now commented out and must be explicitly enabled after configuring:
+- `EMBEDDING_API_KEY` for document retrieval
+- `BRAVE_API_KEY` for web search
+
+---
+
+### BUG-010: Slow AI Coach response times with local Ollama
+
+**Status:** Resolved | **Severity:** High | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+AI Coach responses took 20-40 seconds when using local Ollama inference.
+
+**Root Cause:**
+Local LLM inference is computationally expensive and slow on standard hardware.
+
+**Fix:**
+Added Groq as a cloud LLM provider option with OpenAI-compatible API. Response times reduced to ~0.3 seconds.
+
+**Configuration:**
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
+---
+
+### BUG-009: React Native fetch SSE incompatibility
+
+**Status:** Resolved | **Severity:** High | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+Native `fetch` API in React Native doesn't properly support Server-Sent Events (SSE) streaming, causing AI Coach responses to not stream.
+
+**Files Affected:**
+- `apps/mobile/features/coach/hooks/useStreamMessage.ts`
+
+**Fix:**
+Installed `react-native-sse` package and replaced native fetch implementation with proper SSE client.
+
+```bash
+bun add react-native-sse
+```
+
+---
+
+### BUG-008: Streaming text duplication in mobile app
+
+**Status:** Resolved | **Severity:** High | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21
+
+**Description:**
+Mobile app displayed duplicate/cumulative text during AI Coach streaming responses.
+
+**Files Affected:**
+- `apps/api/src/modules/ai_coach/service.py:744-748`
+
+**Root Cause:**
+Pydantic AI's `stream_text()` returns cumulative text (full response so far), not deltas (new text only). The service was sending the full cumulative text with each chunk.
+
+**Fix:**
+Added delta extraction logic:
+```python
+full_response = text_chunk
+delta = text_chunk[prev_length:]  # Extract only new text
+prev_length = len(text_chunk)
+```
+
+---
+
 ### BUG-007: Progression achievements not seeded
 
 **Status:** Resolved | **Severity:** Low | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21

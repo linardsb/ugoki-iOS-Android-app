@@ -242,6 +242,111 @@ Each decision follows this structure:
 
 ---
 
+### DEC-023: Multi-Provider LLM Support
+**Date:** January 2026 | **Status:** Accepted
+
+**Context:** Need flexibility in LLM provider for development vs production.
+
+**Decision:** Support multiple LLM providers (Ollama, Groq, OpenAI, Anthropic) through configuration.
+
+**Rationale:**
+- Ollama for free local development
+- Groq for fast, cheap production inference (0.3s response time)
+- OpenAI/Anthropic as alternatives if needed
+- All use OpenAI-compatible API format
+
+**Consequences:**
+- Environment variables control provider selection
+- Pydantic AI's OpenAIProvider works with all providers
+- No code changes needed to switch providers
+
+**Reference:** [features/ai-coach.md#configuration](../features/ai-coach.md#configuration)
+
+---
+
+### DEC-024: SSE Streaming for AI Coach
+**Date:** January 2026 | **Status:** Accepted
+
+**Context:** Need real-time response streaming for AI Coach chat.
+
+**Decision:** Use Server-Sent Events (SSE) for streaming responses.
+
+**Rationale:**
+- Standard HTTP-based protocol
+- Works through load balancers
+- React Native support via `react-native-sse` library
+- Simpler than WebSockets for unidirectional data
+
+**Implementation Details:**
+- Backend yields StreamChunk objects with delta text
+- Mobile app uses `react-native-sse` (not native fetch)
+- Pydantic AI's `stream_text()` returns cumulative text; service extracts deltas
+
+**Consequences:**
+- Connection timeout handling needed
+- Fallback to non-streaming on error
+- Special handling for Pydantic AI cumulative text
+
+**Reference:** [features/ai-coach.md#streaming-response-format](../features/ai-coach.md#streaming-response-format)
+
+---
+
+### DEC-025: RAG Not Suitable for Medical Documents
+**Date:** January 2026 | **Status:** Accepted
+
+**Context:** Evaluating whether standard RAG can accurately process medical documents (bloodwork, diagnoses).
+
+**Decision:** Do NOT use standard RAG for medical document interpretation. Keep RAG for general wellness content only.
+
+**Rationale:**
+1. **Embedding limitations**: General-purpose embeddings (OpenAI, Cohere) miss medical terminology nuances
+2. **Chunking problems**: Fixed-size splitting can separate conditions from critical contraindications
+3. **Hallucination risk**: LLMs may confidently generate incorrect medical information
+4. **Retrieval accuracy**: May retrieve partially relevant content while missing important safety caveats
+5. **Liability**: Incorrect medical advice could harm users
+
+**Medical-Grade Requirements** (not implemented):
+- PubMedBERT or MedCPT embeddings
+- Semantic/section-aware chunking
+- Medical fine-tuned LLM
+- Citation and confidence scoring
+
+**UGOKI's Approach:**
+- RAG limited to: fasting protocols, workout guidance, nutrition tips
+- Bloodwork: Dedicated tools query structured METRICS data with safety filters
+- Medical conditions: Pre-filtered and blocked before LLM processing
+
+**Consequences:**
+- Users cannot upload medical documents to RAG knowledge base
+- Bloodwork interpretation uses dedicated tools, not semantic search
+- Safety filters remain critical layer of protection
+
+**Reference:** [features/ai-coach.md#rag-limitations-for-medical-documents](../features/ai-coach.md#rag-limitations-for-medical-documents)
+
+---
+
+### DEC-026: RAG Tools Disabled by Default
+**Date:** January 2026 | **Status:** Accepted
+
+**Context:** RAG tools (web search, document retrieval) require API keys that may not be configured.
+
+**Decision:** Disable RAG tools by default in production code. Require explicit enable after configuration.
+
+**Rationale:**
+- Prevents runtime errors when API keys missing
+- Avoids confusing error messages for new developers
+- Explicit opt-in ensures keys are properly configured
+- Agent works with simplified functionality using only fitness data tools
+
+**Consequences:**
+- Web search and RAG tools commented out in `agents/coach.py`
+- Documentation explains how to enable
+- Production checklist includes API key verification
+
+**Reference:** `apps/api/src/modules/ai_coach/agents/coach.py:317-330`
+
+---
+
 ## Deprecated Decisions
 
 ### DEC-D01: Redux for State Management
