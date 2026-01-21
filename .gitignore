@@ -4,10 +4,19 @@ node_modules/
 __pycache__/
 *.pyc
 
-# Environment
+# Environment - ignore all .env files except examples
 .env
+.env.*
+!.env.example
+!.env.*.example
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+**/.env
+**/.env.*
+!**/.env.example
 
 # Build
 dist/
