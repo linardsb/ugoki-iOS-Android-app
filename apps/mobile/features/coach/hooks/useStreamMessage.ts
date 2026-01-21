@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/shared/stores/auth';
 import { useChatStore } from '../stores/chatStore';
 import { getApiBaseUrl } from '@/shared/api/client';
 import type { CoachPersonality } from '../types';
+import EventSource from 'react-native-sse';
 
 interface StreamChunk {
   text: string;
@@ -15,16 +16,28 @@ interface StreamChunk {
 interface UseStreamMessageOptions {
   onComplete?: () => void;
   onError?: (error: string) => void;
+  /** Delay in ms between revealing characters (default: 15ms for natural typing feel) */
+  typingDelay?: number;
 }
 
 /**
  * Hook to send a streaming message to the AI coach.
- * Uses Server-Sent Events (SSE) to receive response chunks.
+ * Uses Server-Sent Events (SSE) via react-native-sse for React Native compatibility.
  */
+// Default typing delay in milliseconds (18ms = ~55 chars/sec)
+const DEFAULT_TYPING_DELAY = 18;
+
 export function useStreamMessage(options?: UseStreamMessageOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Typing animation refs
+  const textBufferRef = useRef<string>('');
+  const displayedIndexRef = useRef<number>(0);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isCompleteRef = useRef<boolean>(false);
+  const typingDelay = options?.typingDelay ?? DEFAULT_TYPING_DELAY;
 
   const identityId = useAuthStore((state) => state.identity?.id);
   const token = useAuthStore((state) => state.accessToken);
@@ -39,118 +52,170 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
     setStreaming,
   } = useChatStore();
 
+  // Cleanup typing timer on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Process the text buffer character by character
+  const processTypingBuffer = useCallback(() => {
+    if (displayedIndexRef.current < textBufferRef.current.length) {
+      // Reveal next character
+      const nextChar = textBufferRef.current[displayedIndexRef.current];
+      appendToStreaming(nextChar);
+      displayedIndexRef.current++;
+
+      // Schedule next character
+      typingTimerRef.current = setTimeout(processTypingBuffer, typingDelay);
+    } else if (isCompleteRef.current) {
+      // Buffer is empty and stream is complete - finalize
+      finalizeStreaming();
+      setIsLoading(false);
+      setStreaming(false);
+      options?.onComplete?.();
+    }
+    // If buffer is empty but not complete, we'll resume when more text arrives
+  }, [appendToStreaming, finalizeStreaming, setStreaming, typingDelay, options]);
+
+  // Add text to buffer and start typing if not already running
+  const addToBuffer = useCallback((text: string) => {
+    textBufferRef.current += text;
+
+    // Start typing animation if not already running
+    if (!typingTimerRef.current) {
+      processTypingBuffer();
+    }
+  }, [processTypingBuffer]);
+
   const sendMessage = useCallback(
     async (message: string, overridePersonality?: CoachPersonality) => {
+      console.log('[Coach] sendMessage called, identityId:', identityId, 'token:', token ? 'present' : 'missing');
+
       if (!identityId || !token) {
-        setError('Not authenticated');
+        const errorMsg = 'Not authenticated - please log in first';
+        console.error('[Coach] Auth check failed:', errorMsg);
+        setError(errorMsg);
+        options?.onError?.(errorMsg);
         return;
       }
 
-      // Abort any existing request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+      // Close any existing connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
 
       setIsLoading(true);
       setError(null);
       setStreaming(true);
 
+      // Reset typing animation state
+      textBufferRef.current = '';
+      displayedIndexRef.current = 0;
+      isCompleteRef.current = false;
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+
       // Add user message to store
       addUserMessage(message);
-
-      // Create new abort controller
-      abortControllerRef.current = new AbortController();
 
       try {
         const baseUrl = getApiBaseUrl();
         const url = `${baseUrl}/coach/stream`;
+        console.log('[Coach] Connecting to SSE:', url);
 
-        const response = await fetch(url, {
-          method: 'POST',
+        // Create EventSource with POST request
+        const es = new EventSource(url, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
+          method: 'POST',
           body: JSON.stringify({
             message: message,
             session_id: currentSessionId,
             personality: overridePersonality || personality,
           }),
-          signal: abortControllerRef.current.signal,
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        eventSourceRef.current = es;
 
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error('No response body');
-        }
+        es.addEventListener('open', () => {
+          console.log('[Coach] SSE connection opened');
+        });
 
-        const decoder = new TextDecoder();
-        let buffer = '';
+        es.addEventListener('message', (event: any) => {
+          if (!event.data) return;
 
-        while (true) {
-          const { done, value } = await reader.read();
+          try {
+            const chunk: StreamChunk = JSON.parse(event.data);
+            console.log('[Coach] Received chunk:', chunk.text?.substring(0, 30) || '(empty)', 'complete:', chunk.complete);
 
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-
-          // Process complete SSE messages
-          const lines = buffer.split('\n\n');
-          buffer = lines.pop() || ''; // Keep incomplete message in buffer
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              try {
-                const chunk: StreamChunk = JSON.parse(data);
-
-                // Handle session info from first chunk
-                if (chunk.session_id) {
-                  setCurrentSession(chunk.session_id, chunk.conversation_title);
-                }
-
-                // Handle error
-                if (chunk.error) {
-                  setError(chunk.error);
-                  break;
-                }
-
-                // Append text to streaming message
-                if (chunk.text) {
-                  appendToStreaming(chunk.text);
-                }
-
-                // Handle completion
-                if (chunk.complete) {
-                  finalizeStreaming();
-                  options?.onComplete?.();
-                }
-              } catch (e) {
-                console.error('Failed to parse SSE chunk:', e);
-              }
+            // Handle session info from first chunk
+            if (chunk.session_id) {
+              setCurrentSession(chunk.session_id, chunk.conversation_title);
             }
-          }
-        }
-      } catch (err: any) {
-        if (err.name === 'AbortError') {
-          // Request was cancelled, not an error
-          return;
-        }
 
+            // Handle error
+            if (chunk.error) {
+              console.error('[Coach] Server error:', chunk.error);
+              setError(chunk.error);
+              es.close();
+              eventSourceRef.current = null;
+              setIsLoading(false);
+              setStreaming(false);
+              options?.onError?.(chunk.error);
+              return;
+            }
+
+            // Add text to typing buffer (will be revealed character by character)
+            if (chunk.text) {
+              addToBuffer(chunk.text);
+            }
+
+            // Handle completion - mark complete but let typing animation finish
+            if (chunk.complete) {
+              console.log('[Coach] Stream complete, waiting for typing animation to finish');
+              isCompleteRef.current = true;
+              es.close();
+              eventSourceRef.current = null;
+              // Don't finalize here - let processTypingBuffer handle it when buffer is empty
+            }
+          } catch (e) {
+            console.error('[Coach] Failed to parse SSE chunk:', e, 'data:', event.data);
+          }
+        });
+
+        es.addEventListener('error', (event: any) => {
+          console.error('[Coach] SSE error:', event);
+          const errorMessage = event.message || 'Connection failed';
+          setError(errorMessage);
+          options?.onError?.(errorMessage);
+
+          // Finalize any partial streaming
+          finalizeStreaming();
+          es.close();
+          eventSourceRef.current = null;
+          setIsLoading(false);
+          setStreaming(false);
+        });
+
+      } catch (err: any) {
+        console.error('[Coach] Exception:', err);
         const errorMessage = err.message || 'Failed to send message';
         setError(errorMessage);
         options?.onError?.(errorMessage);
 
         // Finalize any partial streaming
         finalizeStreaming();
-      } finally {
         setIsLoading(false);
         setStreaming(false);
-        abortControllerRef.current = null;
       }
     },
     [
@@ -159,7 +224,7 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
       currentSessionId,
       personality,
       addUserMessage,
-      appendToStreaming,
+      addToBuffer,
       finalizeStreaming,
       setCurrentSession,
       setStreaming,
@@ -168,10 +233,21 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
   );
 
   const cancel = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
+    // Close SSE connection
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
     }
+    // Stop typing animation
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    // Reset buffer state
+    textBufferRef.current = '';
+    displayedIndexRef.current = 0;
+    isCompleteRef.current = false;
+
     setIsLoading(false);
     setStreaming(false);
     finalizeStreaming();
