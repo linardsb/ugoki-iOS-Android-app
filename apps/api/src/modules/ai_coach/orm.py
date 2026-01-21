@@ -9,6 +9,19 @@ from pgvector.sqlalchemy import Vector
 from src.db.base import Base, TimestampMixin
 
 
+class CoachUserSettingsORM(Base, TimestampMixin):
+    """Database model for user coach settings (personality, etc.)."""
+
+    __tablename__ = "coach_user_settings"
+
+    identity_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("identities.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    personality: Mapped[str] = mapped_column(String(20), default="motivational", nullable=False)
+
+
 class CoachConversationORM(Base, TimestampMixin):
     """Database model for coach conversation sessions."""
 
@@ -25,6 +38,9 @@ class CoachConversationORM(Base, TimestampMixin):
     last_message_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     session_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict, nullable=False)
+    # Token management fields
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    message_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
 
 class CoachMessageORM(Base):

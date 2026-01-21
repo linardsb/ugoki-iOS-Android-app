@@ -314,60 +314,20 @@ def _create_streaming_agent(personality: str = "motivational") -> Agent[UgokiAge
             return f"\n\n## Health Considerations\n{ctx.deps.health_context}"
         return ""
 
-    # Add web search tool
-    @agent.tool
-    async def web_search(ctx: RunContext[UgokiAgentDeps], query: str) -> str:
-        """
-        Search the web for current fitness, nutrition, or wellness information.
-
-        Use this when users ask about:
-        - Recent research or studies
-        - Current recommendations or guidelines
-        - Information not in your training data
-
-        Args:
-            ctx: The agent context with dependencies
-            query: The search query
-
-        Returns:
-            Formatted search results
-        """
-        from src.modules.ai_coach.tools.web_search import perform_web_search
-
-        logger.info(f"Coach agent calling web_search: {query[:50]}...")
-        return await perform_web_search(
-            query=query,
-            http_client=ctx.deps.http_client,
-            brave_api_key=ctx.deps.brave_api_key,
-        )
-
-    # Add document retrieval tool
-    @agent.tool
-    async def retrieve_relevant_documents(ctx: RunContext[UgokiAgentDeps], user_query: str) -> str:
-        """
-        Search the knowledge base for relevant wellness content using RAG.
-
-        Use this for:
-        - Detailed information about fasting protocols
-        - Exercise techniques and workout information
-        - Nutrition guidelines and recipes
-        - Scientific explanations of wellness concepts
-
-        Args:
-            ctx: The agent context with dependencies
-            user_query: The user's question or topic
-
-        Returns:
-            Relevant document chunks from the knowledge base
-        """
-        from src.modules.ai_coach.tools.documents import retrieve_documents
-
-        logger.info(f"Coach agent calling RAG: {user_query[:50]}...")
-        return await retrieve_documents(
-            query=user_query,
-            db=ctx.deps.db,
-            embedding_client=ctx.deps.embedding_client,
-        )
+    # NOTE: Web search and RAG tools are disabled until API keys are configured
+    # To enable, set BRAVE_API_KEY and EMBEDDING_API_KEY in .env
+    #
+    # @agent.tool
+    # async def web_search(ctx: RunContext[UgokiAgentDeps], query: str) -> str:
+    #     """Search the web for fitness/wellness information."""
+    #     from src.modules.ai_coach.tools.web_search import perform_web_search
+    #     return await perform_web_search(query, ctx.deps.http_client, ctx.deps.brave_api_key)
+    #
+    # @agent.tool
+    # async def retrieve_relevant_documents(ctx: RunContext[UgokiAgentDeps], user_query: str) -> str:
+    #     """Search knowledge base using RAG."""
+    #     from src.modules.ai_coach.tools.documents import retrieve_documents
+    #     return await retrieve_documents(user_query, ctx.deps.db, ctx.deps.embedding_client)
 
     return agent
 
@@ -376,6 +336,7 @@ async def stream_coach_response(
     query: str,
     deps: UgokiAgentDeps,
     personality: str = "motivational",
+    message_history: list | None = None,
 ) -> AsyncIterator[str]:
     """
     Stream responses from the coach agent.
@@ -384,6 +345,7 @@ async def stream_coach_response(
         query: User's message
         deps: Agent dependencies
         personality: Coach personality style
+        message_history: Optional list of previous messages for multi-turn context
 
     Yields:
         Text chunks as they're generated
@@ -391,7 +353,11 @@ async def stream_coach_response(
     agent = _create_streaming_agent(personality)
 
     try:
-        async with agent.run_stream(query, deps=deps) as result:
+        async with agent.run_stream(
+            query,
+            deps=deps,
+            message_history=message_history,
+        ) as result:
             async for text in result.stream_text():
                 yield text
     except Exception as e:
@@ -403,6 +369,7 @@ async def run_coach_response(
     query: str,
     deps: UgokiAgentDeps,
     personality: str = "motivational",
+    message_history: list | None = None,
 ) -> str:
     """
     Run the coach agent and return the full response.
@@ -411,6 +378,7 @@ async def run_coach_response(
         query: User's message
         deps: Agent dependencies
         personality: Coach personality style
+        message_history: Optional list of previous messages for multi-turn context
 
     Returns:
         Complete response from the coach
@@ -418,7 +386,7 @@ async def run_coach_response(
     agent = _create_streaming_agent(personality)
 
     try:
-        result = await agent.run(query, deps=deps)
+        result = await agent.run(query, deps=deps, message_history=message_history)
         return result.output
     except Exception as e:
         logger.error(f"Error running coach response: {e}")

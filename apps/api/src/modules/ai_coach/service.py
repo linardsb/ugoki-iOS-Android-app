@@ -30,6 +30,7 @@ from src.modules.ai_coach.models import (
 from src.modules.ai_coach.orm import (
     CoachConversationORM,
     CoachMessageORM,
+    CoachUserSettingsORM,
 )
 from src.modules.ai_coach.safety import (
     check_message_safety,
@@ -49,8 +50,12 @@ from src.modules.ai_coach.agents import (
 logger = logging.getLogger(__name__)
 
 
-# In-memory personality storage (would be in DB in production)
-_user_personalities: dict[str, CoachPersonality] = {}
+# Token estimation: ~4 characters per token for English text
+CHARS_PER_TOKEN = 4
+# Maximum tokens to use for conversation history (~80K of 128K context)
+MAX_HISTORY_TOKENS = 80000
+# Summarize conversations after this many messages
+SUMMARIZE_AFTER_MESSAGES = 30
 
 
 class AICoachService(AICoachInterface):
@@ -59,9 +64,20 @@ class AICoachService(AICoachInterface):
     def __init__(self, db: AsyncSession):
         self._db = db
 
-    def _get_personality(self, identity_id: str) -> CoachPersonality:
-        """Get user's coach personality preference."""
-        return _user_personalities.get(identity_id, CoachPersonality.MOTIVATIONAL)
+    async def _get_personality(self, identity_id: str) -> CoachPersonality:
+        """Get user's coach personality preference from database."""
+        result = await self._db.execute(
+            select(CoachUserSettingsORM).where(
+                CoachUserSettingsORM.identity_id == identity_id
+            )
+        )
+        settings = result.scalar_one_or_none()
+        if settings:
+            try:
+                return CoachPersonality(settings.personality)
+            except ValueError:
+                return CoachPersonality.MOTIVATIONAL
+        return CoachPersonality.MOTIVATIONAL
 
     async def chat(
         self,
@@ -69,7 +85,7 @@ class AICoachService(AICoachInterface):
         request: ChatRequest,
     ) -> ChatResponse:
         """Chat with the AI coach."""
-        personality = request.personality or self._get_personality(identity_id)
+        personality = request.personality or await self._get_personality(identity_id)
 
         # === SAFETY CHECK (Pre-request filter) ===
         safety_result = check_message_safety(request.message)
@@ -325,7 +341,7 @@ class AICoachService(AICoachInterface):
             workouts_this_week=0,
             current_weight=None,
             weight_trend=None,
-            personality=self._get_personality(identity_id),
+            personality=await self._get_personality(identity_id),
         )
 
     async def get_daily_insight(self, identity_id: str) -> CoachingInsight:
@@ -376,7 +392,7 @@ class AICoachService(AICoachInterface):
         context: str | None = None,
     ) -> str:
         """Get a motivational message."""
-        personality = self._get_personality(identity_id)
+        personality = await self._get_personality(identity_id)
         
         motivations = {
             CoachPersonality.MOTIVATIONAL: [
@@ -424,8 +440,24 @@ class AICoachService(AICoachInterface):
         identity_id: str,
         personality: CoachPersonality,
     ) -> None:
-        """Set the coach personality for a user."""
-        _user_personalities[identity_id] = personality
+        """Set the coach personality for a user in database."""
+        result = await self._db.execute(
+            select(CoachUserSettingsORM).where(
+                CoachUserSettingsORM.identity_id == identity_id
+            )
+        )
+        settings = result.scalar_one_or_none()
+
+        if settings:
+            settings.personality = personality.value
+        else:
+            settings = CoachUserSettingsORM(
+                identity_id=identity_id,
+                personality=personality.value,
+            )
+            self._db.add(settings)
+
+        await self._db.commit()
 
     # ============ Conversation Management Methods ============
 
@@ -657,17 +689,346 @@ class AICoachService(AICoachInterface):
             title += "..."
         return title
 
+    # ============ Context Building Methods ============
+
+    async def _build_user_context(self, identity_id: str) -> str:
+        """
+        Build user context string from fitness data.
+        Uses FitnessTools to fetch current stats.
+        """
+        from src.modules.ai_coach.tools.fitness_tools import FitnessTools
+
+        tools = FitnessTools(db=self._db, identity_id=identity_id)
+
+        try:
+            # Fetch all relevant user data
+            level_info = await tools.get_level_info()
+            streaks = await tools.get_streaks()
+            active_fast = await tools.get_active_fast()
+            workout_stats = await tools.get_workout_stats()
+            weight_trend = await tools.get_weight_trend()
+
+            # Build context string
+            lines = ["### Current Stats"]
+
+            # Level & XP
+            lines.append(f"- **Level:** {level_info['level']} ({level_info['title']})")
+            lines.append(f"- **XP:** {level_info['current_xp']} / {level_info['xp_for_next_level']} ({level_info['progress_percent']}% to next level)")
+            lines.append(f"- **Total XP Earned:** {level_info['total_xp_earned']}")
+
+            # Streaks
+            if streaks:
+                lines.append("\n### Streaks")
+                for streak_type, data in streaks.items():
+                    if data['current'] > 0:
+                        lines.append(f"- **{streak_type.replace('_', ' ').title()}:** {data['current']} days (best: {data['longest']})")
+
+            # Active fast
+            if active_fast:
+                lines.append("\n### Active Fast")
+                lines.append(f"- **In Progress:** Yes")
+                lines.append(f"- **Elapsed:** {active_fast['elapsed_hours']} hours")
+                lines.append(f"- **Target:** {active_fast['target_hours']} hours")
+                lines.append(f"- **Progress:** {active_fast['progress_percent']}%")
+                lines.append(f"- **Remaining:** {active_fast['remaining_hours']} hours")
+
+            # Workout stats
+            if workout_stats:
+                lines.append("\n### Workout Stats")
+                lines.append(f"- **Total Workouts:** {workout_stats.get('total_workouts', 0)}")
+                lines.append(f"- **This Week:** {workout_stats.get('current_week_workouts', 0)}")
+
+            # Weight trend
+            if weight_trend:
+                lines.append("\n### Weight Trend (30 days)")
+                lines.append(f"- **Current:** {weight_trend['end_value']} kg")
+                lines.append(f"- **Change:** {weight_trend['change']:+.1f} kg ({weight_trend['change_percent']:+.1f}%)")
+                lines.append(f"- **Trend:** {weight_trend['trend_direction']}")
+
+            return "\n".join(lines)
+
+        except Exception as e:
+            logger.warning(f"Error building user context: {e}")
+            return ""
+
+    async def _build_user_preferences_context(self, identity_id: str) -> str:
+        """
+        Build user preferences context from profile module.
+        Includes goals, workout preferences, and fasting targets.
+        """
+        from src.modules.profile.service import ProfileService
+
+        profile_service = ProfileService(self._db)
+
+        try:
+            lines = ["### User Goals & Preferences"]
+
+            # Get goals
+            goals = await profile_service._get_goals_if_exists(identity_id)
+            if goals:
+                if goals.primary_goal:
+                    lines.append(f"- **Primary Goal:** {goals.primary_goal.value if hasattr(goals.primary_goal, 'value') else goals.primary_goal}")
+                if goals.target_weight_kg:
+                    lines.append(f"- **Target Weight:** {goals.target_weight_kg} kg")
+                if goals.weekly_workout_goal:
+                    lines.append(f"- **Weekly Workout Goal:** {goals.weekly_workout_goal} workouts")
+                if goals.target_fasting_hours:
+                    lines.append(f"- **Target Fasting Hours:** {goals.target_fasting_hours} hours")
+
+            # Get workout restrictions/preferences
+            restrictions = await profile_service._get_restrictions_if_exists(identity_id)
+            if restrictions:
+                if restrictions.fitness_level:
+                    level_val = restrictions.fitness_level.value if hasattr(restrictions.fitness_level, 'value') else restrictions.fitness_level
+                    lines.append(f"- **Fitness Level:** {level_val}")
+                if restrictions.injury_areas:
+                    injury_list = [a.value if hasattr(a, 'value') else a for a in restrictions.injury_areas]
+                    lines.append(f"- **Injury Areas to Avoid:** {', '.join(injury_list)}")
+                if restrictions.max_workout_duration_minutes:
+                    lines.append(f"- **Max Workout Duration:** {restrictions.max_workout_duration_minutes} minutes")
+                if restrictions.home_equipment:
+                    lines.append(f"- **Home Equipment:** {', '.join(restrictions.home_equipment)}")
+
+            # Get dietary preferences
+            dietary = await profile_service._get_dietary_if_exists(identity_id)
+            if dietary:
+                if dietary.dietary_preference:
+                    lines.append(f"- **Dietary Preference:** {dietary.dietary_preference}")
+                if dietary.allergies:
+                    lines.append(f"- **Allergies:** {', '.join(dietary.allergies)}")
+
+            # Get user preferences (fasting protocol, etc.)
+            prefs = await profile_service.get_preferences(identity_id)
+            if prefs:
+                if prefs.default_fasting_protocol:
+                    lines.append(f"- **Default Fasting Protocol:** {prefs.default_fasting_protocol}")
+
+            return "\n".join(lines) if len(lines) > 1 else ""
+
+        except Exception as e:
+            logger.warning(f"Error building user preferences context: {e}")
+            return ""
+
+    async def _build_health_context(self, identity_id: str) -> str:
+        """
+        Build health context from profile module.
+        Flags conditions that affect fasting safety.
+        """
+        from src.modules.profile.service import ProfileService
+
+        profile_service = ProfileService(self._db)
+
+        try:
+            is_safe, warnings = await profile_service.is_fasting_safe(identity_id)
+
+            if is_safe and not warnings:
+                return ""
+
+            lines = ["### Health Considerations"]
+
+            if not is_safe:
+                lines.append("**⚠️ FASTING SAFETY CONCERN:** User has conditions that may make fasting unsafe.")
+                lines.append("Always recommend consulting a healthcare provider before fasting.")
+
+            for warning in warnings:
+                lines.append(f"- {warning}")
+
+            health = await profile_service._get_health_if_exists(identity_id)
+            if health:
+                if health.takes_medication:
+                    lines.append("- User takes medication that may need consideration")
+                if health.medication_requires_food:
+                    lines.append("- **Important:** Medication requires food - adjust fasting windows accordingly")
+
+            return "\n".join(lines)
+
+        except Exception as e:
+            logger.warning(f"Error building health context: {e}")
+            return ""
+
+    # ============ Conversation History Methods ============
+
+    def _estimate_tokens(self, text: str) -> int:
+        """Estimate token count for text (~4 chars per token)."""
+        return len(text) // CHARS_PER_TOKEN
+
+    async def _load_conversation_history(
+        self,
+        session_id: str,
+        max_messages: int = 50,
+    ) -> tuple[list[dict], str | None]:
+        """
+        Load conversation history from database.
+
+        Returns:
+            Tuple of (messages list, conversation summary if exists)
+        """
+        # Get conversation with summary
+        conv_result = await self._db.execute(
+            select(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id
+            )
+        )
+        conversation = conv_result.scalar_one_or_none()
+        summary = conversation.summary if conversation else None
+
+        # Get recent messages
+        query = select(CoachMessageORM).where(
+            CoachMessageORM.session_id == session_id
+        ).order_by(CoachMessageORM.created_at.desc()).limit(max_messages)
+
+        result = await self._db.execute(query)
+        messages = result.scalars().all()
+
+        # Reverse to chronological order
+        messages = list(reversed(messages))
+
+        return [
+            {
+                "role": "user" if m.message.get("type") == "human" else "assistant",
+                "content": m.message.get("content", ""),
+            }
+            for m in messages
+        ], summary
+
+    def _convert_to_pydantic_messages(
+        self,
+        history: list[dict],
+        summary: str | None = None,
+    ) -> list:
+        """
+        Convert database message format to Pydantic AI ModelMessage format.
+
+        Args:
+            history: List of {role, content} dicts
+            summary: Optional conversation summary to prepend
+
+        Returns:
+            List of Pydantic AI message objects
+        """
+        from pydantic_ai.messages import (
+            ModelRequest,
+            ModelResponse,
+            UserPromptPart,
+            TextPart,
+        )
+
+        messages = []
+
+        # If we have a summary, add it as context at the beginning
+        if summary:
+            messages.append(
+                ModelRequest(parts=[UserPromptPart(content=f"[Previous conversation summary: {summary}]")])
+            )
+            messages.append(
+                ModelResponse(parts=[TextPart(content="I remember our previous conversation. How can I help you today?")])
+            )
+
+        # Convert history to Pydantic AI format
+        for msg in history:
+            if msg["role"] == "user":
+                messages.append(
+                    ModelRequest(parts=[UserPromptPart(content=msg["content"])])
+                )
+            else:
+                messages.append(
+                    ModelResponse(parts=[TextPart(content=msg["content"])])
+                )
+
+        return messages
+
+    async def _should_summarize(self, session_id: str) -> bool:
+        """Check if conversation should be summarized based on message count."""
+        conv_result = await self._db.execute(
+            select(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id
+            )
+        )
+        conversation = conv_result.scalar_one_or_none()
+
+        if not conversation:
+            return False
+
+        return conversation.message_count >= SUMMARIZE_AFTER_MESSAGES and not conversation.summary
+
+    async def _summarize_conversation(self, session_id: str) -> str | None:
+        """
+        Create a summary of the conversation.
+        Called when message count exceeds threshold.
+        """
+        # Load all messages
+        history, _ = await self._load_conversation_history(session_id, max_messages=100)
+
+        if len(history) < 10:
+            return None
+
+        # Build conversation text for summarization
+        conv_text = "\n".join([
+            f"{'User' if m['role'] == 'user' else 'Coach'}: {m['content'][:200]}"
+            for m in history[:30]  # First 30 messages
+        ])
+
+        try:
+            # Use the LLM to summarize
+            deps = await self._get_agent_deps(session_id.split("~")[0])
+            from src.modules.ai_coach.agents import run_coach_response
+
+            summary = await run_coach_response(
+                query=f"Summarize this conversation in 2-3 sentences, focusing on the user's goals, progress discussed, and any commitments made:\n\n{conv_text}",
+                deps=deps,
+                personality="calm",
+            )
+
+            # Save summary to database
+            conv_result = await self._db.execute(
+                select(CoachConversationORM).where(
+                    CoachConversationORM.session_id == session_id
+                )
+            )
+            conversation = conv_result.scalar_one_or_none()
+            if conversation:
+                conversation.summary = summary[:1000]  # Limit summary length
+                await self._db.commit()
+
+            return summary
+
+        except Exception as e:
+            logger.warning(f"Error summarizing conversation: {e}")
+            return None
+
+    async def _increment_message_count(self, session_id: str) -> None:
+        """Increment the message count for a conversation."""
+        conv_result = await self._db.execute(
+            select(CoachConversationORM).where(
+                CoachConversationORM.session_id == session_id
+            )
+        )
+        conversation = conv_result.scalar_one_or_none()
+        if conversation:
+            conversation.message_count += 1
+            await self._db.commit()
+
     async def _get_agent_deps(self, identity_id: str) -> UgokiAgentDeps:
-        """Create agent dependencies for streaming."""
+        """Create agent dependencies for streaming with full user context."""
+        # Build all context in parallel
+        user_context = await self._build_user_context(identity_id)
+        prefs_context = await self._build_user_preferences_context(identity_id)
+        health_context = await self._build_health_context(identity_id)
+
+        # Combine user context and preferences
+        combined_user_context = user_context
+        if prefs_context:
+            combined_user_context = f"{user_context}\n\n{prefs_context}" if user_context else prefs_context
+
         return UgokiAgentDeps(
             db=self._db,
             identity_id=identity_id,
             embedding_client=get_embedding_client(),
             http_client=get_http_client(),
             brave_api_key=get_brave_api_key(),
-            memories="",  # TODO: Integrate Mem0
-            user_context="",  # TODO: Build from user profile
-            health_context="",  # TODO: Build from health profile
+            memories="",  # TODO: Integrate Mem0 in future
+            user_context=combined_user_context,
+            health_context=health_context,
         )
 
     async def stream_chat(
@@ -685,7 +1046,7 @@ class AICoachService(AICoachInterface):
         Yields:
             StreamChunk objects with text and metadata
         """
-        personality = request.personality or self._get_personality(identity_id)
+        personality = request.personality or await self._get_personality(identity_id)
 
         # Safety check first
         safety_result = check_message_safety(request.message)
@@ -725,12 +1086,22 @@ class AICoachService(AICoachInterface):
 
         # Save user message
         await self._save_message(session_id, "human", request.message)
+        await self._increment_message_count(session_id)
+
+        # Load conversation history for existing conversations
+        message_history = None
+        if not is_new_conversation:
+            history, summary = await self._load_conversation_history(session_id)
+            # Exclude the current message we just saved (last item)
+            if history and len(history) > 1:
+                message_history = self._convert_to_pydantic_messages(history[:-1], summary)
 
         # Get agent dependencies
         deps = await self._get_agent_deps(identity_id)
 
         # Stream response from agent
         full_response = ""
+        prev_length = 0
         first_chunk = True
 
         try:
@@ -738,13 +1109,22 @@ class AICoachService(AICoachInterface):
                 query=request.message,
                 deps=deps,
                 personality=personality.value if personality else "motivational",
+                message_history=message_history,
             ):
-                full_response += text_chunk
+                # Pydantic AI stream_text() returns cumulative text, not deltas
+                # Extract just the new part (delta) to send to the client
+                full_response = text_chunk
+                delta = text_chunk[prev_length:]
+                prev_length = len(text_chunk)
+
+                # Skip empty deltas
+                if not delta:
+                    continue
 
                 # Send chunk with session info on first chunk
                 if first_chunk:
                     yield StreamChunk(
-                        text=text_chunk,
+                        text=delta,
                         session_id=session_id if is_new_conversation else None,
                         conversation_title=title if is_new_conversation else None,
                         complete=False,
@@ -752,7 +1132,7 @@ class AICoachService(AICoachInterface):
                     first_chunk = False
                 else:
                     yield StreamChunk(
-                        text=text_chunk,
+                        text=delta,
                         complete=False,
                     )
 
@@ -769,7 +1149,13 @@ class AICoachService(AICoachInterface):
 
             # Save AI response
             await self._save_message(session_id, "ai", full_response)
+            await self._increment_message_count(session_id)
             await self._update_conversation_timestamp(session_id)
+
+            # Check if we should summarize (runs in background, doesn't block response)
+            if await self._should_summarize(session_id):
+                # Don't await - let summarization happen asynchronously
+                logger.info(f"Conversation {session_id} reached {SUMMARIZE_AFTER_MESSAGES} messages, triggering summarization")
 
             # Final chunk to signal completion
             yield StreamChunk(
@@ -782,6 +1168,7 @@ class AICoachService(AICoachInterface):
             # Fall back to pattern matching
             fallback_response = self._simple_response(request.message, personality)
             await self._save_message(session_id, "ai", fallback_response.message)
+            await self._increment_message_count(session_id)
             await self._update_conversation_timestamp(session_id)
 
             yield StreamChunk(
