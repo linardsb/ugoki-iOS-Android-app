@@ -14,11 +14,60 @@ This document covers the AI Coach's fitness tools and the Apple HealthKit / Andr
 | Health sync API | ✅ Complete | `apps/api/src/routes/health_sync.py` |
 | FitnessTools health methods | ✅ Complete | `apps/api/src/modules/ai_coach/tools/fitness_tools.py` |
 | Health settings UI | ✅ Complete | `apps/mobile/features/health/components/HealthSyncCard.tsx` |
-| Custom dev build | ⏳ Pending | Requires `eas build` |
-| Settings screen integration | ⏳ Pending | Add HealthSyncCard to settings |
+| Settings screen integration | ✅ Complete | `apps/mobile/app/(modals)/settings.tsx` |
+| iOS native project | ✅ Complete | `apps/mobile/ios/` |
+| expo-dev-client | ✅ Complete | Required for native builds |
+| Custom dev build | ⏳ Requires Apple Developer | `eas build --profile development` |
+| Physical device testing | ⏳ Requires Apple Developer | $99/year account needed |
 | Google Play approval | ⏳ Pending | ~2 weeks for Android production |
 
 **Last Updated:** January 22, 2026
+
+---
+
+## Testing Status
+
+### Simulator Testing (Current)
+
+The health integration UI is visible in **Settings → Health Data** when running via Expo Go:
+
+```bash
+cd apps/mobile
+npx expo start
+# Press 'i' for iOS simulator
+```
+
+**Expected behavior in simulator:**
+- HealthSyncCard displays "Apple Health Unavailable"
+- This is correct - HealthKit only works on physical devices
+- All other app features work normally
+
+### Physical Device Testing (Requires Apple Developer Account)
+
+To test actual HealthKit integration:
+
+1. **Sign up for Apple Developer Program** ($99/year)
+2. **Build development client:**
+   ```bash
+   cd apps/mobile
+   eas build --profile development --platform ios
+   ```
+3. **Install on physical iPhone** via QR code from EAS
+4. **Navigate to Settings → Health Data**
+5. **Tap "Connect Apple Health"** - permission dialog appears
+6. **Grant permissions** - data syncs to backend
+7. **AI Coach** now uses health data for personalized recommendations
+
+### What Works Without Apple Developer Account
+
+| Feature | Expo Go | Requires Dev Account |
+|---------|---------|---------------------|
+| Health UI in Settings | ✅ | No |
+| "Unavailable" state display | ✅ | No |
+| All other app features | ✅ | No |
+| HealthKit permissions | ❌ | Yes |
+| Health data sync | ❌ | Yes |
+| AI Coach health context | ❌ | Yes |
 
 ---
 
@@ -54,8 +103,35 @@ This document covers the AI Coach's fitness tools and the Apple HealthKit / Andr
   "react-native-health-connect": "^3.5.0",
   "react-native-nitro-modules": "^0.33.2",
   "expo-health-connect": "^0.1.1",
-  "expo-build-properties": "^1.0.10"
+  "expo-build-properties": "^1.0.10",
+  "expo-dev-client": "^6.0.20"
 }
+```
+
+### iOS Native Project (`apps/mobile/ios/`)
+
+| File | Description |
+|------|-------------|
+| `Podfile` | Added ReactAppDependencyProvider workaround |
+| `Podfile.properties.json` | New architecture enabled |
+| `UGOKI/Info.plist` | HealthKit usage descriptions |
+| `UGOKI/UGOKI.entitlements` | HealthKit entitlements |
+| `ReactAppDependencyProvider/` | Workaround for expo-dev-launcher |
+
+**HealthKit Entitlements (UGOKI.entitlements):**
+```xml
+<key>com.apple.developer.healthkit</key>
+<true/>
+<key>com.apple.developer.healthkit.access</key>
+<array/>
+```
+
+**Info.plist Permissions:**
+```xml
+<key>NSHealthShareUsageDescription</key>
+<string>UGOKI uses your health data to personalize fitness coaching...</string>
+<key>NSHealthUpdateUsageDescription</key>
+<string>UGOKI records your workout sessions to track your progress.</string>
 ```
 
 ---
@@ -79,49 +155,46 @@ This document covers the AI Coach's fitness tools and the Apple HealthKit / Andr
 
 ## Next Steps
 
-### 1. Build Custom Development Client (Required)
+### 1. Sign Up for Apple Developer Program (When Ready)
 
-Health integration requires native modules that don't work in Expo Go. Build a custom dev client:
+To test HealthKit on a physical device, you need an Apple Developer account ($99/year):
+- Sign up at [developer.apple.com](https://developer.apple.com)
+- Required for: physical device testing, TestFlight, App Store
+
+### 2. Build Custom Development Client
+
+Once you have Apple Developer credentials:
 
 ```bash
 cd apps/mobile
 
-# Generate native projects
-npx expo prebuild --clean
-
-# Build development client (both platforms)
-eas build --profile development --platform all
-
-# Or build for specific platform
+# Build development client for iOS
 eas build --profile development --platform ios
+
+# Build development client for Android
 eas build --profile development --platform android
+
+# Or both platforms
+eas build --profile development --platform all
 ```
 
-### 2. Add HealthSyncCard to Settings Screen
+The EAS CLI will prompt for Apple credentials during the iOS build.
 
-Import and add the health sync card to your settings/profile screen:
+### 3. HealthSyncCard Integration (✅ Complete)
+
+The HealthSyncCard is already integrated in `app/(modals)/settings.tsx`:
 
 ```tsx
-// In your settings screen (e.g., app/(tabs)/profile.tsx)
+// Already added to settings.tsx
 import { HealthSyncCard } from '@/features/health';
 
-export default function ProfileScreen() {
-  return (
-    <ScrollView>
-      {/* Other settings sections */}
-
-      <SettingsSection title="Health Data">
-        <HealthSyncCard
-          onSyncComplete={() => {
-            // Optionally refresh other data after sync
-          }}
-        />
-      </SettingsSection>
-
-      {/* Other settings sections */}
-    </ScrollView>
-  );
-}
+// In the Health Data section:
+<SettingsSection title="Health Data">
+  <YStack gap="$3">
+    <HealthSyncCard />
+    {/* Bloodwork button */}
+  </YStack>
+</SettingsSection>
 ```
 
 ### 3. Test on Physical Devices
