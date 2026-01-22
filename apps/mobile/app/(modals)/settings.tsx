@@ -15,6 +15,7 @@ import {
   useUpdateGoals,
   SettingsSection,
 } from '@/features/profile';
+import { HealthSyncCard } from '@/features/health';
 import { useChatStore, PERSONALITIES } from '@/features/coach';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '@/features/notifications';
 import type { UnitSystem, FastingProtocol, GoalType, Gender } from '@/features/profile';
@@ -376,42 +377,48 @@ export default function SettingsScreen() {
 
           {/* Health Data Section */}
           <SettingsSection title="Health Data">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
-              <Button
-                size="$5"
-                height={56}
-                backgroundColor="$backgroundHover"
-                borderRadius="$3"
-                justifyContent="space-between"
-                paddingHorizontal="$4"
-                pressStyle={{ scale: 0.98 }}
-                onPress={() => router.push('/(modals)/bloodwork')}
-              >
-                <XStack alignItems="center" gap="$3">
-                  <XStack
-                    width={36}
-                    height={36}
-                    borderRadius="$3"
-                    backgroundColor="$primary"
-                    opacity={0.15}
-                    position="absolute"
-                  />
-                  <XStack
-                    width={36}
-                    height={36}
-                    borderRadius="$3"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <FileText size={18} color={primaryColor} weight="regular" />
+            <YStack gap="$3">
+              {/* Health Sync Card - Apple Health / Health Connect */}
+              <HealthSyncCard />
+
+              {/* Bloodwork Button */}
+              <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3">
+                <Button
+                  size="$5"
+                  height={56}
+                  backgroundColor="$backgroundHover"
+                  borderRadius="$3"
+                  justifyContent="space-between"
+                  paddingHorizontal="$4"
+                  pressStyle={{ scale: 0.98 }}
+                  onPress={() => router.push('/(modals)/bloodwork')}
+                >
+                  <XStack alignItems="center" gap="$3">
+                    <XStack
+                      width={36}
+                      height={36}
+                      borderRadius="$3"
+                      backgroundColor="$primary"
+                      opacity={0.15}
+                      position="absolute"
+                    />
+                    <XStack
+                      width={36}
+                      height={36}
+                      borderRadius="$3"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <FileText size={18} color={primaryColor} weight="regular" />
+                    </XStack>
+                    <YStack>
+                      <Text fontSize="$4" fontWeight="500" color="$color">Bloodwork</Text>
+                      <Text fontSize="$3" color="$colorMuted">Upload lab results for AI analysis</Text>
+                    </YStack>
                   </XStack>
-                  <YStack>
-                    <Text fontSize="$4" fontWeight="500" color="$color">Bloodwork</Text>
-                    <Text fontSize="$3" color="$colorMuted">Upload lab results for AI analysis</Text>
-                  </YStack>
-                </XStack>
-                <CaretRight size={18} color={mutedIconColor} weight="regular" />
-              </Button>
+                  <CaretRight size={18} color={mutedIconColor} weight="regular" />
+                </Button>
+              </YStack>
             </YStack>
           </SettingsSection>
 
