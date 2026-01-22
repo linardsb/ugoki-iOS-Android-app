@@ -22,6 +22,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "UGOKI needs camera access to take photos of your bloodwork results.",
         "NSPhotoLibraryUsageDescription": "UGOKI needs photo library access to upload bloodwork results.",
+        "NSHealthShareUsageDescription": "UGOKI uses your health data to personalize fitness coaching based on sleep, heart rate, and activity levels.",
+        "NSHealthUpdateUsageDescription": "UGOKI records your workout sessions to track your progress.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -35,7 +37,15 @@
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_SLEEP",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_BODY_FAT",
+        "android.permission.health.READ_HEART_RATE_VARIABILITY"
       ]
     },
     "web": {
@@ -47,6 +57,18 @@
       "expo-router",
       "expo-font",
       "expo-splash-screen",
+      "@kingstinct/react-native-healthkit",
+      "expo-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 26
+          }
+        }
+      ],
       [
         "expo-notifications",
         {

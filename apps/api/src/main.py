@@ -21,6 +21,7 @@ from src.modules.event_journal.routes import router as event_journal_router
 from src.modules.social.routes import router as social_router
 from src.modules.research.routes import router as research_router
 from src.routes.uploads import router as uploads_router
+from src.routes.health_sync import router as health_sync_router
 
 
 @asynccontextmanager
@@ -84,3 +85,4 @@ app.include_router(event_journal_router, prefix=f"{settings.api_v1_prefix}/event
 app.include_router(social_router, prefix=f"{settings.api_v1_prefix}/social")
 app.include_router(research_router, prefix=f"{settings.api_v1_prefix}/research")
 app.include_router(uploads_router, prefix=f"{settings.api_v1_prefix}")
+app.include_router(health_sync_router, prefix=f"{settings.api_v1_prefix}")

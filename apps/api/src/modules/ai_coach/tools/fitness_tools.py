@@ -275,3 +275,151 @@ class FitnessTools:
         summary["overall_status"] = "needs_attention" if summary["action_needed"] else "normal"
 
         return summary
+
+    # =========================================================================
+    # Health Device Integration Tools (Apple HealthKit / Android Health Connect)
+    # =========================================================================
+
+    async def get_health_context(self) -> dict:
+        """Get user's recent health data from connected devices for AI context."""
+        service = MetricsService(self.db)
+
+        health_metrics = {}
+        metric_configs = [
+            ("health_resting_hr", "Resting Heart Rate", "bpm"),
+            ("health_hrv", "Heart Rate Variability", "ms"),
+            ("sleep_hours", "Sleep Duration", "hours"),
+            ("steps", "Steps Today", "steps"),
+        ]
+
+        for metric_type, label, unit in metric_configs:
+            latest = await service.get_latest(self.identity_id, metric_type)
+            if latest:
+                health_metrics[metric_type] = {
+                    "label": label,
+                    "value": latest.value,
+                    "unit": unit,
+                    "recorded_at": latest.timestamp.isoformat(),
+                }
+
+        if not health_metrics:
+            return {
+                "has_data": False,
+                "message": "No health device connected. Connect Apple Health or Google Health Connect for personalized insights."
+            }
+
+        return {
+            "has_data": True,
+            "metrics": health_metrics,
+            "insights": self._generate_health_insights(health_metrics),
+        }
+
+    def _generate_health_insights(self, metrics: dict) -> list[str]:
+        """Generate actionable insights from health data."""
+        insights = []
+
+        # HRV-based recovery insight
+        if hrv := metrics.get("health_hrv"):
+            if hrv["value"] < 30:
+                insights.append("HRV is low - consider a lighter workout or active recovery today")
+            elif hrv["value"] > 60:
+                insights.append("HRV is excellent - great day for an intense HIIT session")
+
+        # Sleep-based insight
+        if sleep := metrics.get("sleep_hours"):
+            if sleep["value"] < 6:
+                insights.append(f"Only {sleep['value']:.1f}h sleep - consider extending your fasting window to support recovery")
+            elif sleep["value"] >= 7.5:
+                insights.append("Well-rested - optimal conditions for fasting and exercise")
+
+        # Resting HR trend insight
+        if rhr := metrics.get("health_resting_hr"):
+            if rhr["value"] > 75:
+                insights.append("Elevated resting HR may indicate stress or incomplete recovery")
+
+        return insights
+
+    async def get_recovery_status(self) -> dict:
+        """Assess user's recovery readiness based on health data."""
+        service = MetricsService(self.db)
+
+        # Get current health metrics
+        health_context = await self.get_health_context()
+        if not health_context.get("has_data"):
+            return {
+                "has_data": False,
+                "message": "No health data available to assess recovery"
+            }
+
+        current_metrics = health_context["metrics"]
+        score = 50  # baseline
+
+        # HRV contribution
+        if hrv_data := current_metrics.get("health_hrv"):
+            hrv_trend = await service.get_trend(
+                self.identity_id, "health_hrv", period_days=7
+            )
+            if hrv_trend:
+                if hrv_trend.direction.value == "up":
+                    score += 20
+                elif hrv_trend.direction.value == "down":
+                    score -= 15
+
+        # Sleep contribution
+        if sleep_data := current_metrics.get("sleep_hours"):
+            sleep_value = sleep_data["value"]
+            if sleep_value >= 7.5:
+                score += 20
+            elif sleep_value < 6:
+                score -= 20
+
+        # Resting HR contribution
+        if rhr_data := current_metrics.get("health_resting_hr"):
+            if rhr_data["value"] <= 60:
+                score += 10
+            elif rhr_data["value"] > 75:
+                score -= 10
+
+        # Clamp score
+        score = max(0, min(100, score))
+
+        return {
+            "has_data": True,
+            "recovery_score": score,
+            "status": self._get_recovery_status_label(score),
+            "recommendation": self._get_recovery_recommendation(score),
+        }
+
+    def _get_recovery_status_label(self, score: int) -> str:
+        """Get recovery status label from score."""
+        if score >= 80:
+            return "excellent"
+        elif score >= 60:
+            return "good"
+        elif score >= 40:
+            return "moderate"
+        else:
+            return "needs_rest"
+
+    def _get_recovery_recommendation(self, score: int) -> str:
+        """Get workout recommendation based on recovery score."""
+        if score >= 80:
+            return "Fully recovered - great day for high-intensity training"
+        elif score >= 60:
+            return "Good recovery - moderate intensity recommended"
+        elif score >= 40:
+            return "Partial recovery - consider lighter activity or longer fast"
+        else:
+            return "Rest recommended - focus on sleep and gentle movement"
+
+    async def get_health_summary(self) -> dict:
+        """Get combined health summary including device data and bloodwork."""
+        health_context = await self.get_health_context()
+        recovery = await self.get_recovery_status()
+        bloodwork = await self.get_bloodwork_summary()
+
+        return {
+            "device_health": health_context,
+            "recovery": recovery if recovery.get("has_data") else None,
+            "bloodwork": bloodwork if bloodwork.get("has_data") else None,
+        }

@@ -60,6 +60,15 @@ Quick navigation hub for all project documentation.
 
 ---
 
+## Integrations (External Services)
+
+| Document | Purpose | When to Read |
+|----------|---------|--------------|
+| [FITNESS_TOOLS.md](FITNESS_TOOLS.md) | Health data integration (Apple HealthKit, Android Health Connect) | Implementing device health sync |
+| [AI_COACH_INTEGRATION_PLAN.md](AI_COACH_INTEGRATION_PLAN.md) | AI Coach architecture and enhancement plan | Working on AI Coach features |
+
+---
+
 ## Tracking (Progress & Issues)
 
 | Document | Purpose | When to Read |

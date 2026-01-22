@@ -1,0 +1,1 @@
+export { HealthSyncCard } from './HealthSyncCard';
