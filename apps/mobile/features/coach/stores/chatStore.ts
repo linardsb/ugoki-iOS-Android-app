@@ -149,7 +149,13 @@ export const useChatStore = create<ChatState>()(
       },
 
       clearMessages: () => {
-        set({ messages: [], quickActions: [], streamingMessage: '' });
+        set({
+          messages: [],
+          quickActions: [],
+          streamingMessage: '',
+          isTyping: false,
+          isStreaming: false,
+        });
       },
 
       startNewConversation: () => {
@@ -158,6 +164,8 @@ export const useChatStore = create<ChatState>()(
           messages: [],
           streamingMessage: '',
           quickActions: [],
+          isTyping: false,
+          isStreaming: false,
         });
       },
     }),

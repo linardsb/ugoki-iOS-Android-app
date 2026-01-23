@@ -62,14 +62,24 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
     };
   }, []);
 
-  // Stop typing animation if chat is cleared (isStreaming becomes false externally)
+  // Stop typing animation and close connection if chat is cleared (isStreaming becomes false externally)
   useEffect(() => {
-    if (!storeIsStreaming && typingTimerRef.current) {
-      clearTimeout(typingTimerRef.current);
-      typingTimerRef.current = null;
+    if (!storeIsStreaming) {
+      // Close SSE connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+      // Stop typing animation
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+      // Reset buffer state
       textBufferRef.current = '';
       displayedIndexRef.current = 0;
       isCompleteRef.current = false;
+      setIsLoading(false);
     }
   }, [storeIsStreaming]);
 

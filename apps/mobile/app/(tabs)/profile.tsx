@@ -33,6 +33,7 @@ import {
 } from '@/features/profile';
 import { useProgression } from '@/features/dashboard';
 import { useAuthStore } from '@/shared/stores/auth';
+import { useLogout } from '@/features/auth';
 import { ThemeToggle } from '@/shared/components/ui';
 
 export default function ProfileScreen() {
@@ -40,8 +41,12 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const clearAuth = useAuthStore((state) => state.clearAuth);
   const identity = useAuthStore((state) => state.identity);
+  const logout = useLogout({
+    onSuccess: () => {
+      router.replace('/(auth)/welcome');
+    },
+  });
   const mutedIconColor = theme.colorMuted.val;
   const primaryColor = theme.primary.val;
   const secondaryColor = theme.secondary.val;
@@ -75,8 +80,7 @@ export default function ProfileScreen() {
         {
           text: 'Sign Out',
           onPress: () => {
-            clearAuth();
-            router.replace('/(auth)/welcome');
+            logout.mutate();
           },
         },
       ]

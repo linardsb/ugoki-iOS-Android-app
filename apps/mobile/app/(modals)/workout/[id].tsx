@@ -1,6 +1,6 @@
 import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from 'tamagui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
 import {
   X,
@@ -76,19 +76,16 @@ export default function WorkoutDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
-        <YStack flex={1} backgroundColor="$background" alignItems="center" justifyContent="center">
-          <Spinner size="large" color="$primary" />
-          <Text color="$colorMuted" marginTop="$2">Loading workout...</Text>
-        </YStack>
-      </SafeAreaView>
+      <YStack flex={1} backgroundColor="$background" alignItems="center" justifyContent="center">
+        <Spinner size="large" color="$primary" />
+        <Text color="$colorMuted" marginTop="$2">Loading workout...</Text>
+      </YStack>
     );
   }
 
   if (error || !workout) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
-        <YStack flex={1} backgroundColor="$background" padding="$4">
+      <YStack flex={1} backgroundColor="$background" padding="$4" paddingTop={insets.top}>
           <XStack justifyContent="flex-end">
             <Button
               size="$3"
@@ -104,7 +101,6 @@ export default function WorkoutDetailScreen() {
             <Button onPress={handleClose}>Go Back</Button>
           </YStack>
         </YStack>
-      </SafeAreaView>
     );
   }
 
@@ -112,11 +108,12 @@ export default function WorkoutDetailScreen() {
   const exercisesDuration = calculateTotalDuration(workout.exercises);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
-      <YStack flex={1} backgroundColor="$background">
+    <YStack flex={1} backgroundColor="$background">
         {/* Header */}
         <XStack
-          padding="$4"
+          paddingHorizontal="$4"
+          paddingBottom="$4"
+          paddingTop={insets.top + 16}
           justifyContent="space-between"
           alignItems="center"
           borderBottomWidth={1}
@@ -336,7 +333,6 @@ export default function WorkoutDetailScreen() {
           </YStack>
         </ScrollView>
       </YStack>
-    </SafeAreaView>
   );
 }
 

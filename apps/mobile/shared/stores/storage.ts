@@ -117,6 +117,9 @@ export const appStorage = {
       StorageKeys.ACCESS_TOKEN,
       StorageKeys.IDENTITY_ID,
       StorageKeys.IDENTITY_TYPE,
+      StorageKeys.ONBOARDING_COMPLETED,
+      StorageKeys.ONBOARDING_STEP,
+      'auth-storage', // Zustand persist key - must be cleared to prevent rehydration
     ]);
   },
 };

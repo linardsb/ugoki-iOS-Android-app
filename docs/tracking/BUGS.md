@@ -46,6 +46,58 @@ Each bug follows this pattern:
 
 ## Resolved Issues
 
+### BUG-013: HealthSyncCard button too squashed
+
+**Status:** Resolved | **Severity:** Low | **Reported:** 2026-01-23 | **Resolved:** 2026-01-23
+
+**Description:**
+The "Connect Apple Health" button in the HealthSyncCard component was visually squashed/cut off, making it difficult to read.
+
+**Files Affected:**
+- `apps/mobile/features/health/components/HealthSyncCard.tsx:176-214`
+
+**Root Cause:**
+Button `size="$3"` was too small for the content.
+
+**Fix:**
+Changed button size to `size="$4"` and added explicit `height={48}` for both connected and disconnected states.
+
+---
+
+### BUG-012: Auth logout not clearing Zustand persist storage
+
+**Status:** Resolved | **Severity:** High | **Reported:** 2026-01-23 | **Resolved:** 2026-01-23
+
+**Description:**
+After signing out, users were immediately logged back into their previous account when pressing "Let's Begin" on the welcome screen.
+
+**Files Affected:**
+- `apps/mobile/shared/stores/storage.ts:115-121`
+- `apps/mobile/features/auth/hooks/useLogout.ts:25-45`
+- `apps/mobile/app/(tabs)/profile.tsx:69-84`
+
+**Root Cause:**
+The Zustand auth store uses persist middleware which stores auth state to AsyncStorage key `auth-storage`. The `appStorage.clearAuth()` function only removed 3 specific keys (`ACCESS_TOKEN`, `IDENTITY_ID`, `IDENTITY_TYPE`) but not the Zustand persist key. On app restart/rehydration, Zustand would restore the old auth state from `auth-storage`.
+
+**Fix:**
+1. Added `'auth-storage'` to the keys removed in `clearAuth()`:
+```typescript
+await AsyncStorage.multiRemove([
+  StorageKeys.ACCESS_TOKEN,
+  StorageKeys.IDENTITY_ID,
+  StorageKeys.IDENTITY_TYPE,
+  StorageKeys.ONBOARDING_COMPLETED,
+  StorageKeys.ONBOARDING_STEP,
+  'auth-storage', // Zustand persist key
+]);
+```
+
+2. Made `useLogout` hook properly `await` the async storage clear before navigation.
+
+3. Updated profile screen to use `useLogout` hook instead of calling `clearAuth()` directly.
+
+---
+
 ### BUG-011: RAG tools failing without API keys
 
 **Status:** Resolved | **Severity:** Medium | **Reported:** 2026-01-21 | **Resolved:** 2026-01-21

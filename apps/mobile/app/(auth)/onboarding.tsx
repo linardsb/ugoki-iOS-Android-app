@@ -4,24 +4,22 @@ import { YStack, XStack, H2, Text, Button, Progress, Checkbox, Label } from 'tam
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { User, UserCircle, Check, Warning, FirstAid, Heart } from 'phosphor-react-native';
+import { User, UserCircle, Check, Warning, FirstAid, Heart, CaretDown, CaretUp } from 'phosphor-react-native';
 
 import { appStorage } from '@/shared/stores/storage';
 import { useSaveOnboarding, type OnboardingData, type GoalType, type FitnessLevel, type Gender } from '@/features/profile';
 
 // Onboarding steps data
-const GENDER_OPTIONS: { id: Gender; label: string; icon: string }[] = [
-  { id: 'male', label: 'Male', icon: '👨' },
-  { id: 'female', label: 'Female', icon: '👩' },
-  { id: 'other', label: 'Other', icon: '🧑' },
-  { id: 'prefer_not_to_say', label: 'Prefer not to say', icon: '❔' },
+const GENDER_OPTIONS: { id: Gender; label: string }[] = [
+  { id: 'male', label: 'Male' },
+  { id: 'female', label: 'Female' },
 ];
 
-const GOALS: { id: GoalType; label: string; icon: string }[] = [
-  { id: 'weight_loss', label: 'Lose weight', icon: '🎯' },
-  { id: 'improve_fitness', label: 'Boost energy', icon: '⚡' },
-  { id: 'muscle_gain', label: 'Build strength', icon: '💪' },
-  { id: 'better_sleep', label: 'Better wellness', icon: '🧘' },
+const GOALS: { id: GoalType; label: string }[] = [
+  { id: 'weight_loss', label: 'Lose weight' },
+  { id: 'improve_fitness', label: 'Boost energy' },
+  { id: 'muscle_gain', label: 'Build strength' },
+  { id: 'better_sleep', label: 'Better wellness' },
 ];
 
 const EXPERIENCE: { id: FitnessLevel; label: string; description: string }[] = [
@@ -42,6 +40,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [showFullDisclaimer, setShowFullDisclaimer] = useState(false);
   const [data, setData] = useState<OnboardingData>({
     gender: null,
     goal: null,
@@ -108,91 +107,205 @@ export default function OnboardingScreen() {
       // Step 0: Health Disclaimer (REQUIRED)
       case 0:
         return (
-          <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <XStack gap="$2" alignItems="center">
-                <FirstAid size={28} color="#f97316" weight="fill" />
-                <H2 color="$color">Important Health Information</H2>
-              </XStack>
-              <Text color="$colorMuted" fontSize="$3">
-                Please read before continuing
-              </Text>
+          <YStack gap="$5" flex={1}>
+            {/* Header */}
+            <YStack gap="$3" alignItems="center" paddingTop="$2">
+              <YStack
+                width={64}
+                height={64}
+                borderRadius={32}
+                backgroundColor="$primary"
+                opacity={0.1}
+                position="absolute"
+              />
+              <YStack
+                width={56}
+                height={56}
+                borderRadius={28}
+                backgroundColor="$primary"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Heart size={28} color="white" weight="fill" />
+              </YStack>
+              <YStack gap="$1" alignItems="center">
+                <H2 color="$color" textAlign="center">Before We Begin</H2>
+                <Text color="$colorMuted" fontSize="$3" textAlign="center">
+                  Your health & safety come first
+                </Text>
+              </YStack>
             </YStack>
 
-            <ScrollView style={styles.disclaimerScroll} showsVerticalScrollIndicator={true}>
-              <YStack gap="$4" paddingBottom="$4">
-                {/* What UGOKI is NOT */}
+            <ScrollView style={styles.disclaimerScroll} showsVerticalScrollIndicator={false}>
+              <YStack gap="$3" paddingBottom="$4">
+                {/* Quick Summary Card */}
+                <YStack
+                  backgroundColor="$primary"
+                  padding="$4"
+                  borderRadius="$5"
+                >
+                  <Text color="white" fontSize="$4" fontWeight="600" marginBottom="$2">
+                    UGOKI helps you build healthy habits
+                  </Text>
+                  <Text color="rgba(255,255,255,0.85)" fontSize="$3" lineHeight={22}>
+                    We combine intermittent fasting with quick workouts, guided by AI coaching tailored to your goals.
+                  </Text>
+                </YStack>
+
+                {/* Important Note */}
                 <YStack
                   backgroundColor="$cardBackground"
                   padding="$4"
                   borderRadius="$4"
-                  borderLeftWidth={4}
-                  borderLeftColor="#ef4444"
+                  gap="$3"
                 >
-                  <Text fontWeight="700" fontSize="$4" color="$color" marginBottom="$2">
-                    UGOKI is NOT:
-                  </Text>
-                  <YStack gap="$2">
-                    <Text fontSize="$3" color="$colorMuted">• A medical device</Text>
-                    <Text fontSize="$3" color="$colorMuted">• A substitute for professional medical advice</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Intended to diagnose, treat, cure, or prevent any disease</Text>
-                  </YStack>
-                </YStack>
-
-                {/* Consult Healthcare Provider */}
-                <YStack
-                  backgroundColor="$cardBackground"
-                  padding="$4"
-                  borderRadius="$4"
-                  borderLeftWidth={4}
-                  borderLeftColor="#f97316"
-                >
-                  <Text fontWeight="700" fontSize="$4" color="$color" marginBottom="$2">
-                    Consult a healthcare provider before use if you:
-                  </Text>
-                  <YStack gap="$2">
-                    <Text fontSize="$3" color="$colorMuted">• Have diabetes or blood sugar issues</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Have or have had an eating disorder</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Are pregnant, breastfeeding, or planning pregnancy</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Have cardiovascular or chronic conditions</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Take medications affected by fasting</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Are under 18 or over 70 years of age</Text>
-                    <Text fontSize="$3" color="$colorMuted">• Have a BMI under 18.5</Text>
-                  </YStack>
-                </YStack>
-
-                {/* AI Coach Limitations */}
-                <YStack
-                  backgroundColor="$cardBackground"
-                  padding="$4"
-                  borderRadius="$4"
-                  borderLeftWidth={4}
-                  borderLeftColor="#3b82f6"
-                >
-                  <Text fontWeight="700" fontSize="$4" color="$color" marginBottom="$2">
-                    AI Coach Limitations
-                  </Text>
-                  <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
-                    The AI Coach provides general wellness information only. It cannot and does not provide medical advice. Any information should not be relied upon for medical decisions.
-                  </Text>
-                </YStack>
-
-                {/* Safety Warning */}
-                <YStack
-                  backgroundColor="#fef3c7"
-                  padding="$4"
-                  borderRadius="$4"
-                >
-                  <XStack gap="$2" alignItems="center" marginBottom="$2">
-                    <Warning size={20} color="#d97706" weight="fill" />
-                    <Text fontWeight="700" fontSize="$4" color="#92400e">
-                      Important
+                  <XStack gap="$2" alignItems="center">
+                    <Warning size={20} color="#f97316" weight="fill" />
+                    <Text fontWeight="600" fontSize="$4" color="$color">
+                      Check with your doctor first if you:
                     </Text>
                   </XStack>
-                  <Text fontSize="$3" color="#78350f" lineHeight={20}>
-                    If you experience any adverse health effects while using this app, discontinue use and consult a healthcare professional immediately.
+                  <YStack gap="$2" paddingLeft="$1">
+                    <Text fontSize="$3" color="$colorMuted">• Have diabetes or blood sugar concerns</Text>
+                    <Text fontSize="$3" color="$colorMuted">• Are pregnant or breastfeeding</Text>
+                    <Text fontSize="$3" color="$colorMuted">• Have a history of eating disorders</Text>
+                    <Text fontSize="$3" color="$colorMuted">• Take medications affected by fasting</Text>
+                    <Text fontSize="$3" color="$colorMuted">• Are under 18 or over 70 years old</Text>
+                  </YStack>
+                </YStack>
+
+                {/* Disclaimer */}
+                <YStack
+                  backgroundColor="$cardBackground"
+                  padding="$4"
+                  borderRadius="$4"
+                  gap="$2"
+                >
+                  <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
+                    UGOKI is a wellness app, not a medical device. Our AI coach provides general guidance only and cannot replace professional medical advice.
+                  </Text>
+                  <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
+                    If you feel unwell while fasting or exercising, stop and consult a healthcare provider.
                   </Text>
                 </YStack>
+
+                {/* Full Disclaimer Collapsible */}
+                <XStack
+                  backgroundColor="$cardBackground"
+                  padding="$4"
+                  borderRadius="$4"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  pressStyle={{ opacity: 0.8 }}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setShowFullDisclaimer(!showFullDisclaimer);
+                  }}
+                >
+                  <XStack gap="$3" alignItems="center" flex={1}>
+                    <YStack
+                      width={40}
+                      height={40}
+                      borderRadius="$3"
+                      backgroundColor="#ef444420"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <Warning size={20} color="#ef4444" weight="fill" />
+                    </YStack>
+                    <YStack flex={1}>
+                      <Text fontSize="$4" fontWeight="600" color="$color">
+                        Full Health Disclaimer
+                      </Text>
+                      <Text fontSize="$3" color="$colorMuted">
+                        Important safety information
+                      </Text>
+                    </YStack>
+                  </XStack>
+                  {showFullDisclaimer ? (
+                    <CaretUp size={20} color="#666" />
+                  ) : (
+                    <CaretDown size={20} color="#666" />
+                  )}
+                </XStack>
+
+                {showFullDisclaimer && (
+                  <YStack gap="$3">
+                    {/* UGOKI is NOT */}
+                    <YStack
+                      backgroundColor="$cardBackground"
+                      padding="$4"
+                      borderRadius="$4"
+                      borderLeftWidth={3}
+                      borderLeftColor="#ef4444"
+                    >
+                      <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="$2">
+                        UGOKI is NOT:
+                      </Text>
+                      <YStack gap="$2">
+                        <Text fontSize="$3" color="$colorMuted">• A medical device</Text>
+                        <Text fontSize="$3" color="$colorMuted">• A substitute for professional medical advice</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Intended to diagnose, treat, cure, or prevent any disease</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Suitable for individuals with certain health conditions without medical supervision</Text>
+                      </YStack>
+                    </YStack>
+
+                    {/* Consult healthcare provider */}
+                    <YStack
+                      backgroundColor="$cardBackground"
+                      padding="$4"
+                      borderRadius="$4"
+                      borderLeftWidth={3}
+                      borderLeftColor="#f97316"
+                    >
+                      <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="$2">
+                        Consult a healthcare provider before use if you:
+                      </Text>
+                      <YStack gap="$2">
+                        <Text fontSize="$3" color="$colorMuted">• Have diabetes or blood sugar regulation issues</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Have or have had an eating disorder</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Are pregnant, breastfeeding, or planning to become pregnant</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Have cardiovascular disease or other chronic conditions</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Take medications that may be affected by fasting</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Are under 18 or over 70 years of age</Text>
+                        <Text fontSize="$3" color="$colorMuted">• Have a BMI under 18.5</Text>
+                      </YStack>
+                    </YStack>
+
+                    {/* AI Coach Limitations */}
+                    <YStack
+                      backgroundColor="$cardBackground"
+                      padding="$4"
+                      borderRadius="$4"
+                      borderLeftWidth={3}
+                      borderLeftColor="#3b82f6"
+                    >
+                      <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="$2">
+                        AI Coach Limitations
+                      </Text>
+                      <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
+                        The AI Coach feature provides general wellness information only. It cannot and does not provide medical advice. Any information provided by the AI Coach should not be relied upon for medical decisions.
+                      </Text>
+                    </YStack>
+
+                    {/* Important Warning */}
+                    <YStack
+                      backgroundColor="#fef3c7"
+                      padding="$4"
+                      borderRadius="$4"
+                    >
+                      <XStack gap="$2" alignItems="center" marginBottom="$2">
+                        <Warning size={18} color="#d97706" weight="fill" />
+                        <Text fontSize="$4" fontWeight="600" color="#92400e">
+                          Important
+                        </Text>
+                      </XStack>
+                      <Text fontSize="$3" color="#92400e" lineHeight={20}>
+                        If you experience any adverse health effects while using this app, discontinue use and consult a healthcare professional immediately.
+                      </Text>
+                    </YStack>
+                  </YStack>
+                )}
               </YStack>
             </ScrollView>
 
@@ -210,19 +323,19 @@ export default function OnboardingScreen() {
               }}
             >
               <YStack
-                width={28}
-                height={28}
-                borderRadius={6}
+                width={24}
+                height={24}
+                borderRadius={12}
                 borderWidth={2}
                 borderColor={disclaimerAccepted ? '$primary' : '$borderColor'}
                 backgroundColor={disclaimerAccepted ? '$primary' : 'transparent'}
                 justifyContent="center"
                 alignItems="center"
               >
-                {disclaimerAccepted && <Check size={18} color="white" weight="bold" />}
+                {disclaimerAccepted && <Check size={14} color="white" weight="bold" />}
               </YStack>
               <Text fontSize="$3" color="$color" flex={1} lineHeight={20}>
-                I understand that UGOKI provides general wellness information only and is not a substitute for professional medical advice
+                I understand and want to continue
               </Text>
             </XStack>
           </YStack>
@@ -250,16 +363,13 @@ export default function OnboardingScreen() {
                   pressStyle={{ backgroundColor: data.gender === option.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
                   onPress={() => handleSelect('gender', option.id)}
                 >
-                  <XStack gap="$3" alignItems="center">
-                    <Text fontSize="$6">{option.icon}</Text>
-                    <Text
-                      color={data.gender === option.id ? 'white' : '$color'}
-                      fontWeight="600"
-                      fontSize="$5"
-                    >
-                      {option.label}
-                    </Text>
-                  </XStack>
+                  <Text
+                    color={data.gender === option.id ? 'white' : '$color'}
+                    fontWeight="600"
+                    fontSize="$5"
+                  >
+                    {option.label}
+                  </Text>
                 </Button>
               ))}
             </YStack>
@@ -288,16 +398,13 @@ export default function OnboardingScreen() {
                   pressStyle={{ backgroundColor: data.goal === goal.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
                   onPress={() => handleSelect('goal', goal.id)}
                 >
-                  <XStack gap="$3" alignItems="center">
-                    <Text fontSize="$6">{goal.icon}</Text>
-                    <Text
-                      color={data.goal === goal.id ? 'white' : '$color'}
-                      fontWeight="600"
-                      fontSize="$5"
-                    >
-                      {goal.label}
-                    </Text>
-                  </XStack>
+                  <Text
+                    color={data.goal === goal.id ? 'white' : '$color'}
+                    fontWeight="600"
+                    fontSize="$5"
+                  >
+                    {goal.label}
+                  </Text>
                 </Button>
               ))}
             </YStack>

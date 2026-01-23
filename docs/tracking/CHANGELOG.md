@@ -20,6 +20,11 @@ Types of changes:
 ## [Unreleased]
 
 ### Added
+- **Full Health Disclaimer** - Collapsible detailed health disclaimer on onboarding screen
+  - "UGOKI is NOT:" section with medical device disclaimers
+  - "Consult healthcare provider" section with specific conditions
+  - "AI Coach Limitations" section
+  - Important warning about adverse effects
 - Documentation restructure with PRD, architecture docs, feature specs
 - Exercise library with body focus filtering (upper, lower, core, full_body)
 - Exercise difficulty metadata (beginner, intermediate, advanced)
@@ -27,6 +32,10 @@ Types of changes:
   - AI-generated via Claude Haiku during paper summarization
   - New `AbstractBullets` component on mobile paper detail screen
   - Backfill support for existing cached papers
+
+### Changed
+- **Onboarding Gender Selection** - Simplified to Male/Female only, removed "Other" and "Prefer not to say"
+- **Onboarding UI** - Removed emoji icons from gender and goals selection screens for cleaner design
 
 ### Security
 - **JWT Authentication** - All protected endpoints now validate Bearer tokens
@@ -37,6 +46,8 @@ Types of changes:
 - **Security Tests** - 50 comprehensive tests in `tests/test_security.py`
 
 ### Fixed
+- **BUG-012:** Auth logout not clearing Zustand persist storage - users were logged back in after signing out
+- **BUG-013:** HealthSyncCard "Connect Apple Health" button too squashed - increased button height
 - Research ORM datetime columns now timezone-aware (commit `0ce18294`)
 - **BUG-004:** AI Coach `/stream` endpoint now uses `message` field (consistent with `/chat`)
 - **BUG-005:** Time Keeper `/close` endpoint now accepts optional body (defaults to `COMPLETED` state)

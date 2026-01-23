@@ -175,7 +175,8 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
       {/* Action button */}
       {isConnected ? (
         <Button
-          size="$3"
+          size="$4"
+          height={48}
           backgroundColor="$backgroundHover"
           borderRadius="$3"
           onPress={handleSync}
@@ -194,7 +195,8 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
         </Button>
       ) : (
         <Button
-          size="$3"
+          size="$4"
+          height={48}
           backgroundColor="$primary"
           borderRadius="$3"
           onPress={handleConnect}

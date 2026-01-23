@@ -22,23 +22,23 @@ export function useLogout(options?: UseLogoutOptions) {
       const response = await apiClient.post<LogoutResponse>('/identity/logout');
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Clear all cached queries
       queryClient.clear();
 
-      // Clear auth state
-      clearAuth();
+      // Clear local storage first (including Zustand persist key)
+      await appStorage.clearAuth();
 
-      // Clear local storage (except device ID for future anonymous re-auth)
-      appStorage.clearAuth();
+      // Clear auth state (this will also try to persist null values)
+      clearAuth();
 
       options?.onSuccess?.();
     },
-    onError: (error) => {
+    onError: async (error) => {
       // Even if API call fails, clear local state
       queryClient.clear();
+      await appStorage.clearAuth();
       clearAuth();
-      appStorage.clearAuth();
 
       const message = getErrorMessage(error);
       options?.onError?.(message);
