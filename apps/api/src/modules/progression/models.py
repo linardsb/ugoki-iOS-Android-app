@@ -95,7 +95,7 @@ class UserAchievement(BaseModel):
     identity_id: str
     achievement_id: str
     achievement: Achievement | None = None
-    unlocked_at: datetime
+    unlocked_at: datetime | None = None  # Only set when actually unlocked
     progress: int = Field(0, ge=0, description="Progress toward achievement")
     is_unlocked: bool = False
 

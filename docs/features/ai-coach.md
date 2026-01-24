@@ -1,6 +1,6 @@
 # Feature: AI Coach
 
-Conversational AI assistant with access to user data, streaming responses, conversation persistence, and safety filtering.
+Conversational AI assistant with access to user data, streaming responses, conversation persistence, and safety filtering. Enhanced with constitutional AI principles, cross-session memory, and intelligent context engineering.
 
 ---
 
@@ -8,7 +8,7 @@ Conversational AI assistant with access to user data, streaming responses, conve
 
 The AI Coach is a Pydantic AI-powered conversational assistant that provides personalized guidance based on user data. It supports **streaming responses**, **conversation persistence**, **web search**, and **document retrieval (RAG)**. It has access to fasting status, workout history, metrics, and biomarkers through tool calls. All responses are filtered for safety to avoid medical advice.
 
-### Key Features (v2.1 - Jan 2026)
+### Key Features (v3.0 - Jan 2026)
 
 - **LLM Integration**: Real LLM responses in `/chat` endpoint with pattern-matching fallback
 - **Streaming Responses**: Real-time text streaming via Server-Sent Events (SSE)
@@ -19,17 +19,31 @@ The AI Coach is a Pydantic AI-powered conversational assistant that provides per
 - **GDPR Compliance**: Export and delete conversation data
 - **Multiple LLM Providers**: OpenAI, Ollama, Groq, Anthropic support
 
+### v3.0 Enhancements (Jan 24, 2026)
+
+- **Coach Constitution**: Formal values framework with 4 priority pillars (Safety, Evidence, Personalization, Helpfulness)
+- **Skill System**: Progressive prompt disclosure - 5 domain skills loaded based on query type
+- **User Memory**: Cross-session memory extraction and retrieval (facts, preferences, goals, constraints)
+- **Conversation Compaction**: Automatic summarization after 30 messages for context efficiency
+- **LLM-as-Judge Evaluation**: Automated quality tracking (helpfulness, safety, personalization)
+- **Context Engineering**: Tiered context loading with token budget enforcement
+
 ---
 
 ## Status
 
 | Component | Status |
 |-----------|--------|
-| Backend | Complete (v2.1) |
+| Backend | Complete (v3.0) |
 | Mobile | Complete (v2.1) |
 | Streaming | Complete |
 | Conversations | Complete |
 | RAG | Complete |
+| Constitution | Complete (v3.0) |
+| Skills | Complete (v3.0) |
+| Memory | Complete (v3.0) |
+| Evaluation | Complete (v3.0) |
+| Context Engineering | Complete (v3.0) |
 | Tests | Partial |
 
 ---
@@ -96,44 +110,102 @@ The AI Coach is a Pydantic AI-powered conversational assistant that provides per
 | `apps/mobile/features/coach/components/ChatInput.tsx` | Message input |
 | `apps/mobile/app/(tabs)/coach.tsx` | Chat screen |
 
+### v3.0 Backend Components
+
+| Directory | Purpose |
+|-----------|---------|
+| `ai_coach/skills/` | Skill system (5 domain skills + router) |
+| `ai_coach/memory/` | Cross-session user memory extraction |
+| `ai_coach/evaluation/` | LLM-as-Judge quality evaluation |
+| `ai_coach/context/` | Tiered context engineering |
+
+| File | Purpose |
+|------|---------|
+| `COACH_CONSTITUTION.md` | Values framework (4 priority pillars) |
+| `skills/router.py` | Query classification → skill activation |
+| `skills/workout.py` | HIIT, exercise form, progression |
+| `skills/fasting.py` | IF protocols, metabolic science |
+| `skills/nutrition.py` | Meal timing, hydration, macros |
+| `skills/motivation.py` | Habit psychology, accountability |
+| `skills/research.py` | Study interpretation, evidence |
+| `memory/service.py` | Memory extraction and retrieval |
+| `memory/extractor.py` | LLM-based fact extraction |
+| `evaluation/judge.py` | LLM-as-Judge scoring |
+| `evaluation/service.py` | Evaluation orchestration |
+| `context/manager.py` | Tiered context loading |
+| `context/classifier.py` | Query type classification |
+
 ---
 
 ## Architecture
+
+### v3.0 Enhanced Architecture
 
 ```
 User Message
      │
      ▼
-┌─────────────┐
-│Safety Filter│ → Block medical/emergency
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ Pydantic AI │
-│    Agent    │
-└──────┬──────┘
-       │
-       ├──▶ get_active_fast() → TIME_KEEPER
-       ├──▶ get_user_metrics() → METRICS
-       ├──▶ get_biomarkers() → METRICS
-       ├──▶ get_workout_history() → CONTENT
-       └──▶ get_user_goals() → PROFILE
-       │
-       ▼
-┌─────────────┐
-│Claude 3.5   │
-│   Sonnet    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│Response     │
-│Filter       │ → Add disclaimers
-└──────┬──────┘
-       │
-       ▼
-   Response
+┌─────────────────┐
+│  Safety Filter  │ → Block medical/emergency
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐     ┌─────────────────┐
+│  Skill Router   │ ──▶ │  Load Skills    │
+│ (classify query)│     │ (max 2 active)  │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────┐     ┌─────────────────┐
+│ Context Manager │ ──▶ │  Build Context  │
+│ (tiered loading)│     │ (8k token limit)│
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         ├───────────────────────┘
+         ▼
+┌─────────────────┐     ┌─────────────────┐
+│  Memory Service │ ──▶ │  Load Memories  │
+│ (cross-session) │     │ (facts, prefs)  │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         ▼                       ▼
+┌─────────────────────────────────────────┐
+│              Pydantic AI Agent          │
+│  ┌───────────────────────────────────┐  │
+│  │ Constitution + Personality + Skills│ │
+│  └───────────────────────────────────┘  │
+│  ┌───────────────────────────────────┐  │
+│  │ User Context + Memories + History │  │
+│  └───────────────────────────────────┘  │
+└───────────────────┬─────────────────────┘
+                    │
+       ┌────────────┼────────────┐
+       ▼            ▼            ▼
+  ┌─────────┐ ┌─────────┐ ┌─────────┐
+  │TIME_KEEP│ │ METRICS │ │ CONTENT │
+  └─────────┘ └─────────┘ └─────────┘
+       │            │            │
+       └────────────┼────────────┘
+                    ▼
+┌─────────────────────────────────────────┐
+│              Claude 3.5 Sonnet          │
+└───────────────────┬─────────────────────┘
+                    │
+                    ▼
+┌─────────────────────────────────────────┐
+│           Response Filter               │
+│          (add disclaimers)              │
+└───────────────────┬─────────────────────┘
+                    │
+         ┌──────────┴──────────┐
+         ▼                     ▼
+┌─────────────────┐   ┌─────────────────┐
+│ Memory Extractor│   │ Evaluation Judge│
+│ (async, 1/10)   │   │ (async, 10%)    │
+└─────────────────┘   └─────────────────┘
+                    │
+                    ▼
+               Response
 ```
 
 ---
@@ -397,6 +469,44 @@ GROQ_MODEL=llama-3.3-70b-versatile
 | user_query | TEXT | Query for rate limiting |
 | timestamp | TIMESTAMPTZ | Request time |
 
+### ai_coach_user_memory (v3.0)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key (gen_random_uuid) |
+| identity_id | UUID | FK to identities, CASCADE DELETE |
+| memory_type | VARCHAR(20) | 'fact', 'preference', 'goal', 'constraint' |
+| category | VARCHAR(50) | 'injury', 'schedule', 'equipment', etc. |
+| content | TEXT | The extracted memory content |
+| confidence | FLOAT | Extraction confidence (0.0-1.0) |
+| source_session_id | VARCHAR(100) | Conversation that produced this memory |
+| extracted_at | TIMESTAMPTZ | When memory was extracted |
+| verified_by_user | BOOLEAN | User confirmed accuracy (default: false) |
+| is_active | BOOLEAN | Memory is active (default: true) |
+
+**Indexes:**
+- `idx_memory_identity_category` - B-tree on (identity_id, category)
+- `idx_memory_identity_type` - B-tree on (identity_id, memory_type)
+
+### ai_coach_evaluation (v3.0)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key (gen_random_uuid) |
+| message_id | INTEGER | FK to coach_messages |
+| session_id | VARCHAR(100) | Conversation session |
+| evaluated_at | TIMESTAMPTZ | When evaluation ran |
+| helpfulness_score | FLOAT | 1-5 score |
+| safety_score | FLOAT | 1-5 score |
+| personalization_score | FLOAT | 1-5 score |
+| overall_score | FLOAT | Weighted average |
+| judge_reasoning | TEXT | Explanation of scores |
+| judge_model | VARCHAR(50) | Model used (e.g., 'claude-3-haiku') |
+
+**Indexes:**
+- `idx_evaluation_session` - B-tree on session_id
+- `idx_evaluation_date` - B-tree on evaluated_at
+
 ---
 
 ## Performance Optimizations (v2.1)
@@ -602,6 +712,144 @@ The AI Coach includes multiple safety layers:
 
 ---
 
+## v3.0 Components
+
+### Coach Constitution
+
+The AI Coach operates under a formal values framework with 4 priority pillars (in order):
+
+| Pillar | Description | Examples |
+|--------|-------------|----------|
+| **1. Safety First** | Never diagnose, never ignore pain | "Consult a doctor for persistent pain" |
+| **2. Evidence-Based** | Ground in research, acknowledge uncertainty | "Research suggests..." not "this will definitely..." |
+| **3. Personalized** | Use known context (name, injuries, goals) | Reference user's stated constraints |
+| **4. Genuinely Helpful** | Specific, actionable advice | Explain "why" behind recommendations |
+
+**File:** `apps/api/src/modules/ai_coach/COACH_CONSTITUTION.md`
+
+---
+
+### Skill System
+
+Skills provide domain expertise loaded based on query type:
+
+| Skill | Triggers | Token Budget |
+|-------|----------|--------------|
+| `workout` | exercise, HIIT, reps, sets, form | ~400 |
+| `fasting` | fast, autophagy, eating window | ~420 |
+| `nutrition` | meal, calories, protein, hydration | ~400 |
+| `motivation` | motivation, habit, consistency, discipline | ~380 |
+| `research` | study, research, evidence, science | ~350 |
+
+**Routing Rules:**
+- Max 2 skills per query (context efficiency)
+- Keyword-based classification (upgradeable to LLM classifier)
+- General prompt used when no skills match
+
+**Files:** `apps/api/src/modules/ai_coach/skills/`
+
+---
+
+### User Memory System
+
+Cross-session memory extraction stores user facts:
+
+| Memory Type | Description | Example |
+|-------------|-------------|---------|
+| `fact` | Stated facts about user | "I have a bad knee" |
+| `preference` | Likes/dislikes | "I prefer morning workouts" |
+| `goal` | Explicit objectives | "I want to lose 10 lbs" |
+| `constraint` | Limitations | "I only have 20 minutes" |
+
+| Category | Used For |
+|----------|----------|
+| `injury` | Workout modification |
+| `schedule` | Timing recommendations |
+| `equipment` | Exercise selection |
+| `dietary` | Nutrition advice |
+| `medical` | Safety filtering |
+
+**Extraction Flow:**
+1. After every 10 conversations, async extraction runs
+2. Claude Haiku extracts memories from recent messages
+3. Only high-confidence (>0.7) memories stored
+4. Memories loaded based on query type (skill-aligned)
+
+**Files:** `apps/api/src/modules/ai_coach/memory/`
+
+---
+
+### Conversation Compaction
+
+Automatic summarization for long conversations:
+
+| Trigger | Action |
+|---------|--------|
+| >30 messages | Summarize older messages |
+| Summary exists | Load summary + last 10 messages |
+| No summary | Load last 50 messages |
+
+**Summarization:**
+- Uses Claude Haiku for cost efficiency
+- Captures: goals, constraints, advice given, action items
+- Target: <500 tokens per summary
+
+**Files:** `_load_conversation_history()` and `_summarize_conversation()` in `service.py`
+
+---
+
+### LLM-as-Judge Evaluation
+
+Quality tracking via automated evaluation:
+
+| Score | Description | Range |
+|-------|-------------|-------|
+| `helpfulness` | Did it address the user's need? | 1-5 |
+| `safety` | Was medical advice avoided? | 1-5 |
+| `personalization` | Did it use known context? | 1-5 |
+| `overall` | Weighted average | 1-5 |
+
+**Sampling:**
+- 10% of responses evaluated (configurable)
+- Uses Claude Haiku for cost efficiency
+- Async evaluation (non-blocking)
+- Low safety scores trigger alerts
+
+**Files:** `apps/api/src/modules/ai_coach/evaluation/`
+
+---
+
+### Context Engineering
+
+Tiered context loading with token budget enforcement:
+
+| Tier | Content | When Loaded |
+|------|---------|-------------|
+| **Tier 1** | Current fasting, today's workout, streaks | Always |
+| **Tier 2** | Workout history, weight trend, fasting history | Query-dependent |
+| **Tier 3** | Detailed logs, biomarkers, research papers | Via tools |
+
+**Budget Enforcement:**
+
+| Component | Max Tokens |
+|-----------|------------|
+| Constitution | 500 |
+| Personality | 200 |
+| Skills (x2) | 800 |
+| User Context | 1500 |
+| Memories | 1000 |
+| Conversation | 4000 |
+| **Total Budget** | **8000** |
+
+**Overflow Handling:**
+1. Trim conversation history first
+2. Reduce memories if needed
+3. Skills and constitution never trimmed
+
+**Files:** `apps/api/src/modules/ai_coach/context/`
+
+---
+
 ## Future Enhancements
 
 - [x] ~~Conversation memory across sessions~~ (v2.0)
@@ -610,10 +858,16 @@ The AI Coach includes multiple safety layers:
 - [x] ~~RAG document retrieval~~ (v2.1)
 - [x] ~~LLM in /chat endpoint~~ (v2.1)
 - [x] ~~Embedding cache~~ (v2.1)
+- [x] ~~Constitutional AI values framework~~ (v3.0)
+- [x] ~~Skill system for progressive disclosure~~ (v3.0)
+- [x] ~~Cross-session user memory~~ (v3.0)
+- [x] ~~Conversation compaction~~ (v3.0)
+- [x] ~~LLM-as-Judge evaluation~~ (v3.0)
+- [x] ~~Context engineering with token budgets~~ (v3.0)
 - [ ] Model routing (Haiku for simple, Sonnet for complex)
 - [ ] Proactive insights push notifications
 - [ ] Voice input/output
-- [ ] Mem0 integration for long-term memory
+- [ ] Memory UI for user verification/editing
 - [ ] Meal suggestions based on eating window
 - [ ] Redis-based embedding cache for multi-worker deployments
 

@@ -301,7 +301,7 @@ class ProgressionService(ProgressionInterface):
                 achievement=achievement,
                 progress=progress,
                 is_unlocked=is_unlocked,
-                unlocked_at=unlocked_at or datetime.now(UTC),
+                unlocked_at=unlocked_at,  # Only set when actually unlocked
             ))
 
         return user_achievements
@@ -320,6 +320,9 @@ class ProgressionService(ProgressionInterface):
         streaks = await self.get_all_streaks(identity_id)
         level = await self.get_level(identity_id)
 
+        # Get activity counts from XP transactions
+        activity_counts = await self._get_activity_counts(identity_id)
+
         for achievement in all_achievements:
             # Check if already unlocked
             user_ach = await self._get_user_achievement(identity_id, achievement.id)
@@ -331,7 +334,7 @@ class ProgressionService(ProgressionInterface):
             should_unlock = False
 
             if achievement.achievement_type == AchievementType.STREAK:
-                # Check streak achievements
+                # Check streak achievements (consecutive days)
                 for streak in streaks:
                     if streak.longest_count >= achievement.requirement_value:
                         should_unlock = True
@@ -340,13 +343,35 @@ class ProgressionService(ProgressionInterface):
                     progress = max(progress, streak.longest_count)
 
             elif achievement.achievement_type == AchievementType.FASTING:
-                # Check fasting streak specifically
-                fasting_streak = next(
-                    (s for s in streaks if s.streak_type == StreakType.FASTING), None
-                )
-                if fasting_streak:
-                    progress = fasting_streak.longest_count
+                # Check total fasts completed (not streak)
+                progress = activity_counts.get("fasts", 0)
+                should_unlock = progress >= achievement.requirement_value
+
+            elif achievement.achievement_type == AchievementType.WORKOUT:
+                # Check total workouts completed
+                progress = activity_counts.get("workouts", 0)
+                should_unlock = progress >= achievement.requirement_value
+
+            elif achievement.achievement_type == AchievementType.WEIGHT:
+                # Check total weight logs
+                progress = activity_counts.get("weight_logs", 0)
+                should_unlock = progress >= achievement.requirement_value
+
+            elif achievement.achievement_type == AchievementType.SOCIAL:
+                # Social achievements - check based on achievement name/requirement
+                # For now, these require manual unlock or specific triggers
+                progress = 0
+                should_unlock = False
+
+            elif achievement.achievement_type == AchievementType.SPECIAL:
+                # Special achievements - check level-based ones
+                if "level" in achievement.name.lower():
+                    progress = level.current_level
                     should_unlock = progress >= achievement.requirement_value
+                else:
+                    # Other special achievements require specific triggers
+                    progress = 0
+                    should_unlock = False
 
             # Update or create user achievement
             if user_ach:
@@ -384,6 +409,41 @@ class ProgressionService(ProgressionInterface):
             )
 
         return unlocked
+
+    async def _get_activity_counts(self, identity_id: str) -> dict[str, int]:
+        """Get counts of various activities from XP transactions."""
+        # Count fasts completed
+        fasts_result = await self._db.execute(
+            select(func.count(XPTransactionORM.id)).where(
+                XPTransactionORM.identity_id == identity_id,
+                XPTransactionORM.transaction_type == XPTransactionType.FAST_COMPLETED,
+            )
+        )
+        fasts = fasts_result.scalar() or 0
+
+        # Count workouts completed
+        workouts_result = await self._db.execute(
+            select(func.count(XPTransactionORM.id)).where(
+                XPTransactionORM.identity_id == identity_id,
+                XPTransactionORM.transaction_type == XPTransactionType.WORKOUT_COMPLETED,
+            )
+        )
+        workouts = workouts_result.scalar() or 0
+
+        # Count weight logs
+        weight_logs_result = await self._db.execute(
+            select(func.count(XPTransactionORM.id)).where(
+                XPTransactionORM.identity_id == identity_id,
+                XPTransactionORM.transaction_type == XPTransactionType.WEIGHT_LOGGED,
+            )
+        )
+        weight_logs = weight_logs_result.scalar() or 0
+
+        return {
+            "fasts": fasts,
+            "workouts": workouts,
+            "weight_logs": weight_logs,
+        }
 
     # =========================================================================
     # Overview
@@ -554,7 +614,7 @@ class ProgressionService(ProgressionInterface):
             achievement_id=orm.achievement_id,
             progress=orm.progress,
             is_unlocked=orm.is_unlocked,
-            unlocked_at=orm.unlocked_at or datetime.now(UTC),
+            unlocked_at=orm.unlocked_at,  # Only set when actually unlocked
         )
 
     async def _create_user_achievement(

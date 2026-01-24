@@ -46,6 +46,17 @@ from src.modules.ai_coach.agents import (
     get_http_client,
     get_brave_api_key,
 )
+from src.modules.ai_coach.skills import route_query
+from src.modules.ai_coach.memory import (
+    MemoryService,
+    format_memories_for_prompt,
+    should_extract_memories,
+)
+from src.modules.ai_coach.evaluation import (
+    EvaluationService,
+    EvaluationRequest,
+)
+from src.modules.ai_coach.context import ContextManager
 
 logger = logging.getLogger(__name__)
 
@@ -114,11 +125,17 @@ class AICoachService(AICoachInterface):
         # === NORMAL PROCESSING ===
         # Use LLM for intelligent responses with pattern matching fallback
         try:
-            deps = await self._get_agent_deps(identity_id)
+            # Route query to determine which skills to activate
+            activated_skills = route_query(request.message)
+
+            # Get agent dependencies with skill-filtered memories
+            deps = await self._get_agent_deps(identity_id, skills=activated_skills)
+
             llm_response = await run_coach_response(
                 query=request.message,
                 deps=deps,
                 personality=personality.value if personality else "motivational",
+                skills=activated_skills,
             )
 
             # REDIRECT: Add disclaimer to response
@@ -657,8 +674,12 @@ class AICoachService(AICoachInterface):
         message_type: str,
         content: str,
         message_data: str | None = None,
-    ) -> None:
-        """Save a message to the database."""
+    ) -> int | None:
+        """Save a message to the database.
+
+        Returns:
+            The message ID if saved, None otherwise
+        """
         message = CoachMessageORM(
             session_id=session_id,
             message={
@@ -669,6 +690,8 @@ class AICoachService(AICoachInterface):
         )
         self._db.add(message)
         await self._db.commit()
+        await self._db.refresh(message)
+        return message.id
 
     async def _update_conversation_timestamp(self, session_id: str) -> None:
         """Update the last_message_at timestamp for a conversation."""
@@ -860,6 +883,12 @@ class AICoachService(AICoachInterface):
         """
         Load conversation history from database.
 
+        Implements conversation compaction:
+        - If message_count >= SUMMARIZE_AFTER_MESSAGES and no summary exists,
+          blocks to generate summary before proceeding
+        - If summary exists, loads only recent messages (last 10)
+        - Otherwise loads up to max_messages
+
         Returns:
             Tuple of (messages list, conversation summary if exists)
         """
@@ -870,12 +899,29 @@ class AICoachService(AICoachInterface):
             )
         )
         conversation = conv_result.scalar_one_or_none()
-        summary = conversation.summary if conversation else None
+
+        if not conversation:
+            return [], None
+
+        summary = conversation.summary
+
+        # Check if we need to generate a summary (compaction)
+        if conversation.message_count >= SUMMARIZE_AFTER_MESSAGES and not summary:
+            logger.info(
+                f"Conversation {session_id} has {conversation.message_count} messages, "
+                f"generating summary (compaction)"
+            )
+            summary = await self._summarize_conversation(session_id)
+
+        # Determine how many recent messages to load
+        # If we have a summary, we only need recent context (last 10 messages)
+        # Otherwise, load more for full context
+        messages_to_load = 10 if summary else max_messages
 
         # Get recent messages
         query = select(CoachMessageORM).where(
             CoachMessageORM.session_id == session_id
-        ).order_by(CoachMessageORM.created_at.desc()).limit(max_messages)
+        ).order_by(CoachMessageORM.created_at.desc()).limit(messages_to_load)
 
         result = await self._db.execute(query)
         messages = result.scalars().all()
@@ -899,9 +945,12 @@ class AICoachService(AICoachInterface):
         """
         Convert database message format to Pydantic AI ModelMessage format.
 
+        Implements conversation compaction by prepending summary context
+        when available, reducing the need to load full history.
+
         Args:
-            history: List of {role, content} dicts
-            summary: Optional conversation summary to prepend
+            history: List of {role, content} dicts (recent messages only if compacted)
+            summary: Optional conversation summary from compaction
 
         Returns:
             List of Pydantic AI message objects
@@ -916,15 +965,21 @@ class AICoachService(AICoachInterface):
         messages = []
 
         # If we have a summary, add it as context at the beginning
+        # This replaces loading the full conversation history
         if summary:
-            messages.append(
-                ModelRequest(parts=[UserPromptPart(content=f"[Previous conversation summary: {summary}]")])
+            summary_context = (
+                f"[Earlier conversation context - use this to maintain continuity]\n"
+                f"{summary}\n"
+                f"[End of earlier context - recent messages follow]"
             )
             messages.append(
-                ModelResponse(parts=[TextPart(content="I remember our previous conversation. How can I help you today?")])
+                ModelRequest(parts=[UserPromptPart(content=summary_context)])
+            )
+            messages.append(
+                ModelResponse(parts=[TextPart(content="I have context from our earlier conversation and will use it to help you.")])
             )
 
-        # Convert history to Pydantic AI format
+        # Convert recent history to Pydantic AI format
         for msg in history:
             if msg["role"] == "user":
                 messages.append(
@@ -953,42 +1008,77 @@ class AICoachService(AICoachInterface):
 
     async def _summarize_conversation(self, session_id: str) -> str | None:
         """
-        Create a summary of the conversation.
-        Called when message count exceeds threshold.
-        """
-        # Load all messages
-        history, _ = await self._load_conversation_history(session_id, max_messages=100)
+        Create a summary of the conversation for context compaction.
 
-        if len(history) < 10:
+        Called when message count exceeds SUMMARIZE_AFTER_MESSAGES threshold.
+        Uses Claude Haiku for efficiency.
+
+        The summary captures:
+        - User's stated goals and preferences
+        - Important facts mentioned (injuries, constraints)
+        - Progress discussed
+        - Commitments or action items agreed upon
+        """
+        # Load messages directly (avoid recursion through _load_conversation_history)
+        query = select(CoachMessageORM).where(
+            CoachMessageORM.session_id == session_id
+        ).order_by(CoachMessageORM.created_at.asc()).limit(100)
+
+        result = await self._db.execute(query)
+        messages = result.scalars().all()
+
+        if len(messages) < 10:
             return None
 
-        # Build conversation text for summarization
+        # Build conversation text for summarization (first 30 messages)
         conv_text = "\n".join([
-            f"{'User' if m['role'] == 'user' else 'Coach'}: {m['content'][:200]}"
-            for m in history[:30]  # First 30 messages
+            f"{'User' if m.message.get('type') == 'human' else 'Coach'}: {m.message.get('content', '')[:200]}"
+            for m in messages[:30]
         ])
 
+        summarize_prompt = """Summarize this wellness coaching conversation in 3-4 sentences.
+
+Focus on:
+1. User's stated goals and progress
+2. Important facts (injuries, constraints, preferences mentioned)
+3. Key advice given or commitments made
+
+Be concise but preserve critical context for future conversations.
+
+Conversation:
+"""
+
         try:
-            # Use the LLM to summarize
-            deps = await self._get_agent_deps(session_id.split("~")[0])
-            from src.modules.ai_coach.agents import run_coach_response
+            # Use Anthropic directly for summarization with Haiku for efficiency
+            import anthropic
 
-            summary = await run_coach_response(
-                query=f"Summarize this conversation in 2-3 sentences, focusing on the user's goals, progress discussed, and any commitments made:\n\n{conv_text}",
-                deps=deps,
-                personality="calm",
+            client = anthropic.AsyncAnthropic()
+
+            response = await client.messages.create(
+                model="claude-3-5-haiku-20241022",  # Use Haiku for efficiency
+                max_tokens=500,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"{summarize_prompt}\n{conv_text}"
+                    }
+                ]
             )
 
-            # Save summary to database
-            conv_result = await self._db.execute(
-                select(CoachConversationORM).where(
-                    CoachConversationORM.session_id == session_id
+            summary = response.content[0].text if response.content else None
+
+            if summary:
+                # Save summary to database
+                conv_result = await self._db.execute(
+                    select(CoachConversationORM).where(
+                        CoachConversationORM.session_id == session_id
+                    )
                 )
-            )
-            conversation = conv_result.scalar_one_or_none()
-            if conversation:
-                conversation.summary = summary[:1000]  # Limit summary length
-                await self._db.commit()
+                conversation = conv_result.scalar_one_or_none()
+                if conversation:
+                    conversation.summary = summary[:1000]  # Limit summary length
+                    await self._db.commit()
+                    logger.info(f"Generated summary for conversation {session_id}")
 
             return summary
 
@@ -1008,12 +1098,24 @@ class AICoachService(AICoachInterface):
             conversation.message_count += 1
             await self._db.commit()
 
-    async def _get_agent_deps(self, identity_id: str) -> UgokiAgentDeps:
-        """Create agent dependencies for streaming with full user context."""
+    async def _get_agent_deps(
+        self,
+        identity_id: str,
+        skills: list[str] | None = None,
+    ) -> UgokiAgentDeps:
+        """Create agent dependencies for streaming with full user context.
+
+        Args:
+            identity_id: User's identity ID
+            skills: Optional list of activated skills for memory filtering
+        """
         # Build all context in parallel
         user_context = await self._build_user_context(identity_id)
         prefs_context = await self._build_user_preferences_context(identity_id)
         health_context = await self._build_health_context(identity_id)
+
+        # Load memories relevant to activated skills
+        memory_context = await self._build_memory_context(identity_id, skills)
 
         # Combine user context and preferences
         combined_user_context = user_context
@@ -1026,10 +1128,185 @@ class AICoachService(AICoachInterface):
             embedding_client=get_embedding_client(),
             http_client=get_http_client(),
             brave_api_key=get_brave_api_key(),
-            memories="",  # TODO: Integrate Mem0 in future
+            memories=memory_context,
             user_context=combined_user_context,
             health_context=health_context,
         )
+
+    async def _build_memory_context(
+        self,
+        identity_id: str,
+        skills: list[str] | None = None,
+    ) -> str:
+        """
+        Build memory context from stored user memories.
+
+        Args:
+            identity_id: User's identity ID
+            skills: Optional list of activated skills for filtering
+
+        Returns:
+            Formatted memory string for prompt injection
+        """
+        try:
+            memory_service = MemoryService(self._db)
+
+            if skills:
+                memories = await memory_service.get_memories_for_skills(identity_id, skills)
+            else:
+                memories = await memory_service.get_all_active_memories(identity_id, limit=10)
+
+            return format_memories_for_prompt(memories)
+
+        except Exception as e:
+            logger.warning(f"Error loading memories: {e}")
+            return ""
+
+    async def _get_optimized_context(
+        self,
+        identity_id: str,
+        query: str,
+        skills: list[str] | None = None,
+        memories: str | None = None,
+        conversation_summary: str | None = None,
+    ) -> tuple[str, str, str]:
+        """
+        Build optimized context using the ContextManager.
+
+        Uses tiered loading and token budget enforcement for
+        optimal context window usage.
+
+        Args:
+            identity_id: User's identity ID
+            query: User's query for context classification
+            skills: Activated skill names
+            memories: Formatted memories string
+            conversation_summary: Previous conversation summary
+
+        Returns:
+            Tuple of (user_context, health_context, memory_context)
+        """
+        manager = ContextManager(self._db, identity_id)
+        return await manager.build_context(
+            query=query,
+            skills=skills,
+            memories=memories,
+            conversation_summary=conversation_summary,
+        )
+
+    async def _maybe_extract_memories(
+        self,
+        identity_id: str,
+        session_id: str,
+    ) -> None:
+        """
+        Extract and store memories from conversation if extraction threshold is met.
+
+        Extraction triggers:
+        - After first 5 messages
+        - Every 10 messages thereafter
+
+        Args:
+            identity_id: User's identity ID
+            session_id: Conversation session ID
+        """
+        try:
+            # Get conversation message count
+            conv_result = await self._db.execute(
+                select(CoachConversationORM).where(
+                    CoachConversationORM.session_id == session_id
+                )
+            )
+            conversation = conv_result.scalar_one_or_none()
+
+            if not conversation:
+                return
+
+            message_count = conversation.message_count
+
+            # Check if we should extract memories
+            # Extract after 5 messages initially, then every 10 messages
+            last_extraction = conversation.session_metadata.get("last_memory_extraction_count")
+
+            if not should_extract_memories(message_count, last_extraction):
+                return
+
+            logger.info(f"Triggering memory extraction for conversation {session_id} at {message_count} messages")
+
+            # Load recent messages
+            history, _ = await self._load_conversation_history(session_id, max_messages=20)
+
+            if not history:
+                return
+
+            # Extract and store memories
+            memory_service = MemoryService(self._db)
+            await memory_service.extract_and_store_memories(
+                identity_id=identity_id,
+                session_id=session_id,
+                messages=history,
+            )
+
+            # Update last extraction count in metadata
+            metadata = conversation.session_metadata or {}
+            metadata["last_memory_extraction_count"] = message_count
+            conversation.session_metadata = metadata
+            await self._db.commit()
+
+        except Exception as e:
+            logger.warning(f"Error extracting memories: {e}")
+
+    async def _maybe_evaluate_response(
+        self,
+        session_id: str,
+        message_id: int,
+        user_query: str,
+        coach_response: str,
+        user_context: str | None = None,
+    ) -> None:
+        """
+        Evaluate a response if sampling criteria are met.
+
+        Uses LLM-as-Judge to assess response quality on helpfulness,
+        safety, and personalization dimensions.
+
+        Args:
+            session_id: Conversation session ID
+            message_id: ID of the saved AI response message
+            user_query: The user's original query
+            coach_response: The AI coach's response
+            user_context: Optional user context summary
+        """
+        try:
+            evaluation_service = EvaluationService(self._db)
+
+            # Check if we should evaluate (sampling + minimum length)
+            if not evaluation_service.should_evaluate(len(coach_response)):
+                return
+
+            logger.debug(f"Evaluating response for message {message_id}")
+
+            # Build evaluation request
+            request = EvaluationRequest(
+                user_query=user_query,
+                coach_response=coach_response,
+                user_context_summary=user_context[:500] if user_context else None,
+                session_id=session_id,
+                message_id=message_id,
+            )
+
+            # Evaluate and store (async but awaited to ensure completion)
+            result = await evaluation_service.evaluate_and_store(request)
+
+            if result:
+                logger.info(
+                    f"Evaluated message {message_id}: overall={result.overall_score:.2f}, "
+                    f"safety={result.safety_score:.1f}"
+                )
+
+        except Exception as e:
+            # Evaluation errors should not affect the user experience
+            logger.warning(f"Error evaluating response: {e}")
 
     async def stream_chat(
         self,
@@ -1096,8 +1373,13 @@ class AICoachService(AICoachInterface):
             if history and len(history) > 1:
                 message_history = self._convert_to_pydantic_messages(history[:-1], summary)
 
-        # Get agent dependencies
-        deps = await self._get_agent_deps(identity_id)
+        # Route query to determine which skills to activate (progressive disclosure)
+        activated_skills = route_query(request.message)
+        if activated_skills:
+            logger.debug(f"Activated skills for query: {activated_skills}")
+
+        # Get agent dependencies with skill-filtered memories
+        deps = await self._get_agent_deps(identity_id, skills=activated_skills)
 
         # Stream response from agent
         full_response = ""
@@ -1110,6 +1392,7 @@ class AICoachService(AICoachInterface):
                 deps=deps,
                 personality=personality.value if personality else "motivational",
                 message_history=message_history,
+                skills=activated_skills,
             ):
                 # Pydantic AI stream_text() returns cumulative text, not deltas
                 # Extract just the new part (delta) to send to the client
@@ -1147,15 +1430,27 @@ class AICoachService(AICoachInterface):
                 )
                 full_response = filtered_response
 
-            # Save AI response
-            await self._save_message(session_id, "ai", full_response)
+            # Save AI response and get message ID for evaluation
+            message_id = await self._save_message(session_id, "ai", full_response)
             await self._increment_message_count(session_id)
             await self._update_conversation_timestamp(session_id)
 
-            # Check if we should summarize (runs in background, doesn't block response)
-            if await self._should_summarize(session_id):
-                # Don't await - let summarization happen asynchronously
-                logger.info(f"Conversation {session_id} reached {SUMMARIZE_AFTER_MESSAGES} messages, triggering summarization")
+            # Note: Summarization is now handled synchronously in _load_conversation_history
+            # when the conversation exceeds SUMMARIZE_AFTER_MESSAGES threshold.
+            # This ensures the summary is available before loading context for the next message.
+
+            # Trigger memory extraction periodically
+            await self._maybe_extract_memories(identity_id, session_id)
+
+            # Trigger evaluation (sampled, async)
+            if message_id:
+                await self._maybe_evaluate_response(
+                    session_id=session_id,
+                    message_id=message_id,
+                    user_query=request.message,
+                    coach_response=full_response,
+                    user_context=deps.user_context,
+                )
 
             # Final chunk to signal completion
             yield StreamChunk(

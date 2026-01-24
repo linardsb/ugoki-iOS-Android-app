@@ -271,17 +271,81 @@ Each subdirectory's CLAUDE.md file is maintained as a **living context document*
 - **Updated by:** Developer or AI assistant at end of each significant work session
 - **Purpose:** Provide quick context for future AI sessions about current state, issues, and guidelines
 
-**When you complete work, update the relevant CLAUDE.md:**
+### How to Identify Which Documentation Needs Updating
+
+After making code changes, use this decision tree:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Code Change Made                          │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+         ┌────────────────────┼────────────────────┐
+         ▼                    ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ New/Modified    │  │ Bug Fix         │  │ Architecture    │
+│ Feature         │  │                 │  │ Change          │
+└────────┬────────┘  └────────┬────────┘  └────────┬────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ Update:         │  │ Update:         │  │ Update:         │
+│ • Feature spec  │  │ • BUGS.md       │  │ • MODULES.md    │
+│   in docs/      │  │ • docs/tracking/│  │ • PATTERNS.md   │
+│   features/     │  │   CLAUDE.md     │  │ • docs/arch/    │
+│ • docs/features/│  │                 │  │   CLAUDE.md     │
+│   CLAUDE.md     │  │                 │  │                 │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+**Quick Reference - Which Docs to Update:**
+
+| Change Type | Primary Docs | CLAUDE.md Files |
+|-------------|--------------|-----------------|
+| New API endpoint | `docs/features/{feature}.md`, `MODULES.md` | `docs/features/CLAUDE.md` |
+| New database table | `docs/features/{feature}.md`, `MODULES.md` | `docs/architecture/CLAUDE.md` |
+| Bug fix | `docs/tracking/BUGS.md` | `docs/tracking/CLAUDE.md` |
+| New module | `MODULES.md`, create feature spec | `docs/architecture/CLAUDE.md`, `docs/features/CLAUDE.md` |
+| Security change | `docs/standards/SECURITY.md` | `docs/standards/CLAUDE.md` |
+| New pattern | `docs/architecture/PATTERNS.md` | `docs/architecture/CLAUDE.md` |
+| Dev workflow | `docs/guides/{guide}.md` | `docs/guides/CLAUDE.md` |
+
+**Automated Check (run after significant changes):**
+
+```bash
+# List recently modified code files
+git diff --name-only HEAD~1 | grep -E '\.(py|ts|tsx)$'
+
+# Cross-reference with feature specs
+# If you modified apps/api/src/modules/ai_coach/* → Update docs/features/ai-coach.md
+# If you modified apps/api/src/modules/progression/* → Update docs/features/progression.md
+# etc.
+```
+
+**Module → Feature Spec Mapping:**
+
+| Module Path | Feature Spec |
+|-------------|--------------|
+| `src/modules/ai_coach/` | `docs/features/ai-coach.md` |
+| `src/modules/time_keeper/` | `docs/features/fasting.md` |
+| `src/modules/content/` | `docs/features/workouts.md` |
+| `src/modules/metrics/` | `docs/features/health-metrics.md` |
+| `src/modules/progression/` | `docs/features/progression.md` |
+| `src/modules/social/` | `docs/features/social.md` |
+| `src/modules/research/` | `docs/features/research.md` |
+| `src/modules/profile/` | `docs/features/profile.md` |
+| `src/modules/notification/` | `docs/features/notifications.md` |
+
+### When to Update CLAUDE.md Files
 
 1. **After fixing bugs:** Update `docs/tracking/CLAUDE.md`
 2. **After adding features:** Update `docs/features/CLAUDE.md` (add to "Undocumented Features" or mark as complete)
 3. **After architecture changes:** Update `docs/architecture/CLAUDE.md`
-4. **After guides changes :** Update `docs/guides/CLAUDE.md`
+4. **After guides changes:** Update `docs/guides/CLAUDE.md`
 5. **After Product changes:** Update `docs/product/CLAUDE.md`
 6. **After Standards changes:** Update `docs/standards/CLAUDE.md`
-7. **After Tracking changes:** Update `docs/tracking/CLAUDE.md`
-4. **After documentation improvements:** Update relevant directory's CLAUDE.md
-5. **After any work:** Update this root CLAUDE.md with current date and summary
+7. **After documentation improvements:** Update relevant directory's CLAUDE.md
+8. **After any work:** Update this root CLAUDE.md with current date and summary
 
 **Example commit message pattern:**
 ```

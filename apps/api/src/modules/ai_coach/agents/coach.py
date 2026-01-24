@@ -282,10 +282,18 @@ def _get_streaming_model() -> OpenAIModel:
         )
 
 
-def _create_streaming_agent(personality: str = "motivational") -> Agent[UgokiAgentDeps, str]:
-    """Create an agent configured for streaming with web search and RAG tools."""
+def _create_streaming_agent(
+    personality: str = "motivational",
+    skills: list[str] | None = None,
+) -> Agent[UgokiAgentDeps, str]:
+    """Create an agent configured for streaming with web search and RAG tools.
+
+    Args:
+        personality: Coach personality style
+        skills: Optional list of skill names to activate for this query
+    """
     model = _get_streaming_model()
-    system_prompt = get_personalized_prompt(personality)
+    system_prompt = get_personalized_prompt(personality, skills=skills)
 
     agent = Agent(
         model,
@@ -337,6 +345,7 @@ async def stream_coach_response(
     deps: UgokiAgentDeps,
     personality: str = "motivational",
     message_history: list | None = None,
+    skills: list[str] | None = None,
 ) -> AsyncIterator[str]:
     """
     Stream responses from the coach agent.
@@ -346,11 +355,12 @@ async def stream_coach_response(
         deps: Agent dependencies
         personality: Coach personality style
         message_history: Optional list of previous messages for multi-turn context
+        skills: Optional list of skill names to activate for this query
 
     Yields:
         Text chunks as they're generated
     """
-    agent = _create_streaming_agent(personality)
+    agent = _create_streaming_agent(personality, skills=skills)
 
     try:
         async with agent.run_stream(
@@ -370,6 +380,7 @@ async def run_coach_response(
     deps: UgokiAgentDeps,
     personality: str = "motivational",
     message_history: list | None = None,
+    skills: list[str] | None = None,
 ) -> str:
     """
     Run the coach agent and return the full response.
@@ -379,11 +390,12 @@ async def run_coach_response(
         deps: Agent dependencies
         personality: Coach personality style
         message_history: Optional list of previous messages for multi-turn context
+        skills: Optional list of skill names to activate for this query
 
     Returns:
         Complete response from the coach
     """
-    agent = _create_streaming_agent(personality)
+    agent = _create_streaming_agent(personality, skills=skills)
 
     try:
         result = await agent.run(query, deps=deps, message_history=message_history)
