@@ -25,6 +25,27 @@ Types of changes:
   - "Consult healthcare provider" section with specific conditions
   - "AI Coach Limitations" section
   - Important warning about adverse effects
+- **Apple HealthKit & Google Health Connect Integration** (Jan 22-24)
+  - iOS: @kingstinct/react-native-healthkit support
+  - Android: react-native-health-connect support
+  - Health sync endpoint: `POST /health-sync` for device data sync
+  - Settings UI component (HealthSyncCard) with connect/status display
+  - Supported metrics: Heart rate, HRV, Sleep, Steps, Calories, Weight, Body fat
+  - Backend storage with `source=DEVICE_SYNC` for device metrics
+  - AI Coach integration with health context methods
+- **FitnessTools Health Methods** (ai_coach module)
+  - `get_health_context()` - Latest device metrics with insights
+  - `get_recovery_status()` - Recovery score and workout readiness
+  - `get_health_summary()` - Combined device health + bloodwork
+- **Health Metrics Feature Documentation** (FITNESS_TOOLS.md)
+  - Complete implementation guide for health integration
+  - Testing procedures for simulator and physical devices
+  - Cost analysis and timelines
+  - Google Play approval process documentation
+- **Mandatory Pre-Implementation Checklist** (CLAUDE.md files)
+  - Added docs/architecture/CLAUDE.md with detailed AI assistant guidelines
+  - Updated root CLAUDE.md with "MANDATORY: Before Building Features" section
+  - Prevents future architectural violations through proactive checks
 - Documentation restructure with PRD, architecture docs, feature specs
 - Exercise library with body focus filtering (upper, lower, core, full_body)
 - Exercise difficulty metadata (beginner, intermediate, advanced)
@@ -34,8 +55,15 @@ Types of changes:
   - Backfill support for existing cached papers
 
 ### Changed
+- **Onboarding Health Metrics Flow** (Jan 23-24)
+  - Moved health metrics (height, weight, unit system) from signup to onboarding
+  - Improved UX with clearer data collection flow
 - **Onboarding Gender Selection** - Simplified to Male/Female only, removed "Other" and "Prefer not to say"
 - **Onboarding UI** - Removed emoji icons from gender and goals selection screens for cleaner design
+- **iOS Native Project Configuration** (Jan 22)
+  - Added HealthKit entitlements and permissions
+  - Configured Podfile with expo-dev-launcher workaround
+  - Added new architecture support
 
 ### Security
 - **JWT Authentication** - All protected endpoints now validate Bearer tokens
@@ -44,10 +72,13 @@ Types of changes:
 - **Resource Ownership** - `verify_resource_ownership()` helper for authorization checks
 - **Auth Module** - New `src/core/auth.py` with `get_current_identity` dependency
 - **Security Tests** - 50 comprehensive tests in `tests/test_security.py`
+- **401 Auto-Logout** - Registered unauthorized callback for automatic session cleanup
 
 ### Fixed
-- **BUG-012:** Auth logout not clearing Zustand persist storage - users were logged back in after signing out
-- **BUG-013:** HealthSyncCard "Connect Apple Health" button too squashed - increased button height
+- **BUG-012:** Auth logout not clearing Zustand persist storage - users were logged back in after signing out (Resolved Jan 23)
+- **BUG-013:** HealthSyncCard "Connect Apple Health" button too squashed - increased button height (Resolved Jan 23)
+- **AI Coach Session Persistence** - Fixed stale session_not_found errors with proper error recovery
+- **AI Coach Streaming** - Fixed auto-recovery for stale sessions with retry logic
 - Research ORM datetime columns now timezone-aware (commit `0ce18294`)
 - **BUG-004:** AI Coach `/stream` endpoint now uses `message` field (consistent with `/chat`)
 - **BUG-005:** Time Keeper `/close` endpoint now accepts optional body (defaults to `COMPLETED` state)
@@ -55,6 +86,10 @@ Types of changes:
 ### Database Seeding
 - Seeded 23 workouts with 114 exercises across 5 categories
 - Seeded 21 achievements (streak, fasting, workout, weight, special types)
+
+### Dependencies
+- Added health integration libraries: @kingstinct/react-native-healthkit, react-native-health-connect, expo-health-connect
+- Added expo-dev-client for custom iOS development builds
 
 ---
 

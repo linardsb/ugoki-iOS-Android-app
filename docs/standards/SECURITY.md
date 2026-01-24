@@ -113,6 +113,43 @@ raise HTTPException(401, "Invalid credentials")  # Good
 raise HTTPException(401, f"User {email} not found")  # Bad
 ```
 
+### Health Data Protection (PHI - Protected Health Information)
+
+Device-synced health metrics from Apple HealthKit and Google Health Connect are treated as Protected Health Information (PHI):
+
+**Rules:**
+- All health metrics stored with `source=DEVICE_SYNC` are encrypted in transit
+- Health data in METRICS table marked with `metric_type` prefixed with `health_*`
+- Health permission requests require explicit user consent
+- Users can revoke health sync permission without losing other data
+- Health data is never logged or exposed in errors
+- Health data deletion must be instantaneous (GDPR right to be forgotten)
+
+**Implementation:**
+```python
+# When storing health metrics from device
+await metrics.record(
+    identity_id=identity_id,
+    metric_type="health_heart_rate",  # Prefixed with health_
+    value=72.0,
+    source=MetricSource.DEVICE_SYNC,  # Marked as device source
+    timestamp=datetime.now(timezone.utc)
+)
+
+# Health data access requires audit logging
+async def record_audit_event(
+    identity_id=identity_id,
+    action="health_data_accessed",
+    details={"metric_type": "health_heart_rate"}
+)
+```
+
+**User Permissions:**
+- iOS: Health app permission dialog (Apple requirement)
+- Android: Health Connect permission dialog (Google requirement)
+- Permission state checked before syncing
+- Revocation removes access without data breach
+
 ---
 
 ## API Security

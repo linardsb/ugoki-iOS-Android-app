@@ -55,6 +55,7 @@ Quick navigation hub for all project documentation.
 | [AI Coach](features/ai-coach.md) | Complete | `ai_coach/` | `features/coach/` |
 | [Research Hub](features/research.md) | Complete | `research/` | `features/research/` |
 | [Bloodwork](features/bloodwork.md) | Complete | `metrics/` | `features/bloodwork/` |
+| [Health Metrics](features/health-metrics.md) | Complete | `metrics/` | `features/health/` |
 | [Social](features/social.md) | Complete | `social/` | `features/social/` |
 | [Progression](features/progression.md) | Complete | `progression/` | `features/dashboard/` |
 

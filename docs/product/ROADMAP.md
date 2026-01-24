@@ -20,6 +20,23 @@ Priority tasks for production launch:
 
 ---
 
+## MVP Complete - What's Included
+
+**January 2026:** The MVP includes all core platform features plus health device integration:
+
+| Feature | Status | Documentation |
+|---------|--------|-----------------|
+| Intermittent Fasting Timer | Complete | [features/fasting.md](../features/fasting.md) |
+| HIIT Workout Library (23 workouts) | Complete | [features/workouts.md](../features/workouts.md) |
+| AI Coach (Claude-powered) | Complete | [features/ai-coach.md](../features/ai-coach.md) |
+| Research Hub (PubMed integration) | Complete | [features/research.md](../features/research.md) |
+| Bloodwork Analysis | Complete | [features/bloodwork.md](../features/bloodwork.md) |
+| Social Features | Complete | [features/social.md](../features/social.md) |
+| Progression System | Complete | [features/progression.md](../features/progression.md) |
+| **Health Device Integration** (Apple HealthKit + Google Health Connect) | **Complete** | **[FITNESS_TOOLS.md](../FITNESS_TOOLS.md)** |
+
+---
+
 ## Post-MVP Phases
 
 ### Phase 2: Engagement & Retention
@@ -28,11 +45,11 @@ Priority tasks for production launch:
 
 | Feature | Priority | Status | Spec |
 |---------|----------|--------|------|
-| Wearable integration (HealthKit/Google Fit) | P1 | Planned | [features/wearables.md](../features/wearables.md) |
 | Expanded fasting protocols (24h, 5:2, ADF) | P1 | Planned | [features/fasting.md#protocols](../features/fasting.md#protocols) |
 | Workout reminders & scheduling | P2 | Planned | - |
 | Weekly progress reports | P2 | Planned | - |
 | Avatar/character progression | P2 | Planned | - |
+| Background health sync (expo-background-fetch) | P2 | Planned | [FITNESS_TOOLS.md#future-enhancements](../FITNESS_TOOLS.md#future-enhancements) |
 
 ### Phase 3: Monetization
 

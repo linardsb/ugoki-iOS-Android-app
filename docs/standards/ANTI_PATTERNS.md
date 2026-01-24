@@ -301,6 +301,80 @@ created_at = Column(DateTime(timezone=True))
 
 ---
 
+### Health Data Without source Column
+
+**Don't:**
+```python
+# Storing health metrics without tracking source
+await metrics.record(
+    identity_id=identity_id,
+    metric_type="health_heart_rate",
+    value=72.0,
+    # Missing source - where did this come from?
+)
+```
+
+**Do:**
+```python
+# Always track the source (device sync, user input, calculated)
+await metrics.record(
+    identity_id=identity_id,
+    metric_type="health_heart_rate",
+    value=72.0,
+    source=MetricSource.DEVICE_SYNC,  # From HealthKit/Health Connect
+    timestamp=datetime.now(timezone.utc)
+)
+```
+
+**Why:** Health data source determines trust level and audit requirements. Device data needs different handling than manual entry.
+
+---
+
+### Logging Health Data
+
+**Don't:**
+```python
+# Never log raw health metrics
+logger.info(f"User {identity_id} heart rate: {hr} bpm")
+logger.debug(f"Synced health data: {health_payload}")
+```
+
+**Do:**
+```python
+# Log only metadata, never the actual values
+logger.info(f"Health data synced for user {identity_id}")
+logger.debug(f"Synced {len(metrics)} health metrics")
+```
+
+**Why:** Health data is PHI (Protected Health Information) - logging it violates HIPAA/GDPR and creates security vulnerabilities.
+
+---
+
+### Missing Health Permissions Check
+
+**Don't:**
+```typescript
+// Assuming user granted permission
+const healthData = await getHealthData();
+syncToBackend(healthData);
+```
+
+**Do:**
+```typescript
+// Always check permission first
+const permission = await checkHealthPermission();
+if (!permission.granted) {
+    showPermissionDialog();
+    return;
+}
+const healthData = await getHealthData();
+syncToBackend(healthData);
+```
+
+**Why:** Permission can be revoked at any time. Sync must fail gracefully without data loss.
+
+---
+
 ### Missing Indexes
 
 **Don't:**

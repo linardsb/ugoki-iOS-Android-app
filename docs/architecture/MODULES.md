@@ -81,16 +81,17 @@ class TimeKeeperInterface(ABC):
 ### Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/fasting/start` | Start fasting window |
-| POST | `/api/v1/fasting/end` | End fasting window |
-| POST | `/api/v1/fasting/pause` | Pause active fast |
-| POST | `/api/v1/fasting/resume` | Resume paused fast |
-| GET | `/api/v1/fasting/active` | Get active fast |
-| GET | `/api/v1/fasting/history` | Get fasting history |
+| POST | `/api/v1/time-keeper/windows` | Open new window (fast, eating, workout) |
+| POST | `/api/v1/time-keeper/windows/{id}/close` | Close active window |
+| POST | `/api/v1/time-keeper/windows/{id}/extend` | Extend window scheduled end |
+| GET | `/api/v1/time-keeper/windows/active` | Get active window (by type) |
+| GET | `/api/v1/time-keeper/windows/{id}` | Get specific window |
+| GET | `/api/v1/time-keeper/windows` | List windows with filters |
+| GET | `/api/v1/time-keeper/windows/{id}/elapsed` | Get elapsed seconds |
+| GET | `/api/v1/time-keeper/windows/{id}/remaining` | Get remaining seconds |
 
 ### Database Tables
 - `time_windows` - All time windows
-- `window_pauses` - Pause records
 
 ---
 
@@ -122,7 +123,55 @@ class MetricsInterface(ABC):
 | GET | `/api/v1/metrics/biomarkers/grouped` | Get biomarkers by date |
 
 ### Database Tables
-- `metrics` - All metric records
+- `metrics` - All metric records with columns:
+  - `id` (UUID, PK)
+  - `identity_id` (UUID, FK)
+  - `metric_type` (string) - e.g., "weight_kg", "sleep_hours", "health_heart_rate"
+  - `value` (float)
+  - `unit` (string) - e.g., "kg", "hours", "bpm"
+  - `timestamp` (datetime with timezone)
+  - `source` (enum) - "user_input", "calculated", "DEVICE_SYNC"
+  - `metadata` (JSON, optional) - reference ranges, notes
+
+### Health Data (PHI - Protected Health Information)
+
+Health metrics from Apple HealthKit and Google Health Connect require special handling:
+
+**Metric Type Convention:**
+- Metrics from device sync must use `health_*` prefix: `health_heart_rate`, `health_hrv`, `health_resting_hr`
+- Enables filtering: `SELECT * FROM metrics WHERE metric_type LIKE 'health_%'`
+
+**Source Tracking:**
+- All health metrics stored with `source=MetricSource.DEVICE_SYNC`
+- Distinguishes device data from manual user input
+- Required for audit logging and compliance
+
+**Health Sync Endpoints (New):**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/health-sync` | Sync device health data (PHI) |
+| GET | `/api/v1/health-sync/status` | Check sync status |
+| GET | `/api/v1/metrics?source=DEVICE_SYNC` | Get all device-synced metrics |
+| DELETE | `/api/v1/metrics/health` | Delete all health metrics (GDPR erasure) |
+
+**Supported Health Metrics:**
+- `health_heart_rate` - beats per minute (bpm)
+- `health_resting_hr` - resting heart rate (bpm)
+- `health_hrv` - heart rate variability (ms)
+- `health_steps` - daily step count
+- `sleep_hours` - sleep duration (hours)
+- `calories_burned` - active calories (kcal)
+- `weight_kg` - body weight (kg)
+- `body_fat_pct` - body fat percentage (%)
+
+**Security Requirements:**
+- All health data encrypted in transit (HTTPS)
+- Never logged or exposed in error messages
+- Requires explicit user permission (iOS/Android dialogs)
+- Audit logged via EVENT_JOURNAL module
+- User can delete all health data with one request
+
+See [../features/health-metrics.md](../features/health-metrics.md) for complete health integration specification.
 
 ---
 
@@ -161,7 +210,7 @@ class ProgressionInterface(ABC):
 
 ## 5. CONTENT Module
 
-**Purpose:** Workout library, recipes, recommendations
+**Purpose:** Workout library, recipes, workout sessions, recommendations
 
 **Location:** `apps/api/src/modules/content/`
 
@@ -171,54 +220,99 @@ class ContentInterface(ABC):
     async def list_workouts(filters: WorkoutFilters) -> list[Workout]
     async def get_workout(workout_id: str) -> Workout | None
     async def list_exercises(filters: ExerciseFilters) -> list[Exercise]
+    async def start_workout_session(identity_id: str, workout_id: str) -> WorkoutSession
+    async def complete_workout_session(session_id: str) -> WorkoutSession
+    async def get_recommendations(identity_id: str) -> list[WorkoutRecommendation]
     async def list_recipes(filters: RecipeFilters) -> list[Recipe]
     async def get_recipe(recipe_id: str) -> Recipe | None
 ```
 
 ### Endpoints
+
+**Workouts:**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/content/workouts` | List workouts |
-| GET | `/api/v1/content/workouts/{id}` | Get workout |
+| GET | `/api/v1/content/categories` | List workout categories |
+| GET | `/api/v1/content/categories/{id}` | Get category details |
+| GET | `/api/v1/content/workouts` | List workouts (with filters) |
+| GET | `/api/v1/content/workouts/{id}` | Get workout details |
 | GET | `/api/v1/content/exercises` | List exercises |
+| GET | `/api/v1/content/recommendations` | Get AI recommendations |
+| GET | `/api/v1/content/stats` | Get workout statistics |
+
+**Workout Sessions:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/content/sessions` | Start workout session |
+| GET | `/api/v1/content/sessions/active` | Get active session |
+| POST | `/api/v1/content/sessions/{id}/complete` | Complete session |
+| POST | `/api/v1/content/sessions/{id}/abandon` | Abandon session |
+| GET | `/api/v1/content/sessions/history` | Get session history |
+
+**Recipes:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | GET | `/api/v1/content/recipes` | List recipes |
 | GET | `/api/v1/content/recipes/{id}` | Get recipe |
+| POST | `/api/v1/content/recipes/saved` | Save recipe |
+| DELETE | `/api/v1/content/recipes/saved/{id}` | Remove saved recipe |
+| GET | `/api/v1/content/recipes/saved/list` | List saved recipes |
 
 ### Database Tables
+- `workout_categories` - Workout categories
 - `workouts` - Workout programs
+- `workout_exercises` - Exercises in workouts
 - `exercises` - Exercise library
+- `workout_sessions` - User workout sessions
 - `recipes` - Recipe catalog
+- `user_saved_recipes` - Saved recipes
 
 ---
 
 ## 6. AI_COACH Module
 
-**Purpose:** Pydantic AI agents, Claude integration
+**Purpose:** Pydantic AI agents, Claude integration, streaming chat
 
 **Location:** `apps/api/src/modules/ai_coach/`
 
 ### Interface
 ```python
 class AICoachInterface(ABC):
-    async def chat(identity_id: str, message: str, history: list) -> CoachResponse
-    async def get_insights(identity_id: str) -> list[Insight]
-    async def get_recommendations(identity_id: str) -> list[Recommendation]
+    async def chat(identity_id: str, request: ChatRequest) -> ChatResponse
+    async def stream_chat(identity_id: str, request: StreamChatRequest) -> AsyncIterator[StreamChunk]
+    async def get_user_context(identity_id: str) -> UserContext
+    async def get_daily_insight(identity_id: str) -> CoachingInsight
+    async def set_personality(identity_id: str, personality: CoachPersonality) -> None
+    async def get_conversations(identity_id: str, ...) -> ConversationListResponse
 ```
 
 ### Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/coach/chat` | Send message to coach |
-| GET | `/api/v1/coach/insights` | Get daily insights |
-| GET | `/api/v1/coach/history` | Get chat history |
+| POST | `/api/v1/coach/chat` | Send message (non-streaming) |
+| POST | `/api/v1/coach/stream` | Stream chat response (SSE) |
+| GET | `/api/v1/coach/context` | Get user context for coach |
+| GET | `/api/v1/coach/insight` | Get daily insight/tip |
+| GET | `/api/v1/coach/motivation` | Get quick motivational message |
+| PUT | `/api/v1/coach/personality` | Set coach personality style |
+| GET | `/api/v1/coach/conversations` | List conversations |
+| GET | `/api/v1/coach/conversations/{id}/messages` | Get conversation messages |
+| PATCH | `/api/v1/coach/conversations/{id}` | Update conversation metadata |
+| DELETE | `/api/v1/coach/conversations/{id}` | Delete conversation (GDPR) |
+| GET | `/api/v1/coach/export` | Export all coach data (GDPR) |
 
 ### Key Components
-- `agent.py` - Pydantic AI agent definition
-- `safety.py` - Content filtering
+- `agents/` - Pydantic AI agent definitions
+- `safety.py` - Content filtering for medical advice
 - `tools/` - Agent tools for data access
+- `prompts/` - System prompts
 
 ### Database Tables
-- `chat_messages` - Conversation history
+- `coach_user_settings` - Personality preferences
+- `coach_conversations` - Conversation sessions
+- `coach_messages` - Individual messages
+- `coach_requests` - Rate limiting/usage tracking
+- `coach_documents` - RAG documents with vector embeddings
 
 ---
 
@@ -311,7 +405,7 @@ class EventJournalInterface(ABC):
 
 ## 10. SOCIAL Module
 
-**Purpose:** Friends, followers, leaderboards, challenges
+**Purpose:** Friends, followers, leaderboards, challenges, sharing
 
 **Location:** `apps/api/src/modules/social/`
 
@@ -321,23 +415,68 @@ class SocialInterface(ABC):
     async def send_friend_request(from_id: str, to_id: str) -> FriendRequest
     async def respond_to_request(request_id: str, accept: bool) -> Friendship
     async def get_friends(identity_id: str) -> list[Friend]
+    async def block_user(identity_id: str, blocked_id: str) -> None
+    async def follow_user(identity_id: str, followed_id: str) -> Follow
     async def get_leaderboard(board_type: str, scope: str) -> list[LeaderboardEntry]
     async def create_challenge(data: ChallengeCreate) -> Challenge
     async def join_challenge(identity_id: str, challenge_id: str) -> Participant
 ```
 
 ### Endpoints
+
+**Friends:**
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/v1/social/friends/request` | Send friend request |
-| POST | `/api/v1/social/friends/requests/{id}/respond` | Accept/decline |
+| GET | `/api/v1/social/friends/requests/incoming` | List incoming requests |
+| GET | `/api/v1/social/friends/requests/outgoing` | List outgoing requests |
+| POST | `/api/v1/social/friends/requests/{id}/respond` | Accept/decline request |
 | GET | `/api/v1/social/friends` | List friends |
+| DELETE | `/api/v1/social/friends/{id}` | Remove friend |
+| POST | `/api/v1/social/friends/{id}/block` | Block user |
+| DELETE | `/api/v1/social/friends/{id}/block` | Unblock user |
+
+**Follows:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/social/follow/{id}` | Follow user |
+| DELETE | `/api/v1/social/follow/{id}` | Unfollow user |
+| GET | `/api/v1/social/followers` | List followers |
+| GET | `/api/v1/social/following` | List following |
+
+**Users:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/social/users/{id}` | Get public profile |
+| GET | `/api/v1/social/users/search` | Search users |
+
+**Leaderboards:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | GET | `/api/v1/social/leaderboards/{type}` | Get leaderboard |
+
+**Challenges:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
 | POST | `/api/v1/social/challenges` | Create challenge |
-| POST | `/api/v1/social/challenges/{id}/join` | Join challenge |
+| GET | `/api/v1/social/challenges` | List public challenges |
+| GET | `/api/v1/social/challenges/mine` | List my challenges |
+| GET | `/api/v1/social/challenges/{id}` | Get challenge details |
+| POST | `/api/v1/social/challenges/{id}/join` | Join by ID |
+| POST | `/api/v1/social/challenges/join/{code}` | Join by invite code |
+| DELETE | `/api/v1/social/challenges/{id}/leave` | Leave challenge |
+| GET | `/api/v1/social/challenges/{id}/leaderboard` | Challenge leaderboard |
+| POST | `/api/v1/social/challenges/update-progress` | Update progress |
+
+**Sharing:**
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/social/share/generate` | Generate share content |
 
 ### Database Tables
 - `friendships` - Friend connections
+- `friend_requests` - Pending requests
+- `blocked_users` - Blocked relationships
 - `follows` - Follow relationships
 - `challenges` - Challenge definitions
 - `challenge_participants` - Challenge membership
@@ -364,18 +503,49 @@ class ResearchInterface(ABC):
 ### Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/v1/research/topics` | List topics |
+| GET | `/api/v1/research/search` | Search papers (with AI summary) |
+| GET | `/api/v1/research/topics` | List available topics |
 | GET | `/api/v1/research/topics/{topic}` | Get papers by topic |
-| GET | `/api/v1/research/search` | Search papers |
 | GET | `/api/v1/research/papers/{id}` | Get paper details |
-| POST | `/api/v1/research/saved` | Save paper |
-| GET | `/api/v1/research/saved` | Get saved papers |
-| GET | `/api/v1/research/quota` | Check quota |
+| GET | `/api/v1/research/saved` | Get user's saved papers |
+| POST | `/api/v1/research/saved` | Save a paper |
+| DELETE | `/api/v1/research/saved/{id}` | Remove saved paper |
+| GET | `/api/v1/research/quota` | Check daily quota status |
 
 ### Database Tables
-- `research_papers` - Cached papers
-- `user_saved_research` - Saved papers
-- `user_search_quotas` - Daily quotas
+- `research_papers` - Cached papers with AI summaries
+- `user_saved_research` - User's saved papers
+- `user_search_quotas` - Daily search quotas
+
+---
+
+---
+
+## Additional Routes (Non-Module)
+
+Routes that span multiple modules or provide shared services:
+
+### Uploads Route
+
+**Location:** `apps/api/src/routes/uploads.py`
+
+**Purpose:** File uploads for bloodwork, avatars, etc.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/uploads/bloodwork` | Upload bloodwork PDF/image |
+| POST | `/api/v1/uploads/avatar` | Upload avatar image |
+
+### Health Sync Route
+
+**Location:** `apps/api/src/routes/health_sync.py`
+
+**Purpose:** Sync health data from Apple HealthKit and Android Health Connect
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/health-sync` | Sync health metrics from device |
+| GET | `/api/v1/health-sync/status` | Get sync status |
 
 ---
 

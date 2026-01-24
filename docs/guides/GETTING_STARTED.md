@@ -92,15 +92,40 @@ JWT_SECRET=your-secret-key-here
 JWT_ALGORITHM=HS256
 JWT_EXPIRATION_MINUTES=60
 
-# AI (Claude)
+# LLM Provider Configuration (Choose one)
+# Option 1: Groq (Recommended for fast responses)
+LLM_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Option 2: Anthropic Claude (Default)
+# LLM_PROVIDER=anthropic
 ANTHROPIC_API_KEY=sk-ant-...
+
+# Option 3: OpenAI
+# LLM_PROVIDER=openai
+# OPENAI_API_KEY=sk-...
+# OPENAI_MODEL=gpt-4
+
+# Option 4: Ollama (Local - slow but free)
+# LLM_PROVIDER=ollama
+# OLLAMA_BASE_URL=http://localhost:11434
 
 # Push Notifications
 EXPO_ACCESS_TOKEN=...
 
 # Email
 RESEND_API_KEY=re_...
+
+# Embeddings (for RAG/document retrieval)
+EMBEDDING_API_KEY=...  # Required if enabling RAG tools
 ```
+
+**Important:** The default is `LLM_PROVIDER=anthropic` using Claude. Choose your provider based on your needs:
+- **Groq:** Fastest (0.3s), good for production
+- **Anthropic:** Most capable, better reasoning
+- **OpenAI:** Widely supported, flexible models
+- **Ollama:** Free, runs locally (slower)
 
 ### Mobile (app.config.js)
 

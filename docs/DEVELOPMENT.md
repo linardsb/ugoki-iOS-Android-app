@@ -166,6 +166,31 @@ npx expo start
 
 ---
 
+## Health Integration Testing
+
+**Important:** Testing Apple HealthKit and Google Health Connect features requires custom development builds (not Expo Go).
+
+### Simulator Testing
+- Health sync UI displays with "Apple Health Unavailable" message ✓
+- All other app features work normally ✓
+- Actual health data sync requires physical device
+
+### Physical Device Testing
+To test actual HealthKit/Health Connect integration:
+
+1. **Sign up for Apple Developer Program** ($99/year for iOS testing)
+2. **Build custom development client:**
+   ```bash
+   cd apps/mobile
+   eas build --profile development --platform ios
+   ```
+3. **Install on physical iPhone** via QR code from EAS
+4. **Test health sync** in Settings → Health Data
+
+See [FITNESS_TOOLS.md](docs/FITNESS_TOOLS.md) for complete testing procedures.
+
+---
+
 ## Project Structure
 
 ```
@@ -175,8 +200,14 @@ apps/mobile/
 │   ├── (tabs)/         # Main tab screens
 │   └── (modals)/       # Modal screens
 ├── features/           # Feature modules
-│   ├── health/         # Health integration
-│   ├── chat/           # AI Coach
+│   ├── health/         # Health integration (HealthKit/Health Connect)
+│   ├── coach/          # AI Coach
+│   ├── fasting/        # Fasting timer
+│   ├── workouts/       # Workout player
+│   ├── bloodwork/      # Bloodwork upload
+│   ├── research/       # Research papers
+│   ├── social/         # Social features
+│   ├── profile/        # User profile
 │   └── ...
 ├── shared/             # Shared utilities
 ├── ios/                # Native iOS project (generated)
@@ -184,3 +215,22 @@ apps/mobile/
 ```
 
 Edit files in `app/` and `features/` - these hot-reload instantly.
+
+---
+
+## Handling Native Dependencies
+
+When adding new native packages (like health integration libraries):
+
+```bash
+# Install new package
+bun add @kingstinct/react-native-healthkit
+
+# Update app.json with Expo plugin
+# Then rebuild:
+npx expo prebuild --clean
+cd ios && pod install && cd ..
+bun run ios
+```
+
+This regenerates native projects and reinstalls pods.

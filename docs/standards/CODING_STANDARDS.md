@@ -343,8 +343,88 @@ refactor/metrics-service
 
 ---
 
+## Health Data Handling
+
+Health data from devices (HealthKit/Health Connect) requires special handling as Protected Health Information (PHI):
+
+### Python - Always Track Source
+
+```python
+# Backend - Store health metrics with source
+async def sync_health_data(
+    payload: HealthDataPayload,
+    identity_id: str,
+    service: MetricsService
+):
+    # ALWAYS mark source as DEVICE_SYNC
+    await service.record(
+        identity_id=identity_id,
+        metric_type="health_heart_rate",
+        value=payload.resting_heart_rate,
+        source=MetricSource.DEVICE_SYNC,  # Critical: track source
+        timestamp=payload.synced_at
+    )
+```
+
+### TypeScript - Check Permission First
+
+```typescript
+// Mobile - Always verify permission before sync
+export function useHealthSync() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (Platform.OS === 'ios' && HealthKit) {
+        const authorized = await HealthKit.isAuthorized();
+        setIsAuthorized(authorized);
+        // If not authorized, don't attempt sync
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const syncData = async () => {
+    if (!isAuthorized) {
+      // Request permission first
+      await requestPermissions();
+      return;
+    }
+    // Proceed with sync
+  };
+}
+```
+
+### Never Log Health Data
+
+```python
+# BAD - Never do this
+logger.info(f"Synced health data: HR={hr}, HRV={hrv}, Sleep={sleep}")
+
+# GOOD - Log only metadata
+logger.info(f"Synced {count} health metrics for user")
+
+# GOOD - Log only source
+logger.debug(f"Health sync from device: {source}")
+```
+
+### Health Data Type Suffix
+
+```python
+# Metric types for health data should be prefixed with "health_"
+metric_type = "health_heart_rate"     # Good
+metric_type = "heart_rate"            # Bad - unclear if manual or device
+metric_type = "device_heart_rate"     # Bad - doesn't indicate it's health data
+
+# This enables filtering:
+# SELECT * FROM metrics WHERE metric_type LIKE 'health_%'
+```
+
+---
+
 ## References
 
 - **Anti-Patterns:** [ANTI_PATTERNS.md](ANTI_PATTERNS.md)
 - **Security:** [SECURITY.md](SECURITY.md)
+- **Health Feature:** [../features/health-metrics.md](../features/health-metrics.md)
 - **Patterns:** [architecture/PATTERNS.md](../architecture/PATTERNS.md)
