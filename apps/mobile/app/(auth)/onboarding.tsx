@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { YStack, XStack, H2, Text, Button, Progress, Checkbox, Label } from 'tamagui';
+import { YStack, XStack, H2, Text, Button, Progress, Checkbox, Label, Input, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { User, UserCircle, Check, Warning, FirstAid, Heart, CaretDown, CaretUp } from 'phosphor-react-native';
+import { User, UserCircle, Check, Warning, FirstAid, Heart, CaretDown, CaretUp, Ruler, Scales } from 'phosphor-react-native';
 
 import { appStorage } from '@/shared/stores/storage';
-import { useSaveOnboarding, type OnboardingData, type GoalType, type FitnessLevel, type Gender } from '@/features/profile';
+import { useSaveOnboarding, type OnboardingData, type GoalType, type FitnessLevel, type Gender, type UnitSystem } from '@/features/profile';
 
 // Onboarding steps data
 const GENDER_OPTIONS: { id: Gender; label: string }[] = [
@@ -34,30 +34,44 @@ const EATING_TIMES: { id: 'early' | 'mid' | 'late'; label: string; window: strin
   { id: 'late', label: 'After 12pm', window: '12pm - 8pm' },
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const theme = useTheme();
+  const mutedColor = theme.colorMuted.val;
   const [step, setStep] = useState(0);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [showFullDisclaimer, setShowFullDisclaimer] = useState(false);
+
+  // Health metrics state
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
+  const [heightCm, setHeightCm] = useState('');
+  const [heightFt, setHeightFt] = useState('');
+  const [heightIn, setHeightIn] = useState('');
+  const [weightKg, setWeightKg] = useState('');
+  const [weightLbs, setWeightLbs] = useState('');
+
   const [data, setData] = useState<OnboardingData>({
     gender: null,
     goal: null,
     experience: null,
     eatingTime: null,
+    unitSystem: 'metric',
+    heightCm: null,
+    weightKg: null,
   });
 
   // Save onboarding data using the profile hook
   const saveProfile = useSaveOnboarding({
-    onSuccess: () => {
-      appStorage.setOnboardingCompleted(true);
+    onSuccess: async () => {
+      await appStorage.setOnboardingCompleted(true);
       router.replace('/(tabs)');
     },
-    onError: (error) => {
+    onError: async (error) => {
       console.error('Failed to save profile:', error);
       // Still continue to app, can fill in later
-      appStorage.setOnboardingCompleted(true);
+      await appStorage.setOnboardingCompleted(true);
       router.replace('/(tabs)');
     },
   });
@@ -67,18 +81,59 @@ export default function OnboardingScreen() {
     setData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleNext = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (step < TOTAL_STEPS - 1) {
-      setStep(step + 1);
+  // Calculate height in cm from inputs
+  const getHeightCm = (): number | null => {
+    if (unitSystem === 'metric') {
+      const cm = parseFloat(heightCm);
+      return isNaN(cm) ? null : cm;
     } else {
-      // Final step - save and continue
-      saveProfile.mutate(data);
+      const ft = parseFloat(heightFt) || 0;
+      const inches = parseFloat(heightIn) || 0;
+      const totalInches = ft * 12 + inches;
+      return totalInches > 0 ? Math.round(totalInches * 2.54) : null;
     }
   };
 
-  const handleSkip = () => {
-    appStorage.setOnboardingCompleted(true);
+  // Calculate weight in kg from inputs
+  const getWeightKg = (): number | null => {
+    if (unitSystem === 'metric') {
+      const kg = parseFloat(weightKg);
+      return isNaN(kg) ? null : kg;
+    } else {
+      const lbs = parseFloat(weightLbs);
+      return isNaN(lbs) ? null : Math.round(lbs * 0.453592 * 10) / 10;
+    }
+  };
+
+  const handleNext = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // If on health metrics step, update data with calculated values
+    if (step === 2) {
+      setData((prev) => ({
+        ...prev,
+        unitSystem,
+        heightCm: getHeightCm(),
+        weightKg: getWeightKg(),
+      }));
+    }
+
+    if (step < TOTAL_STEPS - 1) {
+      setStep(step + 1);
+    } else {
+      // Final step - save and continue with updated health metrics
+      const finalData = {
+        ...data,
+        unitSystem,
+        heightCm: getHeightCm(),
+        weightKg: getWeightKg(),
+      };
+      saveProfile.mutate(finalData);
+    }
+  };
+
+  const handleSkip = async () => {
+    await appStorage.setOnboardingCompleted(true);
     router.replace('/(tabs)');
   };
 
@@ -89,10 +144,12 @@ export default function OnboardingScreen() {
       case 1:
         return data.gender !== null;
       case 2:
-        return data.goal !== null;
+        return true; // Health metrics are optional
       case 3:
-        return data.experience !== null;
+        return data.goal !== null;
       case 4:
+        return data.experience !== null;
+      case 5:
         return true; // Eating time is optional
       default:
         return false;
@@ -376,8 +433,181 @@ export default function OnboardingScreen() {
           </YStack>
         );
 
-      // Step 2: Goals
+      // Step 2: Health Metrics (Height & Weight)
       case 2:
+        return (
+          <YStack gap="$4" flex={1}>
+            <YStack gap="$2">
+              <H2 color="$color">Your measurements</H2>
+              <Text color="$colorMuted">Optional - helps personalize recommendations</Text>
+            </YStack>
+
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+              <YStack gap="$4" paddingBottom="$4">
+                {/* Unit System Toggle */}
+                <YStack gap="$2">
+                  <Text color="$color" fontWeight="500" fontSize="$4">
+                    Measurement Units
+                  </Text>
+                  <XStack gap="$2">
+                    <Button
+                      flex={1}
+                      size="$5"
+                      height={48}
+                      backgroundColor={unitSystem === 'metric' ? '$primary' : 'white'}
+                      borderColor={unitSystem === 'metric' ? '$primary' : '$borderColor'}
+                      borderWidth={2}
+                      borderRadius="$4"
+                      pressStyle={{ scale: 0.98 }}
+                      onPress={() => setUnitSystem('metric')}
+                    >
+                      <Text
+                        color={unitSystem === 'metric' ? 'white' : '$color'}
+                        fontWeight="600"
+                        fontSize="$4"
+                      >
+                        Metric
+                      </Text>
+                    </Button>
+                    <Button
+                      flex={1}
+                      size="$5"
+                      height={48}
+                      backgroundColor={unitSystem === 'imperial' ? '$primary' : 'white'}
+                      borderColor={unitSystem === 'imperial' ? '$primary' : '$borderColor'}
+                      borderWidth={2}
+                      borderRadius="$4"
+                      pressStyle={{ scale: 0.98 }}
+                      onPress={() => setUnitSystem('imperial')}
+                    >
+                      <Text
+                        color={unitSystem === 'imperial' ? 'white' : '$color'}
+                        fontWeight="600"
+                        fontSize="$4"
+                      >
+                        Imperial
+                      </Text>
+                    </Button>
+                  </XStack>
+                </YStack>
+
+                {/* Height Input */}
+                <YStack gap="$2">
+                  <XStack gap="$2" alignItems="center">
+                    <Ruler size={20} color={mutedColor} weight="regular" />
+                    <Text color="$color" fontWeight="500" fontSize="$4">
+                      Height {unitSystem === 'metric' ? '(cm)' : '(ft / in)'}
+                    </Text>
+                  </XStack>
+                  {unitSystem === 'metric' ? (
+                    <Input
+                      size="$5"
+                      height={56}
+                      placeholder="e.g. 175"
+                      placeholderTextColor={mutedColor}
+                      keyboardType="numeric"
+                      backgroundColor="white"
+                      borderColor="$borderColor"
+                      borderWidth={2}
+                      borderRadius="$4"
+                      color="$color"
+                      fontSize="$5"
+                      textAlign="center"
+                      focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+                      value={heightCm}
+                      onChangeText={setHeightCm}
+                    />
+                  ) : (
+                    <XStack gap="$2">
+                      <YStack flex={1} gap="$1">
+                        <Input
+                          size="$5"
+                          height={56}
+                          placeholder="ft"
+                          placeholderTextColor={mutedColor}
+                          keyboardType="numeric"
+                          backgroundColor="white"
+                          borderColor="$borderColor"
+                          borderWidth={2}
+                          borderRadius="$4"
+                          color="$color"
+                          fontSize="$5"
+                          textAlign="center"
+                          focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+                          value={heightFt}
+                          onChangeText={setHeightFt}
+                        />
+                        <Text color="$colorMuted" fontSize="$2" textAlign="center">feet</Text>
+                      </YStack>
+                      <YStack flex={1} gap="$1">
+                        <Input
+                          size="$5"
+                          height={56}
+                          placeholder="in"
+                          placeholderTextColor={mutedColor}
+                          keyboardType="numeric"
+                          backgroundColor="white"
+                          borderColor="$borderColor"
+                          borderWidth={2}
+                          borderRadius="$4"
+                          color="$color"
+                          fontSize="$5"
+                          textAlign="center"
+                          focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+                          value={heightIn}
+                          onChangeText={setHeightIn}
+                        />
+                        <Text color="$colorMuted" fontSize="$2" textAlign="center">inches</Text>
+                      </YStack>
+                    </XStack>
+                  )}
+                </YStack>
+
+                {/* Weight Input */}
+                <YStack gap="$2">
+                  <XStack gap="$2" alignItems="center">
+                    <Scales size={20} color={mutedColor} weight="regular" />
+                    <Text color="$color" fontWeight="500" fontSize="$4">
+                      Weight {unitSystem === 'metric' ? '(kg)' : '(lbs)'}
+                    </Text>
+                  </XStack>
+                  <Input
+                    size="$5"
+                    height={56}
+                    placeholder={unitSystem === 'metric' ? 'e.g. 70' : 'e.g. 154'}
+                    placeholderTextColor={mutedColor}
+                    keyboardType="numeric"
+                    backgroundColor="white"
+                    borderColor="$borderColor"
+                    borderWidth={2}
+                    borderRadius="$4"
+                    color="$color"
+                    fontSize="$5"
+                    textAlign="center"
+                    focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
+                    value={unitSystem === 'metric' ? weightKg : weightLbs}
+                    onChangeText={unitSystem === 'metric' ? setWeightKg : setWeightLbs}
+                  />
+                </YStack>
+
+                {/* Info note */}
+                <YStack
+                  backgroundColor="$cardBackground"
+                  padding="$3"
+                  borderRadius="$3"
+                  gap="$2"
+                >
+                  <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
+                    You can update these anytime in Settings, and log weight changes from the dashboard.
+                  </Text>
+                </YStack>
+              </YStack>
+            </ScrollView>
+          </YStack>
+        );
+
+      // Step 3: Goals
+      case 3:
         return (
           <YStack gap="$4" flex={1}>
             <YStack gap="$2">
@@ -411,8 +641,8 @@ export default function OnboardingScreen() {
           </YStack>
         );
 
-      // Step 3: Experience
-      case 3:
+      // Step 4: Experience
+      case 4:
         return (
           <YStack gap="$4" flex={1}>
             <YStack gap="$2">
@@ -455,8 +685,8 @@ export default function OnboardingScreen() {
           </YStack>
         );
 
-      // Step 4: Eating Times
-      case 4:
+      // Step 5: Eating Times
+      case 5:
         return (
           <YStack gap="$4" flex={1}>
             <YStack gap="$2">

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage, appStorage } from './storage';
-import { setApiAuthCache } from '../api/client';
+import { setApiAuthCache, setOnUnauthorizedCallback } from '../api/client';
 
 // Identity type from backend
 export interface Identity {
@@ -124,3 +124,9 @@ export const useIdentityId = () => useAuthStore((state) => state.identity?.id);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useIsAnonymous = () => useAuthStore((state) => state.isAnonymous);
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
+
+// Register callback for 401 errors - clears auth state when server rejects token
+setOnUnauthorizedCallback(() => {
+  console.log('[Auth] 401 received, clearing auth state');
+  useAuthStore.getState().clearAuth();
+});

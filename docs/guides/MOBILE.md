@@ -344,7 +344,7 @@ eas build --profile preview --platform all
 
 ### Prerequisites
 
-1. **EAS CLI:** `npm install -g eas-cli`
+1. **EAS CLI:** `bun add -g eas-cli`
 2. **Login:** `eas login`
 3. **Apple Developer Account** (for iOS)
 4. **Google Play Console** (for Android production)

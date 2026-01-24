@@ -202,6 +202,33 @@ The only app combining IF + HIIT with AI-powered personalization through a coach
 
 ---
 
+### 3.8 Health Metrics & Device Sync
+**Status:** Complete
+
+| Aspect | Details |
+|--------|---------|
+| Backend | `apps/api/src/modules/metrics/` + `apps/api/src/routes/health_sync.py` |
+| Mobile | `apps/mobile/features/health/` |
+| Spec | [features/health-metrics.md](../features/health-metrics.md) |
+
+**Capabilities:**
+- Apple HealthKit integration (iOS)
+- Google Health Connect integration (Android)
+- 10 health metrics: HR, resting HR, HRV, sleep, steps, calories, weight, body fat, HIIT workouts
+- AI Coach personalization based on recovery score
+- Recovery score calculation (HRV + resting HR + sleep quality)
+- Encrypted storage with source tracking (DEVICE_SYNC)
+- HIPAA/GDPR compliant PHI handling
+- User permission lifecycle management
+
+**Key Files:**
+- `apps/api/src/routes/health_sync.py` - Health sync endpoints
+- `apps/api/src/modules/metrics/service.py` - Metrics storage
+- `apps/mobile/features/health/hooks/useHealthSync.ts` - HealthKit/Health Connect integration
+- `apps/mobile/features/health/components/HealthSyncCard.tsx` - UI component
+
+---
+
 ## 4. Supporting Modules
 
 ### 4.1 Identity (Authentication)

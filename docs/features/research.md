@@ -160,6 +160,92 @@ interface QuotaInfo {
 
 ---
 
+## API Response Examples
+
+### Search Response
+
+```json
+{
+  "results": [
+    {
+      "id": "uuid-1",
+      "pmid": "35641234",
+      "title": "Effects of Intermittent Fasting on Metabolic Health",
+      "authors": ["Smith J", "Johnson A", "Davis B"],
+      "journal": "Journal of Clinical Nutrition",
+      "publication_date": "2023-06-15",
+      "abstract": "This study examined the effects of time-restricted feeding...",
+      "topic": "fasting",
+      "digest": {
+        "one_liner": "Intermittent fasting improves insulin sensitivity and weight loss.",
+        "key_benefits": [
+          {
+            "emoji": "⚡",
+            "title": "Improved Energy",
+            "description": "Increased metabolic flexibility and sustained energy"
+          },
+          {
+            "emoji": "📉",
+            "title": "Weight Loss",
+            "description": "Average 5% body weight reduction over 12 weeks"
+          }
+        ],
+        "audience_tags": ["fitness", "health", "longevity"],
+        "tldr": "Time-restricted eating shows promise for metabolic improvement and sustainable weight management without restrictive calorie counting.",
+        "abstract_bullets": [
+          "16:8 fasting protocol reduces insulin levels by 12-18%",
+          "No significant muscle loss when combined with resistance training",
+          "Best results when started gradually (2-4 week adaptation period)"
+        ]
+      },
+      "doi": "10.1234/example",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35641234/"
+    }
+  ],
+  "total_results": 247,
+  "quota": {
+    "searches_remaining": 12,
+    "searches_used": 3,
+    "resets_at": "2026-01-25T00:00:00Z"
+  }
+}
+```
+
+### Topic Browse Response
+
+```json
+{
+  "topic": "fasting",
+  "papers": [
+    {
+      "id": "uuid-2",
+      "pmid": "35641235",
+      "title": "Circadian Rhythms and Intermittent Fasting",
+      "authors": ["Lee K", "Chen M"],
+      "journal": "Nature Metabolism",
+      "publication_date": "2023-09-01",
+      "abstract": "..."
+    }
+  ],
+  "topic_description": "Intermittent fasting research including health benefits, protocols, and metabolic effects",
+  "paper_count": 1542
+}
+```
+
+### Quota Status Response
+
+```json
+{
+  "searches_remaining": 14,
+  "searches_used": 1,
+  "daily_limit": 15,
+  "resets_at": "2026-01-25T00:00:00Z",
+  "next_reset_hours": 3
+}
+```
+
+---
+
 ## Caching Strategy
 
 ```

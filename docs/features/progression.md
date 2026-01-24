@@ -240,6 +240,191 @@ interface Achievement {
 
 ---
 
+## API Response Examples
+
+### Full Progression Data Response
+
+```json
+{
+  "xp": {
+    "total": 4850,
+    "today": 150,
+    "this_week": 650
+  },
+  "level": {
+    "current": 8,
+    "xp_for_next": 1150,
+    "progress_percent": 77,
+    "xp_needed_for_level_10": 1500
+  },
+  "streaks": {
+    "fasting": {
+      "current": 12,
+      "longest": 27,
+      "last_activity": "2026-01-24T18:00:00Z"
+    },
+    "workout": {
+      "current": 5,
+      "longest": 18,
+      "last_activity": "2026-01-24T06:30:00Z"
+    }
+  },
+  "achievements": [
+    {
+      "id": "ach-first-fast",
+      "name": "First Fast",
+      "description": "Complete your first fasting window",
+      "category": "fasting",
+      "xp_reward": 50,
+      "unlocked": true,
+      "unlocked_at": "2025-12-10T08:45:00Z",
+      "progress": 100,
+      "requirement": 1,
+      "current": 1
+    },
+    {
+      "id": "ach-fasting-apprentice",
+      "name": "Fasting Apprentice",
+      "description": "Complete 10 fasts",
+      "category": "fasting",
+      "xp_reward": 100,
+      "unlocked": true,
+      "unlocked_at": "2025-12-18T22:15:00Z",
+      "progress": 100,
+      "requirement": 10,
+      "current": 10
+    },
+    {
+      "id": "ach-fasting-expert",
+      "name": "Fasting Expert",
+      "description": "Complete 50 fasts",
+      "category": "fasting",
+      "xp_reward": 200,
+      "unlocked": false,
+      "unlocked_at": null,
+      "progress": 54,
+      "requirement": 50,
+      "current": 27
+    },
+    {
+      "id": "ach-week-warrior",
+      "name": "Week Warrior",
+      "description": "Achieve a 7-day fasting streak",
+      "category": "streak",
+      "xp_reward": 100,
+      "unlocked": true,
+      "unlocked_at": "2026-01-10T06:00:00Z",
+      "progress": 100,
+      "requirement": 7,
+      "current": 12
+    }
+  ]
+}
+```
+
+### Level Info Response
+
+```json
+{
+  "current_level": 8,
+  "total_xp": 4850,
+  "xp_for_current_level": 2000,
+  "xp_for_next_level": 3350,
+  "xp_progress_in_level": 2850,
+  "xp_needed_for_next": 500,
+  "progress_percent": 85,
+  "next_milestone_level": 10,
+  "xp_for_milestone": 5000
+}
+```
+
+### Streak Info Response
+
+```json
+{
+  "fasting": {
+    "current": 12,
+    "longest": 27,
+    "last_activity_date": "2026-01-24",
+    "last_activity_timestamp": "2026-01-24T18:00:00Z",
+    "grace_period_hours": 4,
+    "time_until_reset": "4h 15m"
+  },
+  "workout": {
+    "current": 5,
+    "longest": 18,
+    "last_activity_date": "2026-01-24",
+    "last_activity_timestamp": "2026-01-24T06:30:00Z",
+    "grace_period_hours": 4,
+    "time_until_reset": "22h 30m"
+  }
+}
+```
+
+### Achievements List Response
+
+```json
+{
+  "total_achievements": 21,
+  "unlocked_count": 8,
+  "locked_count": 13,
+  "achievements": [
+    {
+      "id": "ach-first-fast",
+      "name": "First Fast",
+      "category": "fasting",
+      "xp_reward": 50,
+      "unlocked": true,
+      "unlocked_at": "2025-12-10T08:45:00Z",
+      "progress": 100
+    },
+    {
+      "id": "ach-first-workout",
+      "name": "First Workout",
+      "category": "workout",
+      "xp_reward": 50,
+      "unlocked": true,
+      "unlocked_at": "2025-12-11T07:15:00Z",
+      "progress": 100
+    },
+    {
+      "id": "ach-marathon-faster",
+      "name": "Marathon Faster",
+      "description": "Complete a 24-hour fast",
+      "category": "fasting",
+      "xp_reward": 200,
+      "unlocked": false,
+      "progress": 0,
+      "requirement": "Complete 1 × 24h+ fast"
+    }
+  ],
+  "by_category": {
+    "fasting": {
+      "total": 7,
+      "unlocked": 4,
+      "locked": 3
+    },
+    "workout": {
+      "total": 7,
+      "unlocked": 2,
+      "locked": 5
+    },
+    "streak": {
+      "total": 4,
+      "unlocked": 2,
+      "locked": 2
+    },
+    "social": {
+      "total": 3,
+      "unlocked": 0,
+      "locked": 3
+    }
+  }
+}
+```
+
+---
+
 ## Achievement Checking
 
 Achievements are checked after relevant actions:

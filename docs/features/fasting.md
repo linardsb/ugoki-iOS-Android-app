@@ -44,12 +44,14 @@ The fasting timer is UGOKI's primary feature, allowing users to track intermitte
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/api/v1/fasting/start` | Start a new fast | Yes |
-| POST | `/api/v1/fasting/end` | End the active fast | Yes |
-| POST | `/api/v1/fasting/pause` | Pause the active fast | Yes |
-| POST | `/api/v1/fasting/resume` | Resume a paused fast | Yes |
-| GET | `/api/v1/fasting/active` | Get active fast | Yes |
-| GET | `/api/v1/fasting/history` | Get fasting history | Yes |
+| POST | `/api/v1/time-keeper/windows` | Start a new fasting window | Yes |
+| POST | `/api/v1/time-keeper/windows/{id}/close` | End the active fasting window | Yes |
+| POST | `/api/v1/time-keeper/windows/{id}/extend` | Extend the active fasting window | Yes |
+| GET | `/api/v1/time-keeper/windows/active` | Get active fasting window | Yes |
+| GET | `/api/v1/time-keeper/windows` | Get fasting history (all windows) | Yes |
+| GET | `/api/v1/time-keeper/windows/{id}` | Get specific fasting window by ID | Yes |
+| GET | `/api/v1/time-keeper/windows/{id}/elapsed` | Get elapsed time in current window (seconds) | Yes |
+| GET | `/api/v1/time-keeper/windows/{id}/remaining` | Get remaining time in current window (seconds) | Yes |
 
 ---
 
@@ -133,35 +135,37 @@ interface TimeWindow {
 
 ## Business Logic
 
-### Starting a Fast
-1. Check no active fast exists
-2. Create TIME_WINDOW with state="active"
-3. Calculate target_end_time based on protocol
-4. Start local timer on mobile
+### Starting a Fasting Window
+1. Check no active window exists for user
+2. POST `/api/v1/time-keeper/windows` with protocol
+3. Backend creates TIME_WINDOW with state="active"
+4. Calculate target_end_time based on protocol (hours)
+5. Mobile receives window details and starts local timer
 
-### Pausing a Fast
-1. Validate fast is active
-2. Record pause timestamp
-3. Update state to "paused"
-4. Stop local timer, preserve elapsed time
+### Getting Active Window Status
+1. GET `/api/v1/time-keeper/windows/active` to fetch current window
+2. GET `/api/v1/time-keeper/windows/{id}/elapsed` to get time elapsed
+3. GET `/api/v1/time-keeper/windows/{id}/remaining` to get time remaining
+4. Mobile uses these to display countdown timer
 
-### Resuming a Fast
-1. Validate fast is paused
-2. Calculate paused_duration
-3. Update state to "active"
-4. Resume local timer
+### Extending a Fasting Window
+1. Validate window is currently active
+2. POST `/api/v1/time-keeper/windows/{id}/extend` with additional hours
+3. Backend recalculates target_end_time
+4. Mobile updates countdown timer
 
-### Completing a Fast
-1. Validate fast is active
-2. Check if target duration reached
-3. Update state to "completed"
-4. Trigger progression: add XP, update streak
-5. Record ACTIVITY_EVENT
+### Closing/Completing a Window
+1. Validate window is active (or can be closed)
+2. POST `/api/v1/time-keeper/windows/{id}/close`
+3. Backend sets state="completed"
+4. Backend triggers progression: add XP, update streak
+5. Backend records ACTIVITY_EVENT in audit log
 
 ### Streak Calculation
-- Streak increments when fast completed on consecutive days
-- Streak resets if no fast completed yesterday
+- Streak increments when window completed on consecutive days
+- Streak resets if no window completed yesterday
 - Grace period: 4 hours into next day
+- Stored in PROGRESSION module
 
 ---
 

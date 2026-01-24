@@ -422,6 +422,90 @@ metric_type = "device_heart_rate"     # Bad - doesn't indicate it's health data
 
 ---
 
+## Mobile Storage Architecture
+
+### Understanding the Dual-Layer Approach
+
+Mobile apps use a **two-layer storage system** for authentication tokens and sensitive data:
+
+**Layer 1: SecureStore (Encrypted, Persistent)**
+- Uses `expo-secure-store` on iOS (Keychain) and Android (Keystore)
+- True persistent storage for sensitive data (auth tokens, refresh tokens)
+- Encrypted at rest on device
+- Survives app uninstall/reinstall (on iOS)
+- Used by: Auth state, tokens, API credentials
+
+**Layer 2: AsyncStorage (Temporary, For Hydration)**
+- Regular key-value store, not encrypted
+- Used ONLY for Zustand store hydration (reloading store state on app start)
+- NOT used for direct token storage
+- Cleared when app cache is cleared
+- Used by: Store state snapshots, user preferences, UI state
+
+### Correct Pattern
+
+```typescript
+// GOOD: Auth store using both layers correctly
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+interface AuthStore {
+  token: string | null;
+  setToken: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export const authStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      token: null,
+      setToken: async (token) => {
+        // 1. Store in SecureStore (actual persistent storage)
+        await SecureStore.setItemAsync('auth_token', token);
+        // 2. Update Zustand state
+        set({ token });
+      },
+      logout: async () => {
+        // Remove from both
+        await SecureStore.deleteItemAsync('auth_token');
+        set({ token: null });
+      },
+    }),
+    {
+      name: 'auth-store',
+      storage: AsyncStorage, // For hydration ONLY
+      version: 1,
+    }
+  )
+);
+```
+
+### What NOT to Do
+
+```typescript
+// WRONG: Storing tokens only in AsyncStorage
+const token = await AsyncStorage.getItem('auth_token'); // ❌
+
+// WRONG: Storing tokens in plain variables
+let authToken = null; // ❌ Lost on app restart
+
+// WRONG: Assuming AsyncStorage is encrypted
+await AsyncStorage.setItem('secret', password); // ❌
+```
+
+### Best Practice Summary
+
+| Data Type | Storage | Why |
+|-----------|---------|-----|
+| Auth tokens | SecureStore | Encrypted at rest |
+| Refresh tokens | SecureStore | Encrypted at rest |
+| User preferences | AsyncStorage | Non-sensitive, faster |
+| UI state | AsyncStorage | Non-sensitive, temporary |
+| API keys | SecureStore | NEVER in client code |
+| Session ID | SecureStore | Critical for auth |
+
+---
+
 ## References
 
 - **Anti-Patterns:** [ANTI_PATTERNS.md](ANTI_PATTERNS.md)

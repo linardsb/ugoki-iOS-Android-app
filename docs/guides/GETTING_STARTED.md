@@ -54,7 +54,6 @@ uv run alembic upgrade head
 
 # Seed initial data (workouts, exercises, achievements)
 uv run python scripts/seed_workouts.py
-uv run python -m src.modules.progression.seed
 
 # Start development server
 uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
@@ -92,40 +91,40 @@ JWT_SECRET=your-secret-key-here
 JWT_ALGORITHM=HS256
 JWT_EXPIRATION_MINUTES=60
 
-# LLM Provider Configuration (Choose one)
-# Option 1: Groq (Recommended for fast responses)
-LLM_PROVIDER=groq
-GROQ_API_KEY=gsk_...
-GROQ_MODEL=llama-3.3-70b-versatile
+# AI Provider Configuration (Choose one)
+# Default is ollama (local, free but slower)
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
 
-# Option 2: Anthropic Claude (Default)
-# LLM_PROVIDER=anthropic
-ANTHROPIC_API_KEY=sk-ant-...
+# OR use Groq (fastest responses)
+# AI_PROVIDER=groq
+# GROQ_API_KEY=gsk_...
+# GROQ_MODEL=mixtral-8x7b
 
-# Option 3: OpenAI
-# LLM_PROVIDER=openai
-# OPENAI_API_KEY=sk-...
-# OPENAI_MODEL=gpt-4
+# OR use Anthropic Claude
+# AI_PROVIDER=anthropic
+# ANTHROPIC_API_KEY=sk-ant-...
 
-# Option 4: Ollama (Local - slow but free)
-# LLM_PROVIDER=ollama
-# OLLAMA_BASE_URL=http://localhost:11434
+# Embedding Provider (for RAG/document retrieval)
+EMBEDDING_PROVIDER=ollama
+EMBEDDING_MODEL_CHOICE=nomic-embed-text
+# OR: EMBEDDING_PROVIDER=anthropic for Claude embeddings
+
+# Search API (for Research Hub)
+BRAVE_API_KEY=...
 
 # Push Notifications
 EXPO_ACCESS_TOKEN=...
 
 # Email
 RESEND_API_KEY=re_...
-
-# Embeddings (for RAG/document retrieval)
-EMBEDDING_API_KEY=...  # Required if enabling RAG tools
 ```
 
-**Important:** The default is `LLM_PROVIDER=anthropic` using Claude. Choose your provider based on your needs:
-- **Groq:** Fastest (0.3s), good for production
-- **Anthropic:** Most capable, better reasoning
-- **OpenAI:** Widely supported, flexible models
-- **Ollama:** Free, runs locally (slower)
+**Important:** AI Provider defaults to `AI_PROVIDER=ollama` (local, free). Choose based on your needs:
+- **Ollama:** Free, runs locally (default, slower ~5-30s)
+- **Groq:** Fastest (0.3s), requires API key
+- **Anthropic:** Most capable reasoning, requires API key
+- **Search:** BRAVE_API_KEY enables PubMed/web search in Research Hub
 
 ### Mobile (app.config.js)
 
@@ -283,7 +282,7 @@ python --version  # Should be 3.12+
 uv sync --reinstall
 
 # Check database connection
-uv run python -c "from src.database import engine; print('OK')"
+uv run python -c "from src.db.session import get_engine; print('OK')"
 ```
 
 ### Mobile Won't Start
@@ -310,7 +309,6 @@ psql -h localhost -U ugoki -d ugoki
 uv run alembic downgrade base
 uv run alembic upgrade head
 uv run python scripts/seed_workouts.py
-uv run python -m src.modules.progression.seed
 ```
 
 ---

@@ -73,7 +73,7 @@ export default function FastingScreen() {
     if (!isLoading) {
       syncFromServer(serverFast ?? null);
     }
-  }, [serverFast, isLoading]);
+  }, [serverFast, isLoading, syncFromServer]);
 
   // Combined refetch for pull-to-refresh
   const handleRefresh = () => {

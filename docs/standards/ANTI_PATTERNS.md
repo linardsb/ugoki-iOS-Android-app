@@ -31,6 +31,44 @@ async def get_weight_with_fast(identity_id: str):
 
 ---
 
+### Accepted Exception: Social Module Leaderboard Queries
+
+**Context:** The SOCIAL module intentionally imports from PROFILE and PROGRESSION modules to support leaderboard functionality.
+
+**Exception Details:**
+```python
+# In src/modules/social/service.py
+from src.modules.profile.orm import SocialProfileORM, UserProfileORM
+from src.modules.progression.orm import UserLevelORM, StreakORM
+
+async def get_leaderboard(leaderboard_type: str, limit: int = 100):
+    # Queries across modules to assemble leaderboard data
+    result = await db.execute(
+        select(UserProfileORM, UserLevelORM, StreakORM)
+        .join(UserLevelORM, UserProfileORM.identity_id == UserLevelORM.identity_id)
+        .join(StreakORM, UserProfileORM.identity_id == StreakORM.identity_id)
+        .order_by(getattr(UserLevelORM, f"total_{leaderboard_type}").desc())
+        .limit(limit)
+    )
+```
+
+**Rationale:**
+- Leaderboards require aggregating data from multiple modules (PROFILE for user info, PROGRESSION for XP/streaks, METRICS for stats)
+- Using service-level APIs would require N+1 queries (fetch profile, then fetch level, then fetch streak for each user)
+- This specific use case justifies direct ORM access for performance and simplicity
+- Does not expose SOCIAL module internals to other modules (only SOCIAL imports others, not vice versa)
+
+**Rules for This Exception:**
+1. Only SOCIAL module uses cross-module ORM imports
+2. Other modules MUST NOT follow this pattern
+3. ORM imports are limited to read-only leaderboard queries
+4. If schema changes in referenced modules, update SOCIAL queries accordingly
+5. Document this dependency in module interface
+
+**Future Improvement:** Could be refactored using a GRAPH_SERVICE module for cross-module aggregations, but justified for MVP.
+
+---
+
 ### Parsing IDs from Other Modules
 
 **Don't:**

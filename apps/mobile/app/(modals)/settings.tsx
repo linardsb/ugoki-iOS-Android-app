@@ -4,7 +4,10 @@ import { YStack, XStack, Text, Button, Input } from 'tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink, UserPlus, Trash } from 'phosphor-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthStore } from '@/shared/stores/auth';
+import { appStorage } from '@/shared/stores/storage';
 import { AppSwitch } from '@/shared/components/ui';
 import {
   useProfile,
@@ -61,6 +64,8 @@ export default function SettingsScreen() {
   const { data: profile } = useProfile();
   const { data: preferences } = usePreferences();
   const { data: goals } = useGoals();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+  const [isResetting, setIsResetting] = useState(false);
 
   const updateProfile = useUpdateProfile({
     onSuccess: () => Alert.alert('Success', 'Profile updated'),
@@ -147,6 +152,38 @@ export default function SettingsScreen() {
   const getGenderLabel = (value?: Gender) => GENDER_OPTIONS.find(g => g.value === value)?.label || 'Not set';
   const getGoalLabel = (value: GoalType) => GOALS.find(g => g.value === value)?.label || value;
   const getProtocolLabel = (value: FastingProtocol) => FASTING_PROTOCOLS.find(p => p.value === value)?.label || value;
+
+  // Reset account for testing - creates a fresh anonymous identity
+  const handleResetAccount = () => {
+    Alert.alert(
+      'Create New Test Account',
+      'This will clear all local data and create a fresh anonymous account. Your current data will be lost. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              // Clear device ID to get a new identity
+              await AsyncStorage.removeItem('deviceId');
+              // Clear auth state
+              clearAuth();
+              // Clear onboarding status - must await before navigating
+              await appStorage.setOnboardingCompleted(false);
+              // Navigate to welcome screen
+              router.replace('/(auth)/welcome');
+            } catch (error) {
+              console.error('Reset failed:', error);
+              Alert.alert('Error', 'Failed to reset account. Please try again.');
+              setIsResetting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.val }]}>
@@ -746,6 +783,56 @@ export default function SettingsScreen() {
                   </YStack>
                 </YStack>
               )}
+            </YStack>
+          </SettingsSection>
+
+          {/* Developer Tools Section */}
+          <SettingsSection title="Developer Tools">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$3">
+              {/* New Test Account Button */}
+              <Button
+                size="$5"
+                height={56}
+                backgroundColor="$backgroundHover"
+                borderRadius="$3"
+                justifyContent="space-between"
+                paddingHorizontal="$4"
+                pressStyle={{ scale: 0.98 }}
+                onPress={handleResetAccount}
+                disabled={isResetting}
+                opacity={isResetting ? 0.6 : 1}
+              >
+                <XStack alignItems="center" gap="$3">
+                  <XStack
+                    width={36}
+                    height={36}
+                    borderRadius="$3"
+                    backgroundColor="#8b5cf6"
+                    opacity={0.15}
+                    position="absolute"
+                  />
+                  <XStack
+                    width={36}
+                    height={36}
+                    borderRadius="$3"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <UserPlus size={18} color="#8b5cf6" weight="fill" />
+                  </XStack>
+                  <YStack>
+                    <Text fontSize="$4" fontWeight="500" color="$color">
+                      {isResetting ? 'Resetting...' : 'New Test Account'}
+                    </Text>
+                    <Text fontSize="$3" color="$colorMuted">Create fresh anonymous identity</Text>
+                  </YStack>
+                </XStack>
+                <CaretRight size={18} color={mutedIconColor} weight="regular" />
+              </Button>
+
+              <Text fontSize="$2" color="$colorMuted" paddingHorizontal="$2">
+                For testing multiple users. Clears all local data and creates a new anonymous account.
+              </Text>
             </YStack>
           </SettingsSection>
 

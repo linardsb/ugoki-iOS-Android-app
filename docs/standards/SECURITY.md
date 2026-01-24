@@ -339,18 +339,41 @@ await SecureStore.setItemAsync('accessToken', token);
 // AsyncStorage is unencrypted
 ```
 
-### Certificate Pinning (Production)
+### Certificate Pinning
 
+**Status:** Planned for Phase 2 Deployment (Post-MVP)
+
+Certificate pinning adds an additional layer of security by validating the server's SSL certificate against a known set of certificates. This prevents man-in-the-middle attacks even if a Certificate Authority is compromised.
+
+**Implementation Timeline:**
+- **MVP (Current):** Not required - relies on standard HTTPS certificate validation
+- **Phase 2 (Post-MVP):** To be implemented during production hardening phase before public App Store release
+- **Implementation Target:** 2-3 weeks into Phase 2 deployment cycle
+
+**Planned Approach:**
 ```typescript
-// For production builds
+// For Phase 2+ production builds with certificate pinning
+import { createHttpClient } from 'react-native-http-bridge';
+
 const api = axios.create({
   baseURL: API_URL,
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: true,
-    // Add certificate pins for production
+  httpAgent: createHttpClient({
+    certificates: ['path/to/api.ugoki.app.pem']
   }),
 });
 ```
+
+**Configuration:**
+- Generate certificate pin hashes during EAS build process
+- Store pins securely in app bundle
+- Implement pin update strategy for certificate renewal
+- Add pin validation to all API requests
+- Test on physical devices before release
+
+**Notes:**
+- MVP relies on standard TLS verification through Expo SDK
+- Defer to Phase 2 to allow rapid MVP deployment without certificate management overhead
+- Required before public store submission for security-conscious users
 
 ---
 

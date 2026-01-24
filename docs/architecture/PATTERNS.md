@@ -247,6 +247,141 @@ export const useFastingStore = create<FastingState>((set) => ({
 
 ---
 
+### Zustand Persist Pattern (with Error Recovery)
+
+When persisting state that syncs with server, **always handle stale state scenarios**:
+
+```typescript
+// features/coach/stores/chatStore.ts
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { zustandStorage } from '@/shared/stores/storage';
+
+interface ChatState {
+  // Server-synced state (can become stale)
+  currentSessionId: string | null;
+  messages: ChatMessage[];
+
+  // Local-only state (safe to persist)
+  personality: CoachPersonality;
+
+  // Actions
+  clearMessages: () => void;
+  startNewConversation: () => void;
+}
+
+export const useChatStore = create<ChatState>()(
+  persist(
+    (set, get) => ({
+      currentSessionId: null,
+      messages: [],
+      personality: 'motivational',
+
+      // IMPORTANT: Clear server-synced IDs when clearing local state
+      clearMessages: () => {
+        set({
+          currentSessionId: null,  // Must reset server reference
+          messages: [],
+        });
+      },
+
+      // Explicit action to reset server-synced state
+      startNewConversation: () => {
+        set({
+          currentSessionId: null,
+          messages: [],
+        });
+      },
+    }),
+    {
+      name: 'coach-chat-storage',
+      storage: createJSONStorage(() => zustandStorage),
+      // Only persist what's safe - consider if server IDs should be persisted
+      partialize: (state) => ({
+        currentSessionId: state.currentSessionId,  // ⚠️ Can become stale
+        messages: state.messages.slice(-50),
+        personality: state.personality,  // ✅ Local-only, always safe
+      }),
+    }
+  )
+);
+```
+
+**Key Rules:**
+1. **Server IDs can become stale** - Sessions expire, entities get deleted
+2. **Clear IDs when clearing related state** - If messages are cleared, session ID must be cleared too
+3. **Provide explicit reset actions** - `startNewConversation()` to cleanly reset server-synced state
+4. **Consider NOT persisting server IDs** - Only persist if truly needed for UX
+
+**Why:** Persisted client state can diverge from server state. Must handle gracefully.
+
+---
+
+### Client-Server State Sync Pattern
+
+When client state references server entities, implement error recovery:
+
+```typescript
+// features/coach/hooks/useStreamMessage.ts
+const hasRetriedRef = useRef<boolean>(false);
+
+const sendMessage = useCallback(async (message: string) => {
+  // ... send request with currentSessionId ...
+
+  es.addEventListener('message', (event) => {
+    const chunk = JSON.parse(event.data);
+
+    // Handle stale reference error with auto-recovery
+    if (chunk.error === 'conversation_not_found' && !hasRetriedRef.current) {
+      console.log('[Coach] Stale session, clearing and retrying...');
+      hasRetriedRef.current = true;
+      startNewConversation();  // Clear stale ID
+
+      // Retry once without the stale ID
+      setTimeout(() => sendMessage(message), 100);
+      return;
+    }
+
+    // Handle other errors normally
+    if (chunk.error) {
+      options?.onError?.(chunk.error);
+      return;
+    }
+
+    // On success, reset retry flag
+    if (chunk.complete) {
+      hasRetriedRef.current = false;
+    }
+  });
+}, [currentSessionId, startNewConversation]);
+```
+
+**Key Rules:**
+1. **Detect stale reference errors** - `not_found`, `expired`, `invalid_session`
+2. **Clear stale state** - Remove the invalid reference
+3. **Retry once** - Use a flag to prevent infinite loops
+4. **Reset on success** - Clear retry flag when operation succeeds
+
+**Why:** Server state can change independently. Client must recover gracefully.
+
+---
+
+### Stale Cache Recovery Strategies
+
+| Scenario | Strategy |
+|----------|----------|
+| Session expired | Clear session ID, retry creates new session |
+| Entity deleted | Clear reference, show "not found" or redirect |
+| Token expired | Refresh token, retry request |
+| Data out of sync | Invalidate React Query cache, refetch |
+
+**Implementation Priority:**
+1. **Critical paths first** - Auth, active features (fasting, workouts, coach)
+2. **Add error boundaries** - Catch unhandled errors gracefully
+3. **Log for debugging** - `console.log('[Feature] Stale state recovered')`
+
+---
+
 ### Theme-Aware Component Pattern
 
 ```typescript

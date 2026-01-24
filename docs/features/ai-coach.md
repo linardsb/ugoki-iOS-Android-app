@@ -50,10 +50,10 @@ The AI Coach is a Pydantic AI-powered conversational assistant that provides per
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | POST | `/api/v1/coach/chat` | Send message (non-streaming) | Yes |
-| POST | `/api/v1/coach/stream` | **Stream message (SSE)** | Yes |
-| GET | `/api/v1/coach/insights` | Get daily insights | Yes |
+| POST | `/api/v1/coach/chat/stream` | **Stream message (SSE)** | Yes |
+| GET | `/api/v1/coach/insight` | Get daily insight | Yes |
 | GET | `/api/v1/coach/motivation` | Get motivation message | Yes |
-| PUT | `/api/v1/coach/personality` | Set coach personality | Yes |
+| PATCH | `/api/v1/coach/personality` | Update coach personality | Yes |
 
 ### Conversation Endpoints
 

@@ -51,7 +51,11 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
     setCurrentSession,
     setStreaming,
     isStreaming: storeIsStreaming,
+    startNewConversation,
   } = useChatStore();
+
+  // Track retry state to prevent infinite loops
+  const hasRetriedRef = useRef<boolean>(false);
 
   // Cleanup typing timer on unmount
   useEffect(() => {
@@ -144,8 +148,10 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
         typingTimerRef.current = null;
       }
 
-      // Add user message to store
-      addUserMessage(message);
+      // Add user message to store (but not if this is a retry - message already added)
+      if (!hasRetriedRef.current) {
+        addUserMessage(message);
+      }
 
       try {
         const baseUrl = getApiBaseUrl();
@@ -187,9 +193,23 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
             // Handle error
             if (chunk.error) {
               console.error('[Coach] Server error:', chunk.error);
-              setError(chunk.error);
               es.close();
               eventSourceRef.current = null;
+
+              // Handle stale session error by clearing session and retrying once
+              if (chunk.error === 'conversation_not_found' && !hasRetriedRef.current) {
+                console.log('[Coach] Session not found, clearing and retrying...');
+                hasRetriedRef.current = true;
+                startNewConversation();
+                // Retry the message without session_id (will create new conversation)
+                setTimeout(() => {
+                  // Re-send the message - the currentSessionId will be null now
+                  sendMessage(message, overridePersonality);
+                }, 100);
+                return;
+              }
+
+              setError(chunk.error);
               setIsLoading(false);
               setStreaming(false);
               options?.onError?.(chunk.error);
@@ -205,6 +225,7 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
             if (chunk.complete) {
               console.log('[Coach] Stream complete, waiting for typing animation to finish');
               isCompleteRef.current = true;
+              hasRetriedRef.current = false; // Reset retry flag on successful completion
               es.close();
               eventSourceRef.current = null;
               // Don't finalize here - let processTypingBuffer handle it when buffer is empty
@@ -250,6 +271,7 @@ export function useStreamMessage(options?: UseStreamMessageOptions) {
       finalizeStreaming,
       setCurrentSession,
       setStreaming,
+      startNewConversation,
       options,
     ]
   );

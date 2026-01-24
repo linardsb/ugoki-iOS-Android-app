@@ -35,6 +35,13 @@ export function setApiAuthCache(token: string | null, identityId: string | null)
   cachedIdentityId = identityId;
 }
 
+// Callback for 401 errors - allows auth store to register handler without circular deps
+let onUnauthorizedCallback: (() => void) | null = null;
+
+export function setOnUnauthorizedCallback(callback: () => void) {
+  onUnauthorizedCallback = callback;
+}
+
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -66,11 +73,15 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
 
       if (status === 401) {
-        // Unauthorized - clear auth cache
+        // Unauthorized - clear auth cache and notify auth store
         cachedToken = null;
         cachedIdentityId = null;
         await AsyncStorage.multiRemove(['accessToken', 'identityId']);
-        // Navigation will be handled by auth state listener
+
+        // Notify auth store to clear its state (handles navigation)
+        if (onUnauthorizedCallback) {
+          onUnauthorizedCallback();
+        }
       }
 
       if (status === 403) {

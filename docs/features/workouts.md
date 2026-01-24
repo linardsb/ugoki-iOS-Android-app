@@ -50,8 +50,11 @@ UGOKI provides a curated library of workouts designed for busy professionals. Wo
 | GET | `/api/v1/content/workouts` | List all workouts | No |
 | GET | `/api/v1/content/workouts/{id}` | Get workout details | No |
 | GET | `/api/v1/content/exercises` | List exercises with filters | No |
-| POST | `/api/v1/content/workout-sessions` | Start workout session | Yes |
-| POST | `/api/v1/content/workout-sessions/{id}/complete` | Complete workout | Yes |
+| POST | `/api/v1/content/sessions` | Start workout session | Yes |
+| GET | `/api/v1/content/sessions/active` | Get active workout session | Yes |
+| GET | `/api/v1/content/sessions/history` | Get workout session history | Yes |
+| POST | `/api/v1/content/sessions/{session_id}/complete` | Complete workout | Yes |
+| POST | `/api/v1/content/sessions/{session_id}/abandon` | Abandon workout in progress | Yes |
 
 ### Exercise Filters
 
@@ -64,6 +67,34 @@ GET /api/v1/content/exercises?body_focus=upper&difficulty=beginner
 | body_focus | upper, lower, core, full_body |
 | difficulty | beginner, intermediate, advanced |
 | equipment | none, dumbbells, resistance_band |
+
+---
+
+## Recipe Endpoints
+
+Recipes are meal suggestions that complement workouts and fasting windows.
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/v1/content/recipes` | List all recipes | No |
+| GET | `/api/v1/content/recipes/{id}` | Get recipe details | No |
+| POST | `/api/v1/content/recipes/saved` | Save recipe to favorites | Yes |
+| DELETE | `/api/v1/content/recipes/saved/{id}` | Remove from saved recipes | Yes |
+| GET | `/api/v1/content/recipes/saved/list` | Get user's saved recipes | Yes |
+
+### Recipe Details
+
+Each recipe includes nutritional info, meal prep time, and compatibility with fasting protocols.
+
+---
+
+## Additional Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/v1/content/categories` | Get workout categories | No |
+| GET | `/api/v1/content/recommendations` | AI-generated workout recommendations | Yes |
+| GET | `/api/v1/content/stats` | User workout statistics (total time, completed, streak) | Yes |
 
 ---
 
@@ -142,15 +173,27 @@ Workout Detail → Start Workout → Exercise 1 → Rest → Exercise 2 → ... 
 ## Business Logic
 
 ### Starting a Workout
-1. Create workout session TIME_WINDOW
-2. Initialize exercise queue
-3. Start first exercise timer
+1. POST `/api/v1/content/sessions` with workout_id
+2. Backend creates TIME_WINDOW with type="workout" and state="active"
+3. Mobile receives session_id and initializes exercise queue
+4. Start first exercise timer
+
+### Getting Active Workout
+1. GET `/api/v1/content/sessions/active` to fetch current session
+2. Mobile displays current exercise and remaining time
+3. User can skip exercises or pause
 
 ### Completing a Workout
-1. Mark session as completed
-2. Record ACTIVITY_EVENT
-3. Award XP based on duration/difficulty
-4. Update workout streak
+1. POST `/api/v1/content/sessions/{session_id}/complete`
+2. Backend marks session as completed
+3. Records ACTIVITY_EVENT
+4. Awards XP based on duration/difficulty
+5. Updates workout streak in progression module
+
+### Abandoning a Workout
+1. POST `/api/v1/content/sessions/{session_id}/abandon`
+2. Backend marks session as abandoned
+3. No XP or streak credit awarded
 
 ### Exercise Deduplication
 Exercises are shared across workouts. The listing endpoint deduplicates by name to show unique exercises for filtering.

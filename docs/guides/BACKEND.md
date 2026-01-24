@@ -24,8 +24,13 @@ Development guide for the UGOKI FastAPI backend.
 apps/api/
 ├── src/
 │   ├── main.py                    # App entry point
-│   ├── database.py                # Database configuration
-│   ├── dependencies.py            # FastAPI dependencies
+│   ├── db/                        # Database configuration
+│   │   ├── base.py                # SQLAlchemy Base
+│   │   └── session.py             # Session management
+│   ├── core/                      # Core utilities
+│   │   ├── auth.py                # JWT & authentication
+│   │   ├── config.py              # Configuration & env vars
+│   │   └── rate_limit.py          # Rate limiting
 │   ├── modules/                   # Black box modules
 │   │   ├── identity/
 │   │   ├── time_keeper/
@@ -114,9 +119,9 @@ class MyModuleInterface(ABC):
 
 ```python
 # src/modules/my_module/orm.py
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
-from src.database import Base
+from src.db.base import Base
 import uuid
 
 class MyModelORM(Base):

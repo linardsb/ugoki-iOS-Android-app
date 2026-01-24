@@ -33,7 +33,7 @@ Priority tasks for production launch:
 | Bloodwork Analysis | Complete | [features/bloodwork.md](../features/bloodwork.md) |
 | Social Features | Complete | [features/social.md](../features/social.md) |
 | Progression System | Complete | [features/progression.md](../features/progression.md) |
-| **Health Device Integration** (Apple HealthKit + Google Health Connect) | **Complete** | **[FITNESS_TOOLS.md](../FITNESS_TOOLS.md)** |
+| **Health Device Integration** (Apple HealthKit + Google Health Connect) | **Complete** | **[health-metrics.md](../features/health-metrics.md)** ([implementation guide](../FITNESS_TOOLS.md)) |
 
 ---
 
@@ -49,7 +49,7 @@ Priority tasks for production launch:
 | Workout reminders & scheduling | P2 | Planned | - |
 | Weekly progress reports | P2 | Planned | - |
 | Avatar/character progression | P2 | Planned | - |
-| Background health sync (expo-background-fetch) | P2 | Planned | [FITNESS_TOOLS.md#future-enhancements](../FITNESS_TOOLS.md#future-enhancements) |
+| Background health sync (expo-background-fetch) | P2 | Planned | [health-metrics.md#future](../features/health-metrics.md#future-enhancements) |
 
 ### Phase 3: Monetization
 

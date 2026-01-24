@@ -149,6 +149,128 @@ interface TrendData {
 
 ---
 
+## API Response Examples
+
+### Upload Bloodwork Response
+
+```json
+{
+  "id": "uuid-1",
+  "test_date": "2026-01-24",
+  "filename": "lab_results_jan_2026.pdf",
+  "uploaded_at": "2026-01-24T14:30:00Z",
+  "status": "parsed",
+  "biomarker_count": 8,
+  "biomarkers": [
+    {
+      "id": "uuid-biomarker-1",
+      "metric_type": "biomarker_haemoglobin",
+      "value": 14.2,
+      "unit": "g/dL",
+      "reference_low": 12.0,
+      "reference_high": 17.5,
+      "flag": "normal",
+      "timestamp": "2026-01-24T00:00:00Z"
+    },
+    {
+      "id": "uuid-biomarker-2",
+      "metric_type": "biomarker_cholesterol_total",
+      "value": 185,
+      "unit": "mg/dL",
+      "reference_high": 200,
+      "flag": "normal",
+      "timestamp": "2026-01-24T00:00:00Z"
+    },
+    {
+      "id": "uuid-biomarker-3",
+      "metric_type": "biomarker_hba1c",
+      "value": 5.2,
+      "unit": "%",
+      "reference_high": 5.7,
+      "flag": "normal",
+      "timestamp": "2026-01-24T00:00:00Z"
+    }
+  ]
+}
+```
+
+### Bloodwork History Response
+
+```json
+{
+  "tests": [
+    {
+      "test_date": "2026-01-24",
+      "biomarker_count": 8,
+      "normal_count": 7,
+      "abnormal_count": 1,
+      "biomarkers": [
+        {
+          "metric_type": "biomarker_haemoglobin",
+          "value": 14.2,
+          "unit": "g/dL",
+          "flag": "normal"
+        },
+        {
+          "metric_type": "biomarker_cholesterol_ldl",
+          "value": 145,
+          "unit": "mg/dL",
+          "flag": "high"
+        }
+      ]
+    },
+    {
+      "test_date": "2025-10-15",
+      "biomarker_count": 8,
+      "normal_count": 8,
+      "abnormal_count": 0,
+      "biomarkers": [
+        {
+          "metric_type": "biomarker_haemoglobin",
+          "value": 13.8,
+          "unit": "g/dL",
+          "flag": "normal"
+        }
+      ]
+    }
+  ],
+  "total_tests": 2
+}
+```
+
+### Biomarker Trend Response
+
+```json
+{
+  "metric_type": "biomarker_haemoglobin",
+  "unit": "g/dL",
+  "direction": "up",
+  "percent_change": 2.9,
+  "data_points": [
+    {
+      "value": 13.8,
+      "timestamp": "2025-10-15T00:00:00Z",
+      "test_date": "2025-10-15"
+    },
+    {
+      "value": 14.0,
+      "timestamp": "2025-12-20T00:00:00Z",
+      "test_date": "2025-12-20"
+    },
+    {
+      "value": 14.2,
+      "timestamp": "2026-01-24T00:00:00Z",
+      "test_date": "2026-01-24"
+    }
+  ],
+  "reference_low": 12.0,
+  "reference_high": 17.5,
+  "status": "improving"
+}
+```
+
+---
+
 ## Biomarker Standardization
 
 Common biomarker name mappings:

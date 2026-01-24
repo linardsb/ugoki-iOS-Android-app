@@ -86,21 +86,22 @@ async def client():
 
 @pytest.mark.asyncio
 async def test_fasting_flow(client):
-    # Start fast
-    response = await client.post("/api/v1/fasting/start", json={
+    # Create fasting window
+    response = await client.post("/api/v1/time-keeper/windows", json={
+        "window_type": "fast",
         "protocol": "16:8"
     }, headers={"Authorization": "Bearer test-token"})
     assert response.status_code == 200
-    fast_id = response.json()["id"]
+    window_id = response.json()["id"]
 
-    # Check active
-    response = await client.get("/api/v1/fasting/active",
+    # Check active window
+    response = await client.get("/api/v1/time-keeper/windows/active",
         headers={"Authorization": "Bearer test-token"})
     assert response.status_code == 200
-    assert response.json()["id"] == fast_id
+    assert response.json()["id"] == window_id
 
-    # End fast
-    response = await client.post(f"/api/v1/fasting/end",
+    # Close window (complete fast)
+    response = await client.post(f"/api/v1/time-keeper/windows/{window_id}/close",
         headers={"Authorization": "Bearer test-token"})
     assert response.status_code == 200
     assert response.json()["state"] == "completed"

@@ -347,6 +347,42 @@ Each decision follows this structure:
 
 ---
 
+### DEC-027: Health Device Integration (HealthKit + Health Connect)
+**Date:** January 2026 | **Status:** Accepted
+
+**Context:** Users need automated health data collection to provide context for AI Coach personalization without manual entry burden.
+
+**Decision:** Integrate Apple HealthKit (iOS) and Google Health Connect (Android) for automatic health metric syncing with explicit user permission flow.
+
+**Rationale:**
+- **Eliminates manual entry friction** - Users don't need to manually log heart rate, sleep, steps
+- **Improves personalization** - Recovery score (HRV + resting HR + sleep) enables intelligent workout/fasting recommendations
+- **Privacy-first approach** - Device syncs to user's native health app first, then UGOKI with permission
+- **HIPAA/GDPR compliant** - Treated as Protected Health Information (PHI) with source tracking
+- **Selective sync** - Users can revoke permission anytime without losing other app data
+
+**Alternatives Considered:**
+- Manual user input only (less friction reduction, poor personalization)
+- Third-party API aggregators (adds vendor lock-in, privacy concerns)
+
+**Consequences:**
+- Requires native platform permissions (iOS HealthKit, Android Health Connect)
+- Development blocked on simulator (requires physical device or paid developer account)
+- Health data stored with `MetricSource.DEVICE_SYNC` for audit/GDPR compliance
+- Health data never logged or exposed in error messages
+- Recovery score calculation enables new AI Coach capabilities (DEC-028 future decision)
+- Users must explicitly grant permissions per platform
+
+**Implementation Details:**
+- `apps/mobile/features/health/hooks/useHealthSync.ts` - Unified iOS/Android abstraction
+- `apps/api/src/routes/health_sync.py` - Sync and context endpoints
+- Metrics stored in existing METRICS table with `health_*` prefix
+- GET `/health-sync/context` returns computed recovery_score + AI insights
+
+**Reference:** [features/health-metrics.md](../features/health-metrics.md), [standards/SECURITY.md#health-data-protection](../standards/SECURITY.md#health-data-protection-phi---protected-health-information)
+
+---
+
 ## Deprecated Decisions
 
 ### DEC-D01: Redux for State Management

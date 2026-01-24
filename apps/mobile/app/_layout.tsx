@@ -33,15 +33,21 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const [onboardingChecked, setOnboardingChecked] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
 
-  // Check onboarding status
+  // Check onboarding status - re-check when identity changes (e.g., after reset)
   useEffect(() => {
+    // Reset checked state when identity is cleared (logout/reset)
+    if (!identity) {
+      setOnboardingChecked(false);
+      setOnboardingCompleted(false);
+    }
+
     async function checkOnboarding() {
       const completed = await appStorage.isOnboardingCompleted();
       setOnboardingCompleted(completed);
       setOnboardingChecked(true);
     }
     checkOnboarding();
-  }, []);
+  }, [identity?.id]); // Re-check when identity changes
 
   useEffect(() => {
     if (isLoading || !onboardingChecked) return;

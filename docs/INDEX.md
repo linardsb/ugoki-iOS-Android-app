@@ -58,6 +58,8 @@ Quick navigation hub for all project documentation.
 | [Health Metrics](features/health-metrics.md) | Complete | `metrics/` | `features/health/` |
 | [Social](features/social.md) | Complete | `social/` | `features/social/` |
 | [Progression](features/progression.md) | Complete | `progression/` | `features/dashboard/` |
+| [Profile](features/profile.md) | Complete | `profile/` | `features/profile/` |
+| [Notifications](features/notifications.md) | Complete | `notification/` | `features/notifications/` |
 
 ---
 

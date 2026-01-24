@@ -150,6 +150,7 @@ export const useChatStore = create<ChatState>()(
 
       clearMessages: () => {
         set({
+          currentSessionId: null, // Reset session to start fresh conversation
           messages: [],
           quickActions: [],
           streamingMessage: '',

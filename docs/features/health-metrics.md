@@ -57,6 +57,7 @@ UGOKI integrates with device health apps to automatically sync health metrics wi
 |--------|----------|-------------|------|-----|
 | POST | `/api/v1/health-sync` | Sync device metrics | Yes | Yes |
 | GET | `/api/v1/health-sync/status` | Check sync status | Yes | No |
+| GET | `/api/v1/health-sync/context` | Get health context with AI insights and recovery score | Yes | Yes |
 | GET | `/api/v1/metrics?source=DEVICE_SYNC` | Get synced metrics | Yes | Yes |
 | DELETE | `/api/v1/metrics/health` | Delete all health metrics | Yes | Yes |
 
@@ -126,6 +127,87 @@ interface HealthSyncStatus {
   is_connected: boolean;
   last_sync: string | null;         // ISO datetime
   synced_metrics: string[];         // List of metric_types
+}
+```
+
+### Health Context (for AI Coach)
+
+```typescript
+interface HealthContext {
+  has_data: boolean;                  // True if any health data available
+  metrics: Record<string, MetricValue>;  // Latest values by metric_type
+  insights: string[];                 // AI Coach-generated insights
+  recovery: {
+    score: number;                    // 0-100 (calculated from HRV + RHR + sleep)
+    status: "poor" | "fair" | "good" | "excellent";
+    recommendation: string;           // "Rest day recommended" or "Ready for intense workout"
+  };
+  user_health_summary: {
+    resting_hr: number | null;       // bpm, null if not available
+    hrv: number | null;               // ms (Heart Rate Variability)
+    sleep_average: number | null;     // hours (last 7 days)
+    activity_level: "sedentary" | "light" | "moderate" | "vigorous";
+    trend: "improving" | "stable" | "declining";
+  };
+  recommendations: string[];          // Personalized health/activity recommendations
+  warnings: string[];                 // Health warnings if any (e.g., "Low sleep detected")
+  last_7_days_summary: {
+    avg_sleep: number;                // hours
+    avg_resting_hr: number;           // bpm
+    total_steps: number;
+    total_workouts: number;
+  };
+}
+
+interface MetricValue {
+  value: number;
+  unit: string;
+  recorded_at: string;                // ISO datetime
+}
+```
+
+### API Response Examples
+
+**GET `/api/v1/health-sync/context` Response:**
+
+```json
+{
+  "has_data": true,
+  "metrics": {
+    "health_resting_hr": {"value": 52, "unit": "bpm", "recorded_at": "2026-01-24T08:00:00Z"},
+    "health_hrv": {"value": 45, "unit": "ms", "recorded_at": "2026-01-24T08:00:00Z"},
+    "sleep_hours": {"value": 7.5, "unit": "hours", "recorded_at": "2026-01-23T08:00:00Z"},
+    "steps": {"value": 8234, "unit": "count", "recorded_at": "2026-01-24T18:00:00Z"}
+  },
+  "insights": [
+    "HRV is excellent (45ms) - great day for an intense HIIT session",
+    "Well-rested with 7.5 hours - optimal conditions for fasting and exercise",
+    "Recovery score is high - you're in peak performance state"
+  ],
+  "recovery": {
+    "score": 82,
+    "status": "excellent",
+    "recommendation": "Ready for high-intensity workouts. Consider a challenging HIIT session."
+  },
+  "user_health_summary": {
+    "resting_hr": 52,
+    "hrv": 45,
+    "sleep_average": 7.2,
+    "activity_level": "moderate",
+    "trend": "improving"
+  },
+  "recommendations": [
+    "Maintain current sleep schedule - it's working great",
+    "Try a 20:4 fasting window today given your energy level",
+    "Schedule an advanced HIIT workout while recovery is high"
+  ],
+  "warnings": [],
+  "last_7_days_summary": {
+    "avg_sleep": 7.2,
+    "avg_resting_hr": 54,
+    "total_steps": 62450,
+    "total_workouts": 4
+  }
 }
 ```
 

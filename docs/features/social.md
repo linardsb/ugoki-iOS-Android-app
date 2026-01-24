@@ -71,6 +71,173 @@ UGOKI includes social features to increase engagement and motivation. Users can 
 
 ---
 
+## Request/Response Models
+
+### Friend Request
+
+**Send Request:**
+```typescript
+interface SendFriendRequestPayload {
+  identity_id: string;  // UUID of user to befriend
+}
+```
+
+**Accept/Decline Request:**
+```typescript
+interface RespondFriendRequestPayload {
+  accept: boolean;  // true = accept, false = decline
+}
+
+// Response (both accept and decline)
+interface RespondFriendRequestResponse {
+  id: string;
+  status: "accepted" | "declined";
+  identity_id_a: string;
+  identity_id_b: string;
+  created_at: string;  // ISO datetime
+}
+```
+
+**Get Pending Requests Response:**
+```typescript
+interface PendingFriendRequest {
+  id: string;
+  from_identity_id: string;
+  from_user: {
+    display_name: string;
+    avatar_url: string | null;
+    current_xp: number;
+    current_level: number;
+  };
+  created_at: string;  // ISO datetime
+}
+
+interface PendingRequestsResponse {
+  requests: PendingFriendRequest[];
+  total_count: number;
+}
+```
+
+**Get Friends List Response:**
+```typescript
+interface Friend {
+  id: string;
+  identity_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  current_xp: number;
+  current_level: number;
+  current_fasting_streak: number;
+}
+
+interface FriendsListResponse {
+  friends: Friend[];
+  total_count: number;
+}
+```
+
+### Leaderboard Pagination
+
+**Query Parameters (all leaderboard endpoints):**
+```
+GET /api/v1/social/leaderboards/{type}?limit=20&offset=0
+```
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `limit` | integer | 20 | 100 | Number of results to return |
+| `offset` | integer | 0 | - | Number of results to skip (for pagination) |
+
+**Leaderboard Entry:**
+```typescript
+interface LeaderboardEntry {
+  rank: number;              // 1-based ranking
+  identity_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  value: number;             // XP, streak days, or challenge progress
+  trend: "up" | "down" | "—"; // Direction vs. previous day
+}
+
+interface LeaderboardResponse {
+  type: "global_xp" | "friends_xp" | "global_streak";
+  entries: LeaderboardEntry[];
+  total_count: number;
+  your_rank: number | null;  // null if not on leaderboard
+  your_value: number;
+}
+```
+
+### Challenge Request/Response
+
+**Create Challenge:**
+```typescript
+interface CreateChallengePayload {
+  name: string;                                              // Max 100 chars
+  description: string;                                       // Optional
+  challenge_type: "fasting_streak" | "workout_count" | "total_xp" | "consistency";
+  goal_value: number;                                        // Target value to win
+  start_date: string;                                        // ISO date (YYYY-MM-DD)
+  end_date: string;                                          // ISO date, must be > start
+  invite_identity_ids?: string[];                           // Optional: auto-invite friends
+}
+
+interface CreateChallengeResponse {
+  id: string;
+  join_code: string;         // 8-char code for sharing
+  name: string;
+  challenge_type: string;
+  goal_value: number;
+  start_date: string;
+  end_date: string;
+  created_by: string;
+  created_at: string;
+}
+```
+
+**Join Challenge Response:**
+```typescript
+interface JoinChallengeResponse {
+  challenge_id: string;
+  participant_id: string;
+  current_progress: number;
+  rank: number | null;       // null until challenge starts
+  joined_at: string;
+}
+```
+
+**Challenge Details Response:**
+```typescript
+interface ChallengeParticipant {
+  rank: number;
+  identity_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  current_progress: number;
+  joined_at: string;
+}
+
+interface ChallengeDetailsResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  challenge_type: string;
+  goal_value: number;
+  start_date: string;
+  end_date: string;
+  created_by: string;
+  created_at: string;
+  join_code: string;
+  participants: ChallengeParticipant[];
+  total_participants: number;
+  your_rank: number | null;
+  your_progress: number;
+  time_remaining_hours: number;
+}
+```
+
+---
+
 ## Key Files
 
 ### Backend
