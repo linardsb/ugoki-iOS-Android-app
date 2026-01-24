@@ -10,11 +10,23 @@ UGOKI helps busy professionals achieve sustainable health optimization in 15-20 
 
 - **Intermittent Fasting Timer** - Track fasting windows with multiple protocols (16:8, 18:6, 20:4)
 - **HIIT Workouts** - 16 curated workouts with video player and exercise library
-- **AI Coach** - Personalized guidance via Claude integration with safety filtering
+- **AI Coach** - Personalized guidance with constitutional AI, cross-session memory, skill-based prompts, and automated quality evaluation
 - **Gamification** - Streaks, XP, levels, and 21 achievements
 - **Bloodwork Analysis** - Upload blood tests, AI parses biomarkers with trend tracking
 - **Research Hub** - PubMed papers with AI-generated summaries
 - **Social** - Friends, followers, leaderboards, challenges
+
+### AI Coach (v3.0)
+
+The AI Coach uses advanced context engineering:
+
+- **Constitutional AI** - Values-based responses prioritizing safety, evidence, and personalization
+- **Skill System** - Domain expertise (workout, fasting, nutrition, motivation, research) loaded based on query type
+- **User Memory** - Remembers facts, preferences, goals, and constraints across sessions
+- **Context Engineering** - Tiered context loading with token budget enforcement
+- **Quality Evaluation** - Automated LLM-as-Judge scoring for continuous improvement
+
+See [docs/features/ai-coach.md](docs/features/ai-coach.md) for full specification.
 
 ## Tech Stack
 
@@ -72,7 +84,7 @@ UGOKI follows a **black box modular architecture** with 11 independent modules:
 | METRICS | Weight, biomarkers, trend analysis |
 | PROGRESSION | XP, levels, streaks, 21 achievements |
 | CONTENT | Workouts, exercises, recipes |
-| AI_COACH | Claude chat with safety filtering |
+| AI_COACH | Claude chat with constitution, skills, memory, evaluation |
 | NOTIFICATION | Push tokens, preferences |
 | PROFILE | User data, goals (GDPR isolated) |
 | EVENT_JOURNAL | Immutable audit log |
