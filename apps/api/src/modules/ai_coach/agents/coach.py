@@ -7,6 +7,7 @@ from typing import AsyncIterator
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.groq import GroqModel
 
 from src.modules.ai_coach.models import CoachResponse, CoachPersonality
 from src.modules.ai_coach.tools.fitness_tools import FitnessTools
@@ -242,7 +243,7 @@ def create_coach_agent(personality: CoachPersonality = CoachPersonality.MOTIVATI
 # ============ Streaming Agent Functions ============
 
 
-def _get_streaming_model() -> OpenAIModel:
+def _get_streaming_model() -> OpenAIModel | GroqModel:
     """Get the configured LLM model for streaming responses."""
     config = get_llm_config()
 
@@ -263,12 +264,10 @@ def _get_streaming_model() -> OpenAIModel:
             )
         )
     elif config["provider"] == "groq":
-        return OpenAIModel(
+        # Use native GroqModel for proper API compatibility
+        return GroqModel(
             config["model"],
-            provider=OpenAIProvider(
-                base_url="https://api.groq.com/openai/v1",
-                api_key=config["api_key"],
-            )
+            api_key=config["api_key"],
         )
     else:
         # Default fallback to ollama
