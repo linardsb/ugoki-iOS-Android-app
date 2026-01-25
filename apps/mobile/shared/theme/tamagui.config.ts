@@ -1,140 +1,75 @@
 import { createTamagui, createTokens } from '@tamagui/core';
 import { createInterFont } from '@tamagui/font-inter';
 import { shorthands } from '@tamagui/shorthands';
-import { themes as defaultThemes, tokens as defaultTokens } from '@tamagui/config/v3';
+import { tokens as defaultTokens } from '@tamagui/config/v3';
 import { createMedia } from '@tamagui/react-native-media-driver';
 
-// Custom color palette for UGOKI
-const ugokiColors = {
-  // Primary - Calm teal
-  primary50: '#f0fdfa',
-  primary100: '#ccfbf1',
-  primary200: '#99f6e4',
-  primary300: '#5eead4',
-  primary400: '#2dd4bf',
-  primary500: '#14b8a6', // Main primary
-  primary600: '#0d9488',
-  primary700: '#0f766e',
-  primary800: '#115e59',
-  primary900: '#134e4a',
+import {
+  flatColors,
+  spacing,
+  radius,
+  shadows,
+  shadowsDark,
+  typography,
+} from './tokens';
 
-  // Secondary - Energetic orange/coral
-  secondary50: '#fff7ed',
-  secondary100: '#ffedd5',
-  secondary200: '#fed7aa',
-  secondary300: '#fdba74',
-  secondary400: '#fb923c',
-  secondary500: '#f97316', // Main secondary
-  secondary600: '#ea580c',
-  secondary700: '#c2410c',
-  secondary800: '#9a3412',
-  secondary900: '#7c2d12',
+// =============================================================================
+// TOKENS
+// =============================================================================
 
-  // Success - Green
-  success50: '#f0fdf4',
-  success500: '#22c55e',
-  success600: '#16a34a',
-
-  // Warning - Yellow
-  warning50: '#fefce8',
-  warning500: '#eab308',
-  warning600: '#ca8a04',
-
-  // Error - Red
-  error50: '#fef2f2',
-  error500: '#ef4444',
-  error600: '#dc2626',
-
-  // Neutral grays
-  gray50: '#fafafa',
-  gray100: '#f4f4f5',
-  gray200: '#e4e4e7',
-  gray300: '#d4d4d8',
-  gray400: '#a1a1aa',
-  gray500: '#71717a',
-  gray600: '#52525b',
-  gray700: '#3f3f46',
-  gray800: '#27272a',
-  gray900: '#18181b',
-  gray950: '#121216',
-};
-
-// Create tokens
 const tokens = createTokens({
   ...defaultTokens,
   color: {
     ...defaultTokens.color,
-    ...ugokiColors,
+    ...flatColors,
   },
   size: {
     ...defaultTokens.size,
-    0: 0,
-    0.5: 2,
-    1: 4,
-    1.5: 6,
-    2: 8,
-    2.5: 10,
-    3: 12,
-    3.5: 14,
-    4: 16,
-    5: 20,
-    6: 24,
-    7: 28,
-    8: 32,
-    9: 36,
-    10: 40,
-    11: 44,
-    12: 48,
-    14: 56,
-    16: 64,
-    20: 80,
-    24: 96,
-    28: 112,
-    32: 128,
-    36: 144,
-    40: 160,
-    44: 176,
-    48: 192,
-    52: 208,
-    56: 224,
-    60: 240,
-    64: 256,
-    72: 288,
-    80: 320,
-    96: 384,
+    ...spacing,
+    // Additional named sizes for components
+    icon: {
+      xs: 16,
+      sm: 20,
+      md: 24,
+      lg: 32,
+      xl: 40,
+    },
+    button: {
+      sm: 32,
+      md: 40,
+      lg: 48,
+      xl: 56,
+    },
+    avatar: {
+      xs: 24,
+      sm: 32,
+      md: 40,
+      lg: 56,
+      xl: 80,
+    },
   },
   space: {
     ...defaultTokens.space,
-    0: 0,
-    0.5: 2,
-    1: 4,
-    1.5: 6,
-    2: 8,
-    2.5: 10,
-    3: 12,
-    3.5: 14,
-    4: 16,
-    5: 20,
-    6: 24,
-    7: 28,
-    8: 32,
-    9: 36,
-    10: 40,
-    12: 48,
-    14: 56,
-    16: 64,
-    20: 80,
+    ...spacing,
   },
   radius: {
     ...defaultTokens.radius,
-    0: 0,
-    1: 4,
-    2: 8,
-    3: 12,
-    4: 16,
-    5: 20,
-    6: 24,
-    full: 9999,
+    0: radius.none,
+    1: radius.sm,
+    2: radius.md,
+    3: radius.lg,
+    4: radius.xl,
+    5: radius['2xl'],
+    6: radius['3xl'],
+    full: radius.full,
+    // Named radius tokens
+    xs: radius.xs,
+    sm: radius.sm,
+    md: radius.md,
+    lg: radius.lg,
+    xl: radius.xl,
+    '2xl': radius['2xl'],
+    '3xl': radius['3xl'],
   },
   zIndex: {
     ...defaultTokens.zIndex,
@@ -144,11 +79,69 @@ const tokens = createTokens({
     3: 300,
     4: 400,
     5: 500,
+    dropdown: 100,
+    sticky: 200,
+    modal: 300,
+    popover: 400,
+    overlay: 500,
+    toast: 600,
+    tooltip: 700,
   },
 });
 
-// Fonts
-const interFont = createInterFont();
+// =============================================================================
+// FONTS WITH TYPOGRAPHY SCALE
+// =============================================================================
+
+const interFont = createInterFont({
+  size: {
+    1: typography.fontSize.xs,    // 12
+    2: typography.fontSize.sm,    // 14
+    3: typography.fontSize.base,  // 16
+    4: typography.fontSize.lg,    // 18
+    5: typography.fontSize.xl,    // 20
+    6: typography.fontSize['2xl'], // 24
+    7: typography.fontSize['3xl'], // 30
+    8: typography.fontSize['4xl'], // 36
+    9: typography.fontSize['5xl'], // 48
+    // Semantic aliases
+    xs: typography.fontSize.xs,
+    sm: typography.fontSize.sm,
+    base: typography.fontSize.base,
+    lg: typography.fontSize.lg,
+    xl: typography.fontSize.xl,
+    '2xl': typography.fontSize['2xl'],
+    '3xl': typography.fontSize['3xl'],
+    '4xl': typography.fontSize['4xl'],
+    '5xl': typography.fontSize['5xl'],
+  },
+  weight: {
+    1: typography.fontWeight.normal,
+    3: typography.fontWeight.medium,
+    5: typography.fontWeight.semibold,
+    7: typography.fontWeight.bold,
+    9: typography.fontWeight.extrabold,
+    // Named weights
+    normal: typography.fontWeight.normal,
+    medium: typography.fontWeight.medium,
+    semibold: typography.fontWeight.semibold,
+    bold: typography.fontWeight.bold,
+    extrabold: typography.fontWeight.extrabold,
+  },
+  letterSpacing: {
+    1: typography.letterSpacing.tighter,
+    2: typography.letterSpacing.tight,
+    3: typography.letterSpacing.normal,
+    4: typography.letterSpacing.wide,
+    5: typography.letterSpacing.wider,
+    // Named
+    tighter: typography.letterSpacing.tighter,
+    tight: typography.letterSpacing.tight,
+    normal: typography.letterSpacing.normal,
+    wide: typography.letterSpacing.wide,
+    wider: typography.letterSpacing.wider,
+  },
+});
 
 const fonts = {
   heading: interFont,
@@ -156,7 +149,10 @@ const fonts = {
   mono: interFont,
 };
 
-// Media queries
+// =============================================================================
+// MEDIA QUERIES
+// =============================================================================
+
 const media = createMedia({
   xs: { maxWidth: 660 },
   sm: { maxWidth: 800 },
@@ -170,98 +166,176 @@ const media = createMedia({
   pointerCoarse: { pointer: 'coarse' },
 });
 
-// Custom themes
+// =============================================================================
+// LIGHT THEME
+// =============================================================================
+
 const lightTheme = {
-  background: ugokiColors.gray50,
-  backgroundHover: ugokiColors.gray100,
-  backgroundPress: ugokiColors.gray200,
-  backgroundFocus: ugokiColors.gray100,
-  backgroundStrong: '#ffffff',
+  // Background
+  background: flatColors.gray50,           // Near White (#FAFAF8)
+  backgroundHover: flatColors.gray100,     // Pearl Mist
+  backgroundPress: flatColors.gray200,
+  backgroundFocus: flatColors.gray100,
+  backgroundStrong: flatColors.gray0,      // Pure white
   backgroundTransparent: 'rgba(255, 255, 255, 0)',
+  backgroundSoft: flatColors.gray100,
 
-  color: '#2B2B32',
-  colorHover: '#3a3a42',
-  colorPress: '#4a4a52',
-  colorFocus: '#3a3a42',
-  colorMuted: ugokiColors.gray500,
-  colorSubtle: ugokiColors.gray400,
+  // Text colors
+  color: flatColors.gray900,               // Midnight Indigo
+  colorHover: flatColors.gray800,
+  colorPress: flatColors.gray700,
+  colorFocus: flatColors.gray800,
+  colorMuted: flatColors.gray500,
+  colorSubtle: flatColors.gray400,
 
-  borderColor: ugokiColors.gray200,
-  borderColorHover: ugokiColors.gray300,
-  borderColorPress: ugokiColors.gray400,
-  borderColorFocus: ugokiColors.primary500,
+  // Border
+  borderColor: flatColors.gray200,
+  borderColorHover: flatColors.gray300,
+  borderColorPress: flatColors.gray400,
+  borderColorFocus: flatColors.primary500,
 
-  // Primary
-  primary: ugokiColors.primary500,
-  primaryHover: ugokiColors.primary600,
-  primaryPress: ugokiColors.primary700,
-  primaryFocus: ugokiColors.primary500,
+  // Primary - Slate Blue
+  primary: flatColors.primary500,
+  primaryHover: flatColors.primary600,
+  primaryPress: flatColors.primary700,
+  primaryFocus: flatColors.primary500,
+  primaryMuted: flatColors.primary100,
+  primarySubtle: flatColors.primary50,
 
-  // Secondary
-  secondary: ugokiColors.secondary500,
-  secondaryHover: ugokiColors.secondary600,
-  secondaryPress: ugokiColors.secondary700,
+  // Secondary - Peach Coral
+  secondary: flatColors.secondary500,
+  secondaryHover: flatColors.secondary600,
+  secondaryPress: flatColors.secondary700,
+  secondaryMuted: flatColors.secondary100,
+  secondarySubtle: flatColors.secondary50,
 
-  // Status colors
-  success: ugokiColors.success500,
-  warning: ugokiColors.warning500,
-  error: ugokiColors.error500,
+  // Semantic colors
+  success: flatColors.success500,          // Sage Green
+  successMuted: flatColors.success100,
+  successSubtle: flatColors.success50,
+
+  warning: flatColors.warning500,
+  warningMuted: flatColors.warning100,
+  warningSubtle: flatColors.warning50,
+
+  error: flatColors.error500,
+  errorMuted: flatColors.error100,
+  errorSubtle: flatColors.error50,
+
+  info: flatColors.info500,
+  infoMuted: flatColors.info100,
+  infoSubtle: flatColors.info50,
 
   // Card
-  cardBackground: '#ffffff',
-  cardBorder: ugokiColors.gray200,
+  cardBackground: flatColors.gray100,      // Pearl Mist for cards
+  cardBorder: flatColors.gray200,
 
-  // Shadows
-  shadowColor: 'rgba(0, 0, 0, 0.1)',
-  shadowColorStrong: 'rgba(0, 0, 0, 0.2)',
+  // Shadows (light theme uses standard shadows)
+  shadowColor: shadows.md.shadowColor,
+  shadowColorStrong: shadows.lg.shadowColor,
+
+  // Component-specific tokens
+  switchTrackOn: flatColors.success500,
+  switchTrackOff: flatColors.gray200,
+  switchThumb: flatColors.gray0,
+
+  // Progress/metrics
+  progressBackground: flatColors.gray200,
+  progressFill: flatColors.primary500,
+
+  // Trend colors
+  trendUp: flatColors.success500,
+  trendDown: flatColors.error500,
+  trendNeutral: flatColors.gray400,
 };
+
+// =============================================================================
+// DARK THEME
+// =============================================================================
 
 const darkTheme = {
-  background: ugokiColors.gray950,
-  backgroundHover: ugokiColors.gray900,
-  backgroundPress: ugokiColors.gray800,
-  backgroundFocus: ugokiColors.gray900,
-  backgroundStrong: ugokiColors.gray900,
+  // Background
+  background: flatColors.gray900,          // Dark background (#212020)
+  backgroundHover: flatColors.gray800,
+  backgroundPress: flatColors.gray700,
+  backgroundFocus: flatColors.gray800,
+  backgroundStrong: flatColors.gray800,
   backgroundTransparent: 'rgba(0, 0, 0, 0)',
+  backgroundSoft: flatColors.gray800,
 
-  color: ugokiColors.gray50,
-  colorHover: ugokiColors.gray100,
-  colorPress: ugokiColors.gray200,
-  colorFocus: ugokiColors.gray100,
-  colorMuted: ugokiColors.gray400,
-  colorSubtle: ugokiColors.gray500,
+  // Text colors
+  color: flatColors.gray100,               // Pearl Mist for text
+  colorHover: flatColors.gray50,
+  colorPress: flatColors.gray200,
+  colorFocus: flatColors.gray50,
+  colorMuted: flatColors.gray400,
+  colorSubtle: flatColors.gray500,
 
-  borderColor: ugokiColors.gray800,
-  borderColorHover: ugokiColors.gray700,
-  borderColorPress: ugokiColors.gray600,
-  borderColorFocus: ugokiColors.primary500,
+  // Border
+  borderColor: flatColors.gray700,
+  borderColorHover: flatColors.gray600,
+  borderColorPress: flatColors.gray500,
+  borderColorFocus: flatColors.primary400,
 
-  // Primary
-  primary: ugokiColors.primary500,
-  primaryHover: ugokiColors.primary400,
-  primaryPress: ugokiColors.primary300,
-  primaryFocus: ugokiColors.primary500,
+  // Primary - Slate Blue (lighter for dark theme)
+  primary: flatColors.primary400,
+  primaryHover: flatColors.primary300,
+  primaryPress: flatColors.primary200,
+  primaryFocus: flatColors.primary400,
+  primaryMuted: flatColors.primary800,
+  primarySubtle: flatColors.primary900,
 
-  // Secondary
-  secondary: ugokiColors.secondary500,
-  secondaryHover: ugokiColors.secondary400,
-  secondaryPress: ugokiColors.secondary300,
+  // Secondary - Peach Coral (lighter for dark theme)
+  secondary: flatColors.secondary400,
+  secondaryHover: flatColors.secondary300,
+  secondaryPress: flatColors.secondary200,
+  secondaryMuted: flatColors.secondary800,
+  secondarySubtle: flatColors.secondary900,
 
-  // Status colors
-  success: ugokiColors.success500,
-  warning: ugokiColors.warning500,
-  error: ugokiColors.error500,
+  // Semantic colors
+  success: flatColors.success400,
+  successMuted: flatColors.success800,
+  successSubtle: flatColors.success900,
+
+  warning: flatColors.warning400,
+  warningMuted: flatColors.warning800,
+  warningSubtle: flatColors.warning900,
+
+  error: flatColors.error400,
+  errorMuted: flatColors.error800,
+  errorSubtle: flatColors.error900,
+
+  info: flatColors.info400,
+  infoMuted: flatColors.info800,
+  infoSubtle: flatColors.info900,
 
   // Card
-  cardBackground: ugokiColors.gray900,
-  cardBorder: ugokiColors.gray800,
+  cardBackground: flatColors.gray800,      // Slightly lighter than Midnight Indigo
+  cardBorder: flatColors.gray700,
 
-  // Shadows
-  shadowColor: 'rgba(0, 0, 0, 0.3)',
-  shadowColorStrong: 'rgba(0, 0, 0, 0.5)',
+  // Shadows (dark theme uses darker shadows)
+  shadowColor: shadowsDark.md.shadowColor,
+  shadowColorStrong: shadowsDark.lg.shadowColor,
+
+  // Component-specific tokens
+  switchTrackOn: flatColors.success400,
+  switchTrackOff: flatColors.gray700,
+  switchThumb: flatColors.gray100,
+
+  // Progress/metrics
+  progressBackground: flatColors.gray700,
+  progressFill: flatColors.primary400,
+
+  // Trend colors
+  trendUp: flatColors.success400,
+  trendDown: flatColors.error400,
+  trendNeutral: flatColors.gray500,
 };
 
-// Create Tamagui config
+// =============================================================================
+// CREATE TAMAGUI CONFIG
+// =============================================================================
+
 const config = createTamagui({
   tokens,
   themes: {
@@ -283,3 +357,9 @@ declare module '@tamagui/core' {
 }
 
 export default config;
+
+// =============================================================================
+// RE-EXPORT TOKENS FOR DIRECT USE
+// =============================================================================
+
+export { shadows, shadowsDark, typography, radius, spacing } from './tokens';
