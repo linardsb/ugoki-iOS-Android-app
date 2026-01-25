@@ -1,13 +1,13 @@
 /**
  * LeaderboardEntry Component
  * Displays a single entry in a leaderboard
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Image, View as RNView, useColorScheme } from 'react-native';
-import { XStack, YStack, Text } from 'tamagui';
+import { TouchableOpacity, StyleSheet, Image, View as RNView } from 'react-native';
+import { XStack, YStack, Text, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import { Trophy, Medal } from 'phosphor-react-native';
 import type { LeaderboardEntry as LeaderboardEntryType } from '../types';
 
@@ -19,20 +19,20 @@ interface LeaderboardEntryProps {
 
 export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: LeaderboardEntryProps) {
   const router = useRouter();
+  const theme = useTheme();
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
+  // Theme-aware colors from Tamagui theme tokens
+  const cardBackground = theme.cardBackground?.val || theme.backgroundHover.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const highlightBg = theme.primaryMuted?.val || theme.backgroundHover.val;
+  const highlightBorder = theme.primary?.val || '#3A5BA0';
 
-  // Theme-aware colors matching dashboard cards
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const highlightBg = isDark ? '#14b8a630' : '#d1fae5';
-  const highlightBorder = '#14b8a6';
+  // Medal/trophy colors from design system
+  const goldColor = theme.secondary?.val || '#FFA387'; // Peach Coral for gold
+  const silverColor = theme.colorMuted.val; // Muted for silver
+  const bronzeColor = theme.secondary700?.val || '#D07156'; // Darker peach for bronze
+  const primaryColor = theme.primary?.val || '#3A5BA0';
 
   const handlePress = () => {
     if (onPress) {
@@ -47,16 +47,16 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
   const getRankDisplay = () => {
     if (entry.rank === 1) {
-      return <Trophy size={24} color="#eab308" weight="fill" />;
+      return <Trophy size={24} color={goldColor} weight="fill" />;
     }
     if (entry.rank === 2) {
-      return <Medal size={24} color="#9ca3af" weight="fill" />;
+      return <Medal size={24} color={silverColor} weight="fill" />;
     }
     if (entry.rank === 3) {
-      return <Medal size={24} color="#d97706" weight="fill" />;
+      return <Medal size={24} color={bronzeColor} weight="fill" />;
     }
     return (
-      <Text fontSize={16} fontWeight="600" style={{ color: mutedColor }} width={24} textAlign="center">
+      <Text fontSize={16} fontWeight="600" color="$colorMuted" width={24} textAlign="center">
         {entry.rank}
       </Text>
     );
@@ -65,7 +65,7 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
       <XStack
-        backgroundColor={entry.is_current_user ? highlightBg : cardBackground}
+        backgroundColor={entry.is_current_user ? highlightBg : "$cardBackground"}
         borderRadius="$3"
         padding="$3"
         alignItems="center"
@@ -78,9 +78,9 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* Avatar */}
         {entry.avatar_url ? (
-          <Image source={{ uri: entry.avatar_url }} style={styles.avatar} />
+          <Image source={{ uri: entry.avatar_url }} style={[styles.avatar, { backgroundColor: theme.backgroundHover.val }]} />
         ) : (
-          <RNView style={styles.avatarPlaceholder}>
+          <RNView style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
             <Text color="white" fontSize={14} fontWeight="600">
               {initials}
             </Text>
@@ -89,12 +89,12 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* User Info */}
         <YStack flex={1}>
-          <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>
+          <Text fontSize={15} fontWeight="600" color="$color">
             {name}
             {entry.is_current_user && ' (You)'}
           </Text>
           {entry.username && entry.display_name && (
-            <Text fontSize={12} style={{ color: mutedColor }}>
+            <Text fontSize={12} color="$colorMuted">
               @{entry.username}
             </Text>
           )}
@@ -102,10 +102,10 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
 
         {/* Value */}
         <YStack alignItems="flex-end">
-          <Text fontSize={18} fontWeight="700" style={{ color: textColor }}>
+          <Text fontSize={18} fontWeight="700" color="$color">
             {Math.round(entry.value).toLocaleString()}
           </Text>
-          <Text fontSize={11} style={{ color: mutedColor }}>
+          <Text fontSize={11} color="$colorMuted">
             {valueLabel}
           </Text>
         </YStack>
@@ -124,13 +124,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#e4e4e7',
   },
   avatarPlaceholder: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#14b8a6',
     alignItems: 'center',
     justifyContent: 'center',
   },

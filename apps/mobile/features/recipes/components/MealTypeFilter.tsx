@@ -19,10 +19,10 @@ export function MealTypeFilter({ selected, onSelect }: MealTypeFilterProps) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingVertical: 8,
-          gap: 12,
+          paddingLeft: 16,
+          paddingRight: 16,
+          paddingVertical: 6,
+          gap: 8,
           flexDirection: 'row',
           alignItems: 'center',
         }}
@@ -31,19 +31,19 @@ export function MealTypeFilter({ selected, onSelect }: MealTypeFilterProps) {
         <Pressable onPress={() => onSelect(null)}>
           <View
             style={{
-              paddingHorizontal: 24,
-              paddingVertical: 14,
-              borderRadius: 25,
-              backgroundColor: selected === null ? '#14b8a6' : '#e5e7eb',
-              minWidth: 70,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderRadius: 18,
+              backgroundColor: selected === null ? '#3A5BA0' : '#E8E6E2',
+              minWidth: 50,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             <Text
               style={{
-                color: selected === null ? '#ffffff' : '#1f2937',
-                fontSize: 16,
+                color: selected === null ? '#ffffff' : '#1F2041',
+                fontSize: 13,
                 fontFamily: 'InterSemiBold',
               }}
             >
@@ -57,21 +57,21 @@ export function MealTypeFilter({ selected, onSelect }: MealTypeFilterProps) {
           <Pressable key={type} onPress={() => onSelect(type)}>
             <View
               style={{
-                paddingLeft: 16,
-                paddingRight: 20,
-                paddingVertical: 14,
-                borderRadius: 25,
-                backgroundColor: selected === type ? '#14b8a6' : '#e5e7eb',
+                paddingLeft: 10,
+                paddingRight: 14,
+                paddingVertical: 8,
+                borderRadius: 18,
+                backgroundColor: selected === type ? '#3A5BA0' : '#E8E6E2',
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 8,
+                gap: 6,
               }}
             >
-              <Text style={{ fontSize: 20 }}>{MEAL_TYPE_ICONS[type]}</Text>
+              <Text style={{ fontSize: 14 }}>{MEAL_TYPE_ICONS[type]}</Text>
               <Text
                 style={{
-                  color: selected === type ? '#ffffff' : '#1f2937',
-                  fontSize: 16,
+                  color: selected === type ? '#ffffff' : '#1F2041',
+                  fontSize: 13,
                   fontFamily: 'InterSemiBold',
                 }}
               >

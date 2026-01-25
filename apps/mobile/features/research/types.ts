@@ -137,28 +137,28 @@ export const TOPIC_METADATA: Record<ResearchTopic, TopicInfo> = {
     label: 'Intermittent Fasting',
     description: 'Research on time-restricted eating and metabolic benefits',
     icon: 'fork-knife',
-    color: '#14b8a6',
+    color: '#3A5BA0',
   },
   hiit: {
     id: 'hiit',
     label: 'HIIT Training',
     description: 'High-intensity interval training and workout optimization',
     icon: 'lightning',
-    color: '#f97316',
+    color: '#FFA387',
   },
   nutrition: {
     id: 'nutrition',
     label: 'Nutrition',
     description: 'Diet, macronutrients, and their effects on health',
     icon: 'carrot',
-    color: '#22c55e',
+    color: '#4A9B7F',
   },
   sleep: {
     id: 'sleep',
     label: 'Sleep',
     description: 'Sleep quality, recovery, and circadian rhythm',
     icon: 'moon',
-    color: '#8b5cf6',
+    color: '#3A5BA0',
   },
 };
 
@@ -168,7 +168,7 @@ export function getTopicLabel(topic: ResearchTopic): string {
 }
 
 export function getTopicColor(topic: ResearchTopic): string {
-  return TOPIC_METADATA[topic]?.color || '#6b7280';
+  return TOPIC_METADATA[topic]?.color || '#6B697A';
 }
 
 export function getTopicIcon(topic: ResearchTopic): string {

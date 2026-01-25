@@ -1,5 +1,6 @@
 /**
  * Saved Research Screen - User's bookmarked papers.
+ * Uses theme tokens for consistent styling.
  */
 
 import React from 'react';
@@ -9,12 +10,10 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { YStack, Text, useTheme } from 'tamagui';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -27,16 +26,12 @@ export default function SavedResearchScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';   // Brightened for dark mode
-  const subtleColor = isDark ? '#e8e8e8' : '#9ca3af';  // Brightened for dark mode
+  // Theme colors from tokens
+  const theme = useTheme();
+  const backgroundColor = theme.background.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleColor = theme.colorSubtle?.val || theme.colorMuted.val;
+  const primaryColor = theme.primary.val;
 
   const {
     data: savedPapers,
@@ -55,7 +50,7 @@ export default function SavedResearchScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Saved Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator size="large" color="#14b8a6" />
+          <ActivityIndicator size="large" color={primaryColor} />
         </YStack>
       </View>
     );

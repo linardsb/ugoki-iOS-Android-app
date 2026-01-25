@@ -1,26 +1,22 @@
 /**
  * Abstract bullet points - bite-sized summary of research abstract.
+ * Uses theme tokens for consistent styling.
  */
 
 import React from 'react';
-import { View, useColorScheme } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { View } from 'react-native';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 
 interface AbstractBulletsProps {
   bullets: string[];
 }
 
 export function AbstractBullets({ bullets }: AbstractBulletsProps) {
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
+  const theme = useTheme();
 
-  const cardBackground = isDark ? '#1c1c1e' : '#f9fafb';
-  const bulletColor = '#14b8a6';
-  const textColor = isDark ? '#f5f5f5' : '#374151';
+  const cardBackground = theme.backgroundSoft?.val || theme.backgroundHover.val;
+  const bulletColor = theme.primary.val;
+  const textColor = theme.color.val;
 
   if (!bullets || bullets.length === 0) {
     return null;

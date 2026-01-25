@@ -9,67 +9,67 @@
 
 // Text colors for content on LIGHT card backgrounds (always visible)
 export const CARD_TEXT = {
-  title: '#1f2937',       // Dark gray for titles
-  body: '#4b5563',        // Medium gray for body text
-  muted: '#6b7280',       // Light gray for secondary text
+  title: '#1F2041',       // Midnight Indigo for titles
+  body: '#4A4860',        // Medium gray for body text
+  muted: '#6B697A',       // Muted gray for secondary text
 };
 
 // Theme-aware colors (use with isDark check)
 // IMPORTANT: Dark mode colors must be VERY BRIGHT for readability on dark backgrounds
 export const THEME_TEXT = {
   light: {
-    primary: '#1f2937',   // Dark text for light backgrounds
-    secondary: '#4b5563',
-    muted: '#6b7280',
-    subtle: '#9ca3af',
+    primary: '#1F2041',   // Midnight Indigo for light backgrounds
+    secondary: '#4A4860',
+    muted: '#6B697A',
+    subtle: '#9A98A0',
   },
   dark: {
-    primary: '#ffffff',   // Pure white for dark backgrounds
-    secondary: '#f5f5f5', // Very light gray - use for body text
-    muted: '#f5f5f5',     // Brightened from #f0f0f0 - must be readable
-    subtle: '#e8e8e8',    // Brightened from #e0e0e0 - must be readable
+    primary: '#F5F3EF',   // Pearl Mist for dark backgrounds
+    secondary: '#F5F3EF', // Pearl Mist - use for body text
+    muted: '#E8E6E2',     // Slightly dimmed - must be readable
+    subtle: '#D4D2CE',    // Subtle text
   },
 };
 
 // Background colors
 export const BACKGROUNDS = {
   light: {
-    card: '#f9fafb',
-    cardAlt: '#f3f4f6',
-    page: '#fafafa',
+    card: '#F5F3EF',      // Pearl Mist
+    cardAlt: '#E8E6E2',
+    page: '#FAFAF8',      // Near White
   },
   dark: {
-    card: '#1c1c1e',
-    cardAlt: '#2c2c2e',
-    page: '#121216',
+    card: '#2A2B4A',      // Slightly lighter than Midnight Indigo
+    cardAlt: '#353350',
+    page: '#1F2041',      // Midnight Indigo
   },
 };
 
 // Special card backgrounds (light in both themes for contrast)
 export const LIGHT_CARD = {
-  background: '#f9fafb',
-  backgroundAlt: '#f5f5f5',
-  iconBg: '#f3f4f6',
-  iconBgAlt: '#e5e5e5',
+  background: '#F5F3EF',  // Pearl Mist
+  backgroundAlt: '#E8E6E2',
+  iconBg: '#E8E6E2',
+  iconBgAlt: '#D4D2CE',
 };
 
 // Status colors (semantic colors)
 export const STATUS = {
   success: {
-    light: { bg: '#f0fdf4', text: '#16a34a' },
-    dark: { bg: '#1f3f2f', text: '#86efac' },
+    light: { bg: '#EFF8F5', text: '#4A9B7F' },  // Sage Green
+    dark: { bg: '#1f3f2f', text: '#8DCFB7' },
   },
   warning: {
-    light: { bg: '#fffbeb', text: '#d97706' },
-    dark: { bg: '#3f2f1f', text: '#fcd34d' },
+    light: { bg: '#FFF8F5', text: '#D07156' },  // Peach Coral darker
+    dark: { bg: '#3f2f1f', text: '#FFCAB8' },
   },
   error: {
     light: { bg: '#fef2f2', text: '#dc2626' },
     dark: { bg: '#3f1f1f', text: '#fca5a5' },
   },
   info: {
-    light: { bg: '#eff6ff', text: '#2563eb' },
-    dark: { bg: '#1e3a5f', text: '#93c5fd' },
+    light: { bg: '#EFF3F9', text: '#3A5BA0' },  // Slate Blue
+    dark: { bg: '#1e3a5f', text: '#8DA8D5' },
   },
 };
 

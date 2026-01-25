@@ -22,7 +22,7 @@ export function WorkoutList({
   showEmpty = true,
 }: WorkoutListProps) {
   const theme = useTheme();
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const mutedColor = theme.colorMuted?.val || '#6B697A';
 
   if (isLoading) {
     return (

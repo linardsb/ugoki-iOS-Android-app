@@ -1,11 +1,12 @@
 /**
  * FriendRequestCard Component
  * Displays a friend request with accept/decline buttons
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image, View as RNView, Alert } from 'react-native';
-import { XStack, YStack, Text, Button } from 'tamagui';
+import { XStack, YStack, Text, Button, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Check, X } from 'phosphor-react-native';
 import { useRespondToFriendRequest } from '../hooks';
@@ -18,7 +19,17 @@ interface FriendRequestCardProps {
 
 export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
   const router = useRouter();
+  const theme = useTheme();
   const respondMutation = useRespondToFriendRequest();
+
+  // Theme-aware colors from Tamagui theme tokens
+  const primaryColor = theme.primary?.val || '#3A5BA0';
+  const primaryBgColor = theme.primaryMuted?.val || theme.backgroundHover.val;
+  const successColor = theme.success?.val || '#4A9B7F';
+  const errorColor = theme.error?.val || '#EF4444';
+  const errorBgColor = theme.errorMuted?.val || theme.backgroundHover.val;
+  const mutedColor = theme.colorMuted.val;
+  const mutedBgColor = theme.backgroundHover.val;
 
   const handleAccept = () => {
     respondMutation.mutate(
@@ -74,7 +85,7 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
 
   return (
     <XStack
-      backgroundColor="white"
+      backgroundColor="$cardBackground"
       borderRadius="$3"
       padding="$3"
       alignItems="center"
@@ -83,9 +94,9 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
       {/* Avatar */}
       <TouchableOpacity onPress={handleViewProfile} activeOpacity={0.7}>
         {request.avatar_url ? (
-          <Image source={{ uri: request.avatar_url }} style={styles.avatar} />
+          <Image source={{ uri: request.avatar_url }} style={[styles.avatar, { backgroundColor: mutedBgColor }]} />
         ) : (
-          <RNView style={styles.avatarPlaceholder}>
+          <RNView style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
             <Text color="white" fontSize={16} fontWeight="600">
               {initials}
             </Text>
@@ -96,24 +107,24 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
       {/* User Info */}
       <TouchableOpacity onPress={handleViewProfile} style={{ flex: 1 }} activeOpacity={0.7}>
         <YStack gap="$1">
-          <Text fontSize={16} fontWeight="600" color="#1f2937">
+          <Text fontSize={16} fontWeight="600" color="$color">
             {name}
           </Text>
           <XStack gap="$2" alignItems="center">
             {request.username && (
-              <Text fontSize={13} color="#6b7280">
+              <Text fontSize={13} color="$colorMuted">
                 @{request.username}
               </Text>
             )}
             {request.level && (
-              <RNView style={styles.levelBadge}>
-                <Text fontSize={11} fontWeight="600" color="#14b8a6">
+              <RNView style={[styles.levelBadge, { backgroundColor: primaryBgColor }]}>
+                <Text fontSize={11} fontWeight="600" color="$primary">
                   Lvl {request.level}
                 </Text>
               </RNView>
             )}
           </XStack>
-          <Text fontSize={12} color="#9ca3af">
+          <Text fontSize={12} color="$colorSubtle">
             {timeSince(request.created_at)}
           </Text>
         </YStack>
@@ -125,21 +136,21 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
           <TouchableOpacity
             onPress={handleAccept}
             disabled={respondMutation.isPending}
-            style={[styles.actionButton, styles.acceptButton]}
+            style={[styles.actionButton, { backgroundColor: successColor }]}
           >
             <Check size={20} color="white" weight="bold" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleDecline}
             disabled={respondMutation.isPending}
-            style={[styles.actionButton, styles.declineButton]}
+            style={[styles.actionButton, { backgroundColor: errorBgColor }]}
           >
-            <X size={20} color="#ef4444" weight="bold" />
+            <X size={20} color={errorColor} weight="bold" />
           </TouchableOpacity>
         </XStack>
       ) : (
-        <RNView style={styles.pendingBadge}>
-          <Text fontSize={12} fontWeight="500" color="#6b7280">
+        <RNView style={[styles.pendingBadge, { backgroundColor: mutedBgColor }]}>
+          <Text fontSize={12} fontWeight="500" color="$colorMuted">
             Pending
           </Text>
         </RNView>
@@ -153,18 +164,15 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e4e4e7',
   },
   avatarPlaceholder: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#14b8a6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   levelBadge: {
-    backgroundColor: '#d1fae5',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 8,
@@ -176,14 +184,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  acceptButton: {
-    backgroundColor: '#14b8a6',
-  },
-  declineButton: {
-    backgroundColor: '#fee2e2',
-  },
   pendingBadge: {
-    backgroundColor: '#f3f4f6',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,

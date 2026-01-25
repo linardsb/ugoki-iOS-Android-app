@@ -10,10 +10,10 @@ interface StreakCardProps {
 }
 
 const STREAK_CONFIG: Record<StreakType, { icon: ComponentType<IconProps>; label: string; color: string }> = {
-  fasting: { icon: Fire, label: 'Fasting', color: '#f97316' },
-  workout: { icon: Barbell, label: 'Workout', color: '#14b8a6' },
-  logging: { icon: Calendar, label: 'Logging', color: '#8b5cf6' },
-  app_usage: { icon: Calendar, label: 'Daily', color: '#3b82f6' },
+  fasting: { icon: Fire, label: 'Fasting', color: '#FFA387' },
+  workout: { icon: Barbell, label: 'Workout', color: '#3A5BA0' },
+  logging: { icon: Calendar, label: 'Logging', color: '#4A9B7F' },
+  app_usage: { icon: Calendar, label: 'Daily', color: '#3A5BA0' },
 };
 
 export function StreakCard({ streaks, isLoading }: StreakCardProps) {

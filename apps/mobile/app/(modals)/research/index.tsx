@@ -1,5 +1,6 @@
 /**
  * Research Hub - Main screen for browsing health research.
+ * Uses theme tokens for consistent styling.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -10,12 +11,10 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
-  useColorScheme,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { MagnifyingGlass, BookmarkSimple } from 'phosphor-react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -109,17 +108,17 @@ export default function ResearchHubScreen() {
   const isLoading = topicLoading || searchMutation.isPending;
   const noQuota = quota && quota.searches_remaining <= 0;
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened for dark mode
-  const borderColor = isDark ? '#2c2c2e' : '#e5e7eb';
+  // Theme colors from tokens
+  const theme = useTheme();
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.backgroundStrong?.val || theme.backgroundHover.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const borderColor = theme.borderColor.val;
+  const primaryColor = theme.primary.val;
+  const successColor = theme.success?.val || '#4A9B7F';
+  const errorBg = theme.errorSubtle?.val || '#fef2f2';
+  const errorText = theme.error?.val || '#dc2626';
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -131,7 +130,7 @@ export default function ResearchHubScreen() {
             onPress={() => router.push('/(modals)/research/saved')}
             style={[styles.savedButton, { backgroundColor: cardBackground }]}
           >
-            <BookmarkSimple size={18} color="#f97316" weight="fill" />
+            <BookmarkSimple size={18} color={theme.secondary.val} weight="fill" />
             <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
               Saved
             </Text>
@@ -186,7 +185,7 @@ export default function ResearchHubScreen() {
               <Text
                 fontSize={14}
                 fontWeight="600"
-                color={noQuota ? '#9ca3af' : '#14b8a6'}
+                style={{ color: noQuota ? mutedColor : successColor }}
               >
                 Search
               </Text>
@@ -196,12 +195,12 @@ export default function ResearchHubScreen() {
 
         {noQuota && (
           <YStack
-            backgroundColor="#fef2f2"
+            backgroundColor={errorBg}
             borderRadius="$3"
             padding="$3"
             marginBottom="$3"
           >
-            <Text fontSize={13} color="#dc2626" textAlign="center">
+            <Text fontSize={13} style={{ color: errorText }} textAlign="center">
               You've reached your daily search limit. Browse topics or check back tomorrow!
             </Text>
           </YStack>
@@ -250,7 +249,7 @@ export default function ResearchHubScreen() {
         {/* Loading State */}
         {isLoading && (
           <YStack alignItems="center" paddingVertical="$6">
-            <ActivityIndicator size="large" color="#14b8a6" />
+            <ActivityIndicator size="large" color={primaryColor} />
             <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }}>
               {searchMutation.isPending ? 'Searching...' : 'Loading research...'}
             </Text>

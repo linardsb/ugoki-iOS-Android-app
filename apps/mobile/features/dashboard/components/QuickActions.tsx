@@ -16,37 +16,37 @@ export function QuickActions() {
     {
       icon: Timer,
       label: 'Fast',
-      color: '#f97316',
+      color: '#FFA387',
       onPress: () => router.push('/(tabs)/fasting'),
     },
     {
       icon: Barbell,
       label: 'Workout',
-      color: '#14b8a6',
+      color: '#3A5BA0',
       onPress: () => router.push('/(tabs)/workouts'),
     },
     {
       icon: Chat,
       label: 'Coach',
-      color: '#8b5cf6',
+      color: '#3A5BA0',
       onPress: () => router.push('/(tabs)/coach'),
     },
     {
       icon: CookingPot,
       label: 'Recipes',
-      color: '#ec4899',
+      color: '#FFA387',
       onPress: () => router.push('/(modals)/recipes'),
     },
     {
       icon: Scales,
       label: 'Weight',
-      color: '#06b6d4',
+      color: '#4A9B7F',
       onPress: () => router.push('/(modals)/log-weight'),
     },
     {
       icon: BookOpenText,
       label: 'Research',
-      color: '#6366f1',
+      color: '#3A5BA0',
       onPress: () => router.push('/(modals)/research'),
     },
   ];

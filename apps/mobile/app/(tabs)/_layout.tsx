@@ -60,11 +60,11 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: theme.primary?.val || '#14b8a6',
-          tabBarInactiveTintColor: theme.colorHover?.val || '#9ca3af',
+          tabBarActiveTintColor: theme.primary?.val || '#3A5BA0',
+          tabBarInactiveTintColor: theme.colorHover?.val || '#9A98A0',
           tabBarStyle: {
-            backgroundColor: theme.background?.val || '#ffffff',
-            borderTopColor: theme.borderColor?.val || '#e5e5e5',
+            backgroundColor: theme.background?.val || '#FAFAF8',
+            borderTopColor: theme.borderColor?.val || '#E8E6E2',
             borderTopWidth: 1,
             paddingTop: 8,
             paddingBottom: 28,

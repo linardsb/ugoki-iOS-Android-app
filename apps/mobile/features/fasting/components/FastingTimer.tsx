@@ -75,11 +75,11 @@ export function FastingTimer({ size = 280, strokeWidth = 12 }: FastingTimerProps
 
   // Determine colors based on state
   const getProgressColor = () => {
-    if (isComplete) return '#22c55e'; // green
-    if (isPaused) return '#f59e0b'; // amber
-    if (progressPercent >= 75) return '#22c55e'; // green - almost done
-    if (progressPercent >= 50) return '#14b8a6'; // teal
-    return '#f97316'; // orange - primary
+    if (isComplete) return '#4A9B7F'; // Sage Green
+    if (isPaused) return '#FFA387'; // Peach Coral
+    if (progressPercent >= 75) return '#4A9B7F'; // Sage Green - almost done
+    if (progressPercent >= 50) return '#3A5BA0'; // Slate Blue
+    return '#FFA387'; // Peach Coral - primary
   };
 
   const getStatusText = () => {
@@ -100,7 +100,7 @@ export function FastingTimer({ size = 280, strokeWidth = 12 }: FastingTimerProps
               cx={center}
               cy={center}
               r={radius}
-              stroke="#e5e5e5"
+              stroke="#E8E6E2"
               strokeWidth={strokeWidth}
               fill="transparent"
             />

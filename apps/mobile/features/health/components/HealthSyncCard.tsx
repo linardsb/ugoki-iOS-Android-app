@@ -3,6 +3,8 @@
  *
  * Displays health data sync status and allows users to connect/sync their health data
  * from Apple HealthKit (iOS) or Google Health Connect (Android).
+ *
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
 import { useState } from 'react';
@@ -17,6 +19,7 @@ import {
   Warning,
   ArrowsClockwise,
 } from 'phosphor-react-native';
+import { Card } from '@/shared/components/ui';
 import { useHealthSync } from '../hooks/useHealthSync';
 
 interface HealthSyncCardProps {
@@ -37,6 +40,12 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
 
   const platformName = Platform.OS === 'ios' ? 'Apple Health' : 'Health Connect';
   const isConnected = connectionState.isAuthorized || syncStatus?.is_connected;
+
+  // Theme colors
+  const mutedColor = theme.colorMuted.val;
+  const successColor = theme.success.val;
+  const successBgColor = theme.successMuted?.val || theme.backgroundHover.val;
+  const textColor = theme.color.val;
 
   const handleConnect = async () => {
     try {
@@ -87,12 +96,7 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
 
   if (!connectionState.isAvailable) {
     return (
-      <YStack
-        backgroundColor="$cardBackground"
-        borderRadius="$4"
-        padding="$4"
-        gap="$3"
-      >
+      <Card>
         <XStack alignItems="center" gap="$3">
           <XStack
             width={44}
@@ -102,51 +106,46 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
             justifyContent="center"
             alignItems="center"
           >
-            <Warning size={24} color={theme.colorMuted.val} weight="fill" />
+            <Warning size={24} color={mutedColor} weight="fill" />
           </XStack>
           <YStack flex={1}>
             <Text fontSize="$4" fontWeight="600" color="$color">
               {platformName} Unavailable
             </Text>
-            <Text fontSize="$3" color="$colorMuted">
+            <Text fontSize="$2" color="$colorMuted">
               {Platform.OS === 'android'
                 ? 'Install Health Connect app to enable'
                 : 'Health data not available on this device'}
             </Text>
           </YStack>
         </XStack>
-      </YStack>
+      </Card>
     );
   }
 
   return (
-    <YStack
-      backgroundColor="$cardBackground"
-      borderRadius="$4"
-      padding="$4"
-      gap="$4"
-    >
+    <Card gap="$4">
       {/* Header */}
       <XStack alignItems="center" gap="$3">
         <XStack
           width={44}
           height={44}
           borderRadius="$3"
-          backgroundColor={isConnected ? '#10b98120' : '$backgroundHover'}
+          backgroundColor={isConnected ? successBgColor : '$backgroundHover'}
           justifyContent="center"
           alignItems="center"
         >
           {isConnected ? (
-            <CheckCircle size={24} color="#10b981" weight="fill" />
+            <CheckCircle size={24} color={successColor} weight="fill" />
           ) : (
-            <Heart size={24} color={theme.colorMuted.val} weight="fill" />
+            <Heart size={24} color={mutedColor} weight="fill" />
           )}
         </XStack>
         <YStack flex={1}>
           <Text fontSize="$4" fontWeight="600" color="$color">
             {platformName}
           </Text>
-          <Text fontSize="$3" color="$colorMuted">
+          <Text fontSize="$2" color="$colorMuted">
             {isConnected
               ? `Last sync: ${formatLastSync(syncStatus?.last_sync ?? null)}`
               : 'Connect for personalized insights'}
@@ -158,16 +157,16 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
       {isConnected && syncStatus?.synced_metrics && syncStatus.synced_metrics.length > 0 && (
         <XStack flexWrap="wrap" gap="$2">
           {syncStatus.synced_metrics.includes('health_resting_hr') && (
-            <MetricBadge icon={<Heart size={14} />} label="Heart Rate" />
+            <MetricBadge icon={<Heart size={14} color={mutedColor} />} label="Heart Rate" />
           )}
           {syncStatus.synced_metrics.includes('health_hrv') && (
-            <MetricBadge icon={<Lightning size={14} />} label="HRV" />
+            <MetricBadge icon={<Lightning size={14} color={mutedColor} />} label="HRV" />
           )}
           {syncStatus.synced_metrics.includes('sleep_hours') && (
-            <MetricBadge icon={<Moon size={14} />} label="Sleep" />
+            <MetricBadge icon={<Moon size={14} color={mutedColor} />} label="Sleep" />
           )}
           {syncStatus.synced_metrics.includes('steps') && (
-            <MetricBadge icon={<Footprints size={14} />} label="Steps" />
+            <MetricBadge icon={<Footprints size={14} color={mutedColor} />} label="Steps" />
           )}
         </XStack>
       )}
@@ -185,7 +184,7 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
             isSyncing ? (
               <Spinner size="small" color="$color" />
             ) : (
-              <ArrowsClockwise size={18} color={theme.color.val} weight="bold" />
+              <ArrowsClockwise size={18} color={textColor} weight="bold" />
             )
           }
         >
@@ -216,15 +215,14 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
       )}
 
       {/* Info text */}
-      <Text fontSize="$2" color="$colorMuted" textAlign="center">
+      <Text fontSize="$1" color="$colorMuted" textAlign="center">
         Your health data helps personalize fasting and workout recommendations
       </Text>
-    </YStack>
+    </Card>
   );
 }
 
 function MetricBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
-  const theme = useTheme();
   return (
     <XStack
       backgroundColor="$backgroundHover"
@@ -235,7 +233,7 @@ function MetricBadge({ icon, label }: { icon: React.ReactNode; label: string }) 
       gap="$1"
     >
       {icon}
-      <Text fontSize="$2" color="$colorMuted">
+      <Text fontSize="$1" color="$colorMuted">
         {label}
       </Text>
     </XStack>

@@ -1,13 +1,14 @@
 /**
  * Recipe card component for displaying recipe summaries
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
-import { View, Text, XStack, YStack, Card } from 'tamagui';
-import { Pressable, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Badge } from '@/shared/components/ui';
+import { View, Text, XStack, YStack, useTheme } from 'tamagui';
+import { TouchableOpacity } from 'react-native';
+import { BookmarkSimple } from 'phosphor-react-native';
+import { Card, Badge } from '@/shared/components/ui';
 import type { RecipeSummary } from '../types';
-import { MEAL_TYPE_ICONS, DIET_TAG_LABELS, DietTag } from '../types';
+import { MEAL_TYPE_ICONS, DIET_TAG_LABELS } from '../types';
 
 interface RecipeCardProps {
   recipe: RecipeSummary;
@@ -17,7 +18,11 @@ interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' }: RecipeCardProps) {
+  const theme = useTheme();
   const mealIcon = MEAL_TYPE_ICONS[recipe.meal_type];
+
+  const primaryColor = theme.primary.val;
+  const mutedColor = theme.colorMuted.val;
 
   // Get first 2-3 relevant diet tags to display
   const displayTags = recipe.diet_tags.slice(0, variant === 'compact' ? 2 : 3);
@@ -44,19 +49,19 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                   {recipe.name}
                 </Text>
                 <XStack gap="$2" marginTop="$1">
-                  <Text fontSize="$3" color="$colorSubtle">
+                  <Text fontSize="$2" color="$colorSubtle">
                     {recipe.calories} cal
                   </Text>
-                  <Text fontSize="$3" color="$colorSubtle">
+                  <Text fontSize="$2" color="$colorSubtle">
                     •
                   </Text>
-                  <Text fontSize="$3" color="$colorSubtle">
+                  <Text fontSize="$2" color="$colorSubtle">
                     {recipe.protein_g}g protein
                   </Text>
-                  <Text fontSize="$3" color="$colorSubtle">
+                  <Text fontSize="$2" color="$colorSubtle">
                     •
                   </Text>
-                  <Text fontSize="$3" color="$colorSubtle">
+                  <Text fontSize="$2" color="$colorSubtle">
                     {recipe.prep_time_minutes} min
                   </Text>
                 </XStack>
@@ -68,10 +73,10 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 activeOpacity={0.6}
               >
-                <Ionicons
-                  name={recipe.is_saved ? 'bookmark' : 'bookmark-outline'}
+                <BookmarkSimple
                   size={22}
-                  color={recipe.is_saved ? '#14b8a6' : '#9ca3af'}
+                  color={recipe.is_saved ? primaryColor : mutedColor}
+                  weight={recipe.is_saved ? 'fill' : 'regular'}
                 />
               </TouchableOpacity>
             )}
@@ -114,7 +119,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 <Text fontSize={22} fontWeight="700" color="$primary">
                   {recipe.calories}
                 </Text>
-                <Text fontSize={13} color="$colorSubtle">
+                <Text fontSize="$3" color="$colorMuted">
                   calories
                 </Text>
               </YStack>
@@ -122,7 +127,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 <Text fontSize={22} fontWeight="700" color="$primary">
                   {recipe.protein_g}g
                 </Text>
-                <Text fontSize={13} color="$colorSubtle">
+                <Text fontSize="$3" color="$colorMuted">
                   protein
                 </Text>
               </YStack>
@@ -130,7 +135,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 <Text fontSize={22} fontWeight="700" color="$color">
                   {recipe.prep_time_minutes}
                 </Text>
-                <Text fontSize={13} color="$colorSubtle">
+                <Text fontSize="$3" color="$colorMuted">
                   min
                 </Text>
               </YStack>
@@ -147,7 +152,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                     paddingVertical="$2"
                     borderRadius="$3"
                   >
-                    <Text fontSize="$3" color="$colorSubtle" fontWeight="500">
+                    <Text fontSize="$3" color="$colorMuted" fontWeight="500">
                       {DIET_TAG_LABELS[tag]}
                     </Text>
                   </View>
@@ -162,10 +167,10 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               activeOpacity={0.6}
             >
-              <Ionicons
-                name={recipe.is_saved ? 'bookmark' : 'bookmark-outline'}
+              <BookmarkSimple
                 size={26}
-                color={recipe.is_saved ? '#14b8a6' : '#9ca3af'}
+                color={recipe.is_saved ? primaryColor : mutedColor}
+                weight={recipe.is_saved ? 'fill' : 'regular'}
               />
             </TouchableOpacity>
           )}

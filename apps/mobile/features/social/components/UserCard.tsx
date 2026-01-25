@@ -1,11 +1,12 @@
 /**
  * UserCard Component
  * Displays a user in lists (friends, followers, search results)
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image, View as RNView } from 'react-native';
-import { XStack, YStack, Text } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { CaretRight } from 'phosphor-react-native';
 
@@ -33,6 +34,12 @@ export function UserCard({
   showChevron = true,
 }: UserCardProps) {
   const router = useRouter();
+  const theme = useTheme();
+
+  // Theme-aware colors from Tamagui theme tokens
+  const primaryColor = theme.primary?.val || '#3A5BA0';
+  const primaryBgColor = theme.primaryMuted?.val || theme.backgroundHover.val;
+  const mutedColor = theme.colorMuted.val;
 
   const handlePress = () => {
     if (onPress) {
@@ -48,7 +55,7 @@ export function UserCard({
   return (
     <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
       <XStack
-        backgroundColor="white"
+        backgroundColor="$cardBackground"
         borderRadius="$3"
         padding="$3"
         alignItems="center"
@@ -56,9 +63,9 @@ export function UserCard({
       >
         {/* Avatar */}
         {avatarUrl ? (
-          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+          <Image source={{ uri: avatarUrl }} style={[styles.avatar, { backgroundColor: theme.backgroundHover.val }]} />
         ) : (
-          <RNView style={styles.avatarPlaceholder}>
+          <RNView style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
             <Text color="white" fontSize={16} fontWeight="600">
               {initials}
             </Text>
@@ -67,16 +74,16 @@ export function UserCard({
 
         {/* User Info */}
         <YStack flex={1} gap="$1">
-          <Text fontSize={16} fontWeight="600" color="#1f2937">
+          <Text fontSize={16} fontWeight="600" color="$color">
             {name}
           </Text>
           {username && displayName && (
-            <Text fontSize={13} color="#6b7280">
+            <Text fontSize={13} color="$colorMuted">
               @{username}
             </Text>
           )}
           {subtitle && (
-            <Text fontSize={13} color="#6b7280">
+            <Text fontSize={13} color="$colorMuted">
               {subtitle}
             </Text>
           )}
@@ -84,8 +91,8 @@ export function UserCard({
 
         {/* Level Badge */}
         {level && (
-          <RNView style={styles.levelBadge}>
-            <Text fontSize={12} fontWeight="600" color="#14b8a6">
+          <RNView style={[styles.levelBadge, { backgroundColor: primaryBgColor }]}>
+            <Text fontSize={12} fontWeight="600" color="$primary">
               Lvl {level}
             </Text>
           </RNView>
@@ -94,7 +101,7 @@ export function UserCard({
         {/* Right Element or Chevron */}
         {rightElement}
         {showChevron && !rightElement && (
-          <CaretRight size={20} color="#6b7280" weight="regular" />
+          <CaretRight size={20} color={mutedColor} weight="regular" />
         )}
       </XStack>
     </TouchableOpacity>
@@ -106,18 +113,15 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#e4e4e7',
   },
   avatarPlaceholder: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#14b8a6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   levelBadge: {
-    backgroundColor: '#d1fae5',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,

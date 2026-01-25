@@ -14,7 +14,7 @@ export function ChatInput({
   placeholder = 'Message your coach...',
 }: ChatInputProps) {
   const theme = useTheme();
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const mutedColor = theme.colorMuted?.val || '#6B697A';
   const [message, setMessage] = useState('');
 
   const handleSend = () => {

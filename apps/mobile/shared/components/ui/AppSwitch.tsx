@@ -1,4 +1,4 @@
-import { XStack, Circle } from 'tamagui';
+import { XStack, Circle, useTheme } from 'tamagui';
 import { Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -9,6 +9,8 @@ interface AppSwitchProps {
 }
 
 export function AppSwitch({ checked, onCheckedChange, disabled }: AppSwitchProps) {
+  const theme = useTheme();
+
   const handlePress = () => {
     if (disabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -20,17 +22,17 @@ export function AppSwitch({ checked, onCheckedChange, disabled }: AppSwitchProps
       <XStack
         width={50}
         height={28}
-        borderRadius={14}
-        backgroundColor={checked ? '#22c55e' : '#e4e4e7'}
-        padding={2}
+        borderRadius="$full"
+        backgroundColor={checked ? '$switchTrackOn' : '$switchTrackOff'}
+        padding="$0.5"
         alignItems="center"
         justifyContent={checked ? 'flex-end' : 'flex-start'}
         opacity={disabled ? 0.5 : 1}
       >
         <Circle
           size={24}
-          backgroundColor="white"
-          shadowColor="rgba(0,0,0,0.2)"
+          backgroundColor="$switchThumb"
+          shadowColor="$shadowColor"
           shadowOffset={{ width: 0, height: 2 }}
           shadowOpacity={1}
           shadowRadius={2}

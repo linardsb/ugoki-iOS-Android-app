@@ -1,6 +1,12 @@
-import { YStack, XStack, Text, Card, Image, useTheme } from 'tamagui';
+/**
+ * WorkoutCard Component
+ * Uses theme tokens for all colors - no hardcoded values.
+ */
+
+import { YStack, XStack, Text, Image, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Clock, Fire, Barbell, Lightning, Play } from 'phosphor-react-native';
+import { Card } from '@/shared/components/ui';
 import type { Workout, DifficultyLevel, WorkoutType } from '../types';
 
 interface WorkoutCardProps {
@@ -9,10 +15,18 @@ interface WorkoutCardProps {
   onPress?: () => void;
 }
 
-const difficultyColors: Record<DifficultyLevel, string> = {
-  beginner: '#22c55e',
-  intermediate: '#f59e0b',
-  advanced: '#ef4444',
+// Map difficulty to semantic theme colors
+const getDifficultyColor = (difficulty: DifficultyLevel, theme: ReturnType<typeof useTheme>) => {
+  switch (difficulty) {
+    case 'beginner':
+      return theme.success.val;
+    case 'intermediate':
+      return theme.secondary.val;
+    case 'advanced':
+      return theme.error.val;
+    default:
+      return theme.colorMuted.val;
+  }
 };
 
 const workoutTypeIcons: Record<WorkoutType, typeof Barbell> = {
@@ -28,6 +42,8 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
   const theme = useTheme();
   const iconColor = theme.color.val;
   const mutedIconColor = theme.colorMuted.val;
+  const primaryColor = theme.primary.val;
+  const darkBg = theme.background.val;
 
   const handlePress = () => {
     if (onPress) {
@@ -38,7 +54,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
   };
 
   const Icon = workoutTypeIcons[workout.workout_type] || Barbell;
-  const difficultyColor = difficultyColors[workout.difficulty];
+  const difficultyColor = getDifficultyColor(workout.difficulty, theme);
 
   if (variant === 'compact') {
     return (
@@ -80,13 +96,13 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             <XStack gap="$2" alignItems="center">
               <XStack gap="$1" alignItems="center">
                 <Clock size={16} color={mutedIconColor} weight="thin" />
-                <Text fontSize="$3" color="$colorMuted">
+                <Text fontSize="$2" color="$colorMuted">
                   {workout.duration_minutes}m
                 </Text>
               </XStack>
               <Text color="$colorMuted">·</Text>
               <Text
-                fontSize="$3"
+                fontSize="$2"
                 color={difficultyColor}
                 fontWeight="500"
                 textTransform="capitalize"
@@ -104,7 +120,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
                 {workout.calories_estimate}
               </Text>
             </XStack>
-            <Text fontSize="$3" color="$colorMuted">cal</Text>
+            <Text fontSize="$2" color="$colorMuted">cal</Text>
           </YStack>
         </XStack>
       </Card>
@@ -120,8 +136,9 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
         overflow="hidden"
         pressStyle={{ scale: 0.98 }}
         onPress={handlePress}
+        padded="none"
       >
-        {/* Background */}
+        {/* Background - use primary color when no thumbnail so white text is readable */}
         {workout.thumbnail_url ? (
           <Image
             source={{ uri: workout.thumbnail_url }}
@@ -135,17 +152,19 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             position="absolute"
             width="100%"
             height="100%"
-            backgroundColor="#1e293b"
+            backgroundColor="$primary"
           />
         )}
 
-        {/* Gradient overlay - lighter for solid color backgrounds */}
-        <YStack
-          position="absolute"
-          width="100%"
-          height="100%"
-          backgroundColor={workout.thumbnail_url ? "rgba(0,0,0,0.4)" : "transparent"}
-        />
+        {/* Gradient overlay for images */}
+        {workout.thumbnail_url && (
+          <YStack
+            position="absolute"
+            width="100%"
+            height="100%"
+            backgroundColor="rgba(0,0,0,0.4)"
+          />
+        )}
 
         {/* Content */}
         <YStack flex={1} padding="$3" justifyContent="space-between">
@@ -157,7 +176,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               paddingVertical="$1.5"
               borderRadius="$3"
             >
-              <Text fontSize="$3" color="white" fontWeight="700" textTransform="capitalize">
+              <Text fontSize="$2" color="white" fontWeight="700" textTransform="capitalize">
                 {workout.difficulty}
               </Text>
             </XStack>
@@ -168,7 +187,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
                 paddingVertical="$1.5"
                 borderRadius="$3"
               >
-                <Text fontSize="$3" color="white" fontWeight="700">Featured</Text>
+                <Text fontSize="$2" color="white" fontWeight="700">Featured</Text>
               </XStack>
             )}
           </XStack>
@@ -181,13 +200,13 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             <XStack gap="$3">
               <XStack gap="$1" alignItems="center">
                 <Clock size={14} color="white" weight="thin" />
-                <Text fontSize="$3" color="rgba(255,255,255,0.8)">
+                <Text fontSize="$2" color="rgba(255,255,255,0.8)">
                   {workout.duration_minutes} min
                 </Text>
               </XStack>
               <XStack gap="$1" alignItems="center">
                 <Fire size={14} color="white" weight="thin" />
-                <Text fontSize="$3" color="rgba(255,255,255,0.8)">
+                <Text fontSize="$2" color="rgba(255,255,255,0.8)">
                   {workout.calories_estimate} cal
                 </Text>
               </XStack>
@@ -206,6 +225,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
       overflow="hidden"
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
       onPress={handlePress}
+      padded="none"
     >
       {/* Thumbnail */}
       <XStack
@@ -238,7 +258,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
           alignItems="center"
         >
           <Clock size={12} color="white" weight="thin" />
-          <Text fontSize="$3" color="white" fontWeight="500">
+          <Text fontSize="$2" color="white" fontWeight="500">
             {workout.duration_minutes}m
           </Text>
         </XStack>
@@ -251,7 +271,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
         </Text>
 
         {workout.description && (
-          <Text fontSize="$3" color="$colorMuted" numberOfLines={2}>
+          <Text fontSize="$2" color="$colorMuted" numberOfLines={2}>
             {workout.description}
           </Text>
         )}
@@ -265,7 +285,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               paddingVertical="$1"
               borderRadius="$2"
             >
-              <Text fontSize="$3" color={difficultyColor} fontWeight="600" textTransform="capitalize">
+              <Text fontSize="$2" color={difficultyColor} fontWeight="600" textTransform="capitalize">
                 {workout.difficulty}
               </Text>
             </XStack>
@@ -275,7 +295,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               paddingVertical="$1"
               borderRadius="$2"
             >
-              <Text fontSize="$3" color="$colorMuted" textTransform="capitalize">
+              <Text fontSize="$2" color="$colorMuted" textTransform="capitalize">
                 {workout.workout_type}
               </Text>
             </XStack>
@@ -283,7 +303,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
 
           <XStack gap="$1" alignItems="center">
             <Fire size={14} color={iconColor} weight="thin" />
-            <Text fontSize="$3" fontWeight="500" color="$color">
+            <Text fontSize="$2" fontWeight="500" color="$color">
               {workout.calories_estimate}
             </Text>
           </XStack>

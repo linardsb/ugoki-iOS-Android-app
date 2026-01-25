@@ -10,8 +10,8 @@ interface WeightCardProps {
 
 export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) {
   const theme = useTheme();
-  const primaryColor = theme.primary?.val || '#14b8a6';
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const primaryColor = theme.primary?.val || '#3A5BA0';
+  const mutedColor = theme.colorMuted?.val || '#6B697A';
 
   if (isLoading) {
     return (
@@ -37,14 +37,14 @@ export function WeightCard({ latestWeight, trend, isLoading }: WeightCardProps) 
 
   const getTrendIcon = () => {
     if (!trend) return <Minus size={16} color={mutedColor} weight="regular" />;
-    if (trend.direction === 'down') return <TrendDown size={16} color="#22c55e" weight="regular" />;
+    if (trend.direction === 'down') return <TrendDown size={16} color="#4A9B7F" weight="regular" />;
     if (trend.direction === 'up') return <TrendUp size={16} color="#ef4444" weight="regular" />;
     return <Minus size={16} color={mutedColor} weight="regular" />;
   };
 
   const getTrendColor = () => {
     if (!trend) return '$colorMuted';
-    if (trend.direction === 'down') return '#22c55e';
+    if (trend.direction === 'down') return '#4A9B7F';
     if (trend.direction === 'up') return '#ef4444';
     return '$colorMuted';
   };

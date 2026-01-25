@@ -1,14 +1,12 @@
 /**
  * Quota indicator showing remaining searches for the day.
+ * Uses theme tokens for consistent styling.
  */
 
 import React from 'react';
-import { useColorScheme } from 'react-native';
-import { XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { XStack, Text, useTheme } from 'tamagui';
 import { MagnifyingGlass } from 'phosphor-react-native';
 import type { UserSearchQuota } from '../types';
-import { getTextColor as getThemeTextColor, getStatusColors, getBackground } from '../colors';
 
 interface QuotaIndicatorProps {
   quota: UserSearchQuota | undefined;
@@ -16,14 +14,10 @@ interface QuotaIndicatorProps {
 }
 
 export function QuotaIndicator({ quota, isLoading }: QuotaIndicatorProps) {
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const loadingBg = getBackground(isDark, 'cardAlt');
-  const loadingColor = getThemeTextColor(isDark, 'subtle');
+  const theme = useTheme();
+
+  const loadingBg = theme.backgroundHover.val;
+  const loadingColor = theme.colorMuted.val;
 
   if (isLoading || !quota) {
     return (
@@ -48,14 +42,27 @@ export function QuotaIndicator({ quota, isLoading }: QuotaIndicatorProps) {
   const isLow = remaining <= 3;
   const isEmpty = remaining === 0;
 
-  // Use global status colors for consistency
-  const getStatusType = (): 'error' | 'warning' | 'success' => {
-    if (isEmpty) return 'error';
-    if (isLow) return 'warning';
-    return 'success';
+  // Get status colors from theme
+  const getStatusColors = () => {
+    if (isEmpty) {
+      return {
+        bg: theme.errorSubtle?.val || theme.backgroundHover.val,
+        text: theme.error?.val || '#dc2626',
+      };
+    }
+    if (isLow) {
+      return {
+        bg: theme.warningSubtle?.val || theme.backgroundHover.val,
+        text: theme.warning?.val || '#ca8a04',
+      };
+    }
+    return {
+      bg: theme.successSubtle?.val || theme.backgroundHover.val,
+      text: theme.success?.val || '#4A9B7F',
+    };
   };
 
-  const statusColors = getStatusColors(isDark, getStatusType());
+  const statusColors = getStatusColors();
 
   return (
     <XStack

@@ -1,14 +1,26 @@
+/**
+ * ActiveFastCard Component
+ * Uses theme tokens for all colors - no hardcoded values.
+ */
+
 import { useEffect, useState } from 'react';
-import { YStack, XStack, Text, Card } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useRouter } from 'expo-router';
 import { Timer, Play, CaretRight, ForkKnife } from 'phosphor-react-native';
+import { Card, ProgressBar } from '@/shared/components/ui';
 import { useFastingStore, useHasActiveFast } from '@/features/fasting';
 
 export function ActiveFastCard() {
   const router = useRouter();
+  const theme = useTheme();
   const { activeWindow, isPaused, getProgress, getElapsedMs, getRemainingMs } = useFastingStore();
   const hasActiveFast = useHasActiveFast();
   const [, forceUpdate] = useState(0);
+
+  // Theme colors
+  const primaryColor = theme.primary.val;
+  const successColor = theme.success.val;
+  const secondaryColor = theme.secondary.val;
 
   // Update timer every second if active
   useEffect(() => {
@@ -60,7 +72,7 @@ export function ActiveFastCard() {
               <Text fontSize="$5" fontWeight="bold" color="white">
                 Start Your Fast
               </Text>
-              <Text fontSize="$3" color="rgba(255,255,255,0.8)">
+              <Text fontSize="$2" color="rgba(255,255,255,0.8)">
                 Tap to begin fasting
               </Text>
             </YStack>
@@ -77,9 +89,12 @@ export function ActiveFastCard() {
   const remainingMs = getRemainingMs();
   const showBreakFastCTA = progressPercent >= 80 || isComplete;
 
+  // Determine card color based on state
+  const cardBgColor = isComplete ? '$success' : isPaused ? '$secondary' : '$primary';
+
   return (
     <Card
-      backgroundColor={isComplete ? '#22c55e' : isPaused ? '#f59e0b' : '$primary'}
+      backgroundColor={cardBgColor}
       padding="$4"
       borderRadius="$4"
       pressStyle={{ opacity: 0.9 }}
@@ -90,11 +105,11 @@ export function ActiveFastCard() {
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
             <Timer size={20} color="white" weight="thin" />
-            <Text fontSize="$3" color="rgba(255,255,255,0.8)">
+            <Text fontSize="$2" color="rgba(255,255,255,0.8)">
               {isComplete ? 'Fast Complete!' : isPaused ? 'Fast Paused' : 'Fasting Now'}
             </Text>
           </XStack>
-          <Text fontSize="$3" fontWeight="bold" color="white">
+          <Text fontSize="$2" fontWeight="bold" color="white">
             {Math.round(progressPercent)}%
           </Text>
         </XStack>
@@ -105,7 +120,7 @@ export function ActiveFastCard() {
             {formatTime(elapsedMs)}
           </Text>
           {remainingMs !== null && !isComplete && (
-            <Text fontSize="$3" color="rgba(255,255,255,0.8)">
+            <Text fontSize="$2" color="rgba(255,255,255,0.8)">
               {formatTime(remainingMs)} left
             </Text>
           )}
@@ -138,7 +153,7 @@ export function ActiveFastCard() {
           >
             <XStack gap="$2" alignItems="center">
               <ForkKnife size={16} color="white" weight="thin" />
-              <Text fontSize="$3" color="white" fontWeight="500">
+              <Text fontSize="$2" color="white" fontWeight="500">
                 How to break your fast safely
               </Text>
             </XStack>

@@ -1,13 +1,13 @@
 /**
  * Research Paper Detail Screen.
+ * Uses theme tokens for consistent styling.
  */
 
 import React, { useMemo, useState } from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
 import {
   BookmarkSimple,
   ArrowSquareOut,
@@ -28,7 +28,6 @@ import {
 import { BenefitBadge, openResearchLink } from '@/features/research/components';
 import { AbstractBullets } from '@/features/research/components/AbstractBullets';
 import { TOPIC_METADATA } from '@/features/research/types';
-import { getStatusColors } from '@/features/research/colors';
 
 // Section labels to make bold in abstracts
 const ABSTRACT_LABELS = [
@@ -62,7 +61,7 @@ function truncateText(text: string, maxLength: number = 200): string {
 }
 
 // Component to format abstract with collapsible view
-function FormattedAbstract({ text, isDark, bodyColor }: { text: string; isDark: boolean; bodyColor: string }) {
+function FormattedAbstract({ text, bodyColor, linkColor }: { text: string; bodyColor: string; linkColor: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isLong = text.length > 200;
 
@@ -85,13 +84,13 @@ function FormattedAbstract({ text, isDark, bodyColor }: { text: string; isDark: 
           style={{ marginTop: 8 }}
         >
           <XStack alignItems="center" gap="$1">
-            <Text fontSize={13} fontWeight="600" style={{ color: '#14b8a6' }}>
+            <Text fontSize={13} fontWeight="600" style={{ color: linkColor }}>
               {isExpanded ? 'Show less' : 'Read full abstract'}
             </Text>
             {isExpanded ? (
-              <CaretUp size={14} color="#14b8a6" weight="bold" />
+              <CaretUp size={14} color={linkColor} weight="bold" />
             ) : (
-              <CaretDown size={14} color="#14b8a6" weight="bold" />
+              <CaretDown size={14} color={linkColor} weight="bold" />
             )}
           </XStack>
         </TouchableOpacity>
@@ -106,18 +105,17 @@ export default function ResearchDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  // Use VERY BRIGHT explicit colors for dark mode readability
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#f5f5f5' : '#6b7280';  // Brightened for dark mode
-  const bodyColor = isDark ? '#f5f5f5' : '#4b5563';   // Bright body text for dark mode
-  const infoColors = getStatusColors(isDark, 'info');
+  // Theme colors from tokens
+  const theme = useTheme();
+  const backgroundColor = theme.background.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const bodyColor = theme.color.val;
+  const primaryColor = theme.primary.val;
+  const secondaryColor = theme.secondary.val;
+  const errorColor = theme.error?.val || '#dc2626';
+  const infoBg = theme.infoSubtle?.val || theme.primarySubtle?.val || theme.backgroundHover.val;
+  const infoText = theme.info?.val || theme.primary.val;
 
   // Queries
   const { data: paper, isLoading, error } = usePaper(id, !!id);
@@ -153,7 +151,7 @@ export default function ResearchDetailScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator size="large" color="#14b8a6" />
+          <ActivityIndicator size="large" color={primaryColor} />
           <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }}>
             Loading paper...
           </Text>
@@ -167,14 +165,14 @@ export default function ResearchDetailScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Research" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
-          <Text fontSize={16} color="#dc2626" textAlign="center">
+          <Text fontSize={16} style={{ color: errorColor }} textAlign="center">
             Failed to load paper. Please try again.
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{ marginTop: 16 }}
           >
-            <Text fontSize={14} color="#14b8a6" fontWeight="600">
+            <Text fontSize={14} style={{ color: primaryColor }} fontWeight="600">
               Go Back
             </Text>
           </TouchableOpacity>
@@ -205,7 +203,7 @@ export default function ResearchDetailScreen() {
             <TouchableOpacity onPress={handleSaveToggle}>
               <BookmarkSimple
                 size={24}
-                color={isSaved ? '#f97316' : mutedColor}
+                color={isSaved ? secondaryColor : mutedColor}
                 weight={isSaved ? 'fill' : 'regular'}
               />
             </TouchableOpacity>
@@ -238,13 +236,13 @@ export default function ResearchDetailScreen() {
           </XStack>
           {paper.open_access && (
             <XStack
-              backgroundColor={infoColors.bg}
+              backgroundColor={infoBg}
               paddingHorizontal="$2"
               paddingVertical="$1"
               borderRadius="$2"
               marginLeft="$2"
             >
-              <Text fontSize={11} fontWeight="600" color={infoColors.text}>
+              <Text fontSize={11} fontWeight="600" style={{ color: infoText }}>
                 Open Access
               </Text>
             </XStack>
@@ -326,12 +324,12 @@ export default function ResearchDetailScreen() {
                   {digest.audience_tags.map((tag, index) => (
                     <XStack
                       key={index}
-                      backgroundColor={infoColors.bg}
+                      backgroundColor={infoBg}
                       paddingHorizontal="$3"
                       paddingVertical="$2"
                       borderRadius="$4"
                     >
-                      <Text fontSize={13} fontWeight="600" color={infoColors.text}>
+                      <Text fontSize={13} fontWeight="600" style={{ color: infoText }}>
                         {tag}
                       </Text>
                     </XStack>
@@ -360,14 +358,14 @@ export default function ResearchDetailScreen() {
             <Text fontSize={14} fontWeight="700" style={{ color: textColor }}>
               Abstract
             </Text>
-            <FormattedAbstract text={paper.abstract} isDark={isDark} bodyColor={bodyColor} />
+            <FormattedAbstract text={paper.abstract} bodyColor={bodyColor} linkColor={primaryColor} />
           </YStack>
         )}
 
         {/* External Link Button */}
         <TouchableOpacity
           onPress={handleOpenLink}
-          style={styles.externalButton}
+          style={[styles.externalButton, { backgroundColor: primaryColor }]}
           activeOpacity={0.8}
         >
           <ArrowSquareOut size={20} color="white" />
@@ -403,7 +401,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#14b8a6',
     borderRadius: 12,
     paddingVertical: 16,
     marginTop: 24,

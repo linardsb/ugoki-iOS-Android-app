@@ -1,13 +1,13 @@
 /**
  * Social Modal Screen
  * Hub for social features: friends, challenges, leaderboards
+ * Uses theme tokens for all colors - no hardcoded values.
  */
 
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import {
   Users,
   UserPlus,
@@ -33,18 +33,24 @@ export default function SocialScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
+  // Theme-aware colors from Tamagui theme tokens
+  const cardBackground = theme.cardBackground?.val || theme.backgroundHover.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleBackground = theme.backgroundHover.val;
 
-  // Theme-aware colors matching dashboard cards
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
+  // Semantic colors from design system
+  const successColor = theme.success?.val || '#4A9B7F'; // Sage Green
+  const secondaryColor = theme.secondary?.val || '#FFA387'; // Peach Coral
+  const infoColor = theme.info?.val || '#3B82F6'; // Info Blue
+  const warningColor = theme.warning?.val || '#EAB308'; // Amber
+  const errorColor = theme.error?.val || '#EF4444'; // Error Red
+  const primaryColor = theme.primary?.val || '#3A5BA0'; // Slate Blue
+
+  // Muted versions for backgrounds
+  const successBgColor = theme.successMuted?.val || theme.backgroundHover.val;
+  const secondaryBgColor = theme.secondaryMuted?.val || theme.backgroundHover.val;
+  const warningBgColor = theme.warningMuted?.val || theme.backgroundHover.val;
 
   const { data: friends, isLoading: friendsLoading, refetch: refetchFriends } = useFriends();
   const { data: followers, refetch: refetchFollowers } = useFollowers();
@@ -94,13 +100,13 @@ export default function SocialScreen() {
               style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/friends')}
             >
-              <Users size={24} color="#14b8a6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
+              <Users size={24} color={successColor} weight="regular" />
+              <Text fontSize={24} fontWeight="700" color="$color">
                 {friends?.length || 0}
               </Text>
-              <Text fontSize={12} style={{ color: mutedColor }}>Friends</Text>
+              <Text fontSize={12} color="$colorMuted">Friends</Text>
               {requestCount > 0 ? (
-                <View style={styles.badge}>
+                <View style={[styles.badge, { backgroundColor: errorColor }]}>
                   <Text fontSize={10} fontWeight="700" color="white">
                     {requestCount}
                   </Text>
@@ -112,29 +118,29 @@ export default function SocialScreen() {
               style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/friends')}
             >
-              <UserPlus size={24} color="#8b5cf6" weight="regular" />
-              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
+              <UserPlus size={24} color={infoColor} weight="regular" />
+              <Text fontSize={24} fontWeight="700" color="$color">
                 {followers?.length || 0}
               </Text>
-              <Text fontSize={12} style={{ color: mutedColor }}>Followers</Text>
+              <Text fontSize={12} color="$colorMuted">Followers</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
               onPress={() => router.push('/(modals)/challenges')}
             >
-              <Flag size={24} color="#f97316" weight="regular" />
-              <Text fontSize={24} fontWeight="700" style={{ color: textColor }}>
+              <Flag size={24} color={secondaryColor} weight="regular" />
+              <Text fontSize={24} fontWeight="700" color="$color">
                 {activeChallenges.length}
               </Text>
-              <Text fontSize={12} style={{ color: mutedColor }}>Challenges</Text>
+              <Text fontSize={12} color="$colorMuted">Challenges</Text>
             </TouchableOpacity>
           </XStack>
 
           {/* Quick Actions */}
           <XStack gap="$3">
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: '#14b8a6' }]}
+              style={[styles.actionButton, { backgroundColor: successColor }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <UserPlus size={18} color="white" weight="bold" />
@@ -142,7 +148,7 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: '#f97316' }]}
+              style={[styles.actionButton, { backgroundColor: secondaryColor }]}
               onPress={() => router.push('/(modals)/challenges/create')}
             >
               <Plus size={18} color="white" weight="bold" />
@@ -160,8 +166,8 @@ export default function SocialScreen() {
                 onPress={() => router.push('/(modals)/challenges')}
                 style={styles.seeAllButton}
               >
-                <Text fontSize={14} color="#14b8a6" fontWeight="600">See All</Text>
-                <CaretRight size={16} color="#14b8a6" weight="bold" />
+                <Text fontSize={14} color="$success" fontWeight="600">See All</Text>
+                <CaretRight size={16} color={successColor} weight="bold" />
               </TouchableOpacity>
             </XStack>
 
@@ -181,10 +187,10 @@ export default function SocialScreen() {
                 onPress={() => router.push('/(modals)/challenges')}
               >
                 <Flag size={32} color={mutedColor} weight="regular" />
-                <Text fontSize={14} style={{ color: mutedColor }} textAlign="center">
+                <Text fontSize={14} color="$colorMuted" textAlign="center">
                   No active challenges
                 </Text>
-                <Text fontSize={13} color="#14b8a6" fontWeight="600">
+                <Text fontSize={13} color="$success" fontWeight="600">
                   Browse challenges to join one
                 </Text>
               </TouchableOpacity>
@@ -201,13 +207,13 @@ export default function SocialScreen() {
                 onPress={() => router.push('/(modals)/leaderboards')}
                 style={styles.seeAllButton}
               >
-                <Text fontSize={14} color="#14b8a6" fontWeight="600">Leaderboards</Text>
-                <CaretRight size={16} color="#14b8a6" weight="bold" />
+                <Text fontSize={14} color="$success" fontWeight="600">Leaderboards</Text>
+                <CaretRight size={16} color={successColor} weight="bold" />
               </TouchableOpacity>
             </XStack>
 
             <YStack
-              backgroundColor={cardBackground}
+              backgroundColor="$cardBackground"
               borderRadius="$4"
               padding="$3"
               gap="$2"
@@ -223,7 +229,7 @@ export default function SocialScreen() {
               ) : (
                 <YStack alignItems="center" padding="$4">
                   <Trophy size={32} color={mutedColor} weight="regular" />
-                  <Text fontSize={14} style={{ color: mutedColor }} marginTop="$2">
+                  <Text fontSize={14} color="$colorMuted" marginTop="$2">
                     No leaderboard data yet
                   </Text>
                 </YStack>
@@ -242,12 +248,12 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/friends')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#14b8a620' : '#d1fae5' }]}>
-                  <Users size={20} color="#14b8a6" weight="regular" />
+                <View style={[styles.menuIcon, { backgroundColor: successBgColor }]}>
+                  <Users size={20} color={successColor} weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Friends</Text>
-                  <Text fontSize={13} style={{ color: mutedColor }}>Manage your friends list</Text>
+                  <Text fontSize={15} fontWeight="600" color="$color">Friends</Text>
+                  <Text fontSize={13} color="$colorMuted">Manage your friends list</Text>
                 </YStack>
               </XStack>
               <CaretRight size={20} color={mutedColor} weight="regular" />
@@ -258,12 +264,12 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/leaderboards')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#f59e0b20' : '#fef3c7' }]}>
-                  <Trophy size={20} color="#f59e0b" weight="regular" />
+                <View style={[styles.menuIcon, { backgroundColor: warningBgColor }]}>
+                  <Trophy size={20} color={warningColor} weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Leaderboards</Text>
-                  <Text fontSize={13} style={{ color: mutedColor }}>See global and friends rankings</Text>
+                  <Text fontSize={15} fontWeight="600" color="$color">Leaderboards</Text>
+                  <Text fontSize={13} color="$colorMuted">See global and friends rankings</Text>
                 </YStack>
               </XStack>
               <CaretRight size={20} color={mutedColor} weight="regular" />
@@ -274,12 +280,12 @@ export default function SocialScreen() {
               onPress={() => router.push('/(modals)/challenges')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
-                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#f9731620' : '#ffedd5' }]}>
-                  <Flag size={20} color="#f97316" weight="regular" />
+                <View style={[styles.menuIcon, { backgroundColor: secondaryBgColor }]}>
+                  <Flag size={20} color={secondaryColor} weight="regular" />
                 </View>
                 <YStack>
-                  <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>Challenges</Text>
-                  <Text fontSize={13} style={{ color: mutedColor }}>Compete with friends</Text>
+                  <Text fontSize={15} fontWeight="600" color="$color">Challenges</Text>
+                  <Text fontSize={13} color="$colorMuted">Compete with friends</Text>
                 </YStack>
               </XStack>
               <CaretRight size={20} color={mutedColor} weight="regular" />
@@ -316,7 +322,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#ef4444',
     borderRadius: 10,
     minWidth: 20,
     height: 20,

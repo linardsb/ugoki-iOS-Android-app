@@ -28405,15 +28405,15 @@
       "heading": {
         "family": "Inter",
         "lineHeight": {
-          "1": 21,
-          "2": 22,
-          "3": 23,
-          "4": 24,
-          "5": 26,
-          "6": 28,
-          "7": 30,
-          "8": 33,
-          "9": 40,
+          "1": 22,
+          "2": 24,
+          "3": 26,
+          "4": 28,
+          "5": 30,
+          "6": 34,
+          "7": 40,
+          "8": 46,
+          "9": 58,
           "10": 56,
           "11": 65,
           "12": 72,
@@ -28421,56 +28421,93 @@
           "14": 102,
           "15": 124,
           "16": 144,
-          "true": 24
+          "true": 24,
+          "xs": 22,
+          "sm": 24,
+          "base": 26,
+          "lg": 28,
+          "xl": 30,
+          "2xl": 34,
+          "3xl": 40,
+          "4xl": 46,
+          "5xl": 58
         },
         "weight": {
-          "1": "300",
-          "2": "300",
-          "3": "300",
-          "4": "300",
-          "5": "300",
-          "6": "300",
-          "7": "300",
-          "8": "300",
-          "9": "300",
-          "10": "300",
-          "11": "300",
-          "12": "300",
-          "13": "300",
-          "14": "300",
-          "15": "300",
-          "16": "300",
-          "true": "300"
+          "1": "400",
+          "2": "400",
+          "3": "500",
+          "4": "500",
+          "5": "600",
+          "6": "600",
+          "7": "700",
+          "8": "700",
+          "9": "800",
+          "10": "800",
+          "11": "800",
+          "12": "800",
+          "13": "800",
+          "14": "800",
+          "15": "800",
+          "16": "800",
+          "true": "800",
+          "xs": "800",
+          "sm": "800",
+          "base": "800",
+          "lg": "800",
+          "xl": "800",
+          "2xl": "800",
+          "3xl": "800",
+          "4xl": "800",
+          "5xl": "800",
+          "normal": "400",
+          "medium": "500",
+          "semibold": "600",
+          "bold": "700",
+          "extrabold": "800"
         },
         "letterSpacing": {
-          "1": 0,
-          "2": 0,
+          "1": -0.05,
+          "2": -0.025,
           "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 0,
-          "11": 0,
-          "12": 0,
-          "13": 0,
-          "14": 0,
-          "15": 0,
-          "16": 0,
-          "true": 0
+          "4": 0.025,
+          "5": 0.05,
+          "6": 0.05,
+          "7": 0.05,
+          "8": 0.05,
+          "9": 0.05,
+          "10": 0.05,
+          "11": 0.05,
+          "12": 0.05,
+          "13": 0.05,
+          "14": 0.05,
+          "15": 0.05,
+          "16": 0.05,
+          "true": 0.05,
+          "xs": 0.05,
+          "sm": 0.05,
+          "base": 0.05,
+          "lg": 0.05,
+          "xl": 0.05,
+          "2xl": 0.05,
+          "3xl": 0.05,
+          "4xl": 0.05,
+          "5xl": 0.05,
+          "tighter": -0.05,
+          "tight": -0.025,
+          "normal": 0,
+          "wide": 0.025,
+          "wider": 0.05
         },
         "size": {
-          "1": 11,
-          "2": 12,
-          "3": 13,
-          "4": 14,
-          "5": 16,
-          "6": 18,
-          "7": 20,
-          "8": 23,
-          "9": 30,
+          "1": 12,
+          "2": 14,
+          "3": 16,
+          "4": 18,
+          "5": 20,
+          "6": 24,
+          "7": 30,
+          "8": 36,
+          "9": 48,
           "10": 46,
           "11": 55,
           "12": 62,
@@ -28478,21 +28515,30 @@
           "14": 92,
           "15": 114,
           "16": 134,
-          "true": 14
+          "true": 14,
+          "xs": 12,
+          "sm": 14,
+          "base": 16,
+          "lg": 18,
+          "xl": 20,
+          "2xl": 24,
+          "3xl": 30,
+          "4xl": 36,
+          "5xl": 48
         }
       },
       "body": {
         "family": "Inter",
         "lineHeight": {
-          "1": 21,
-          "2": 22,
-          "3": 23,
-          "4": 24,
-          "5": 26,
-          "6": 28,
-          "7": 30,
-          "8": 33,
-          "9": 40,
+          "1": 22,
+          "2": 24,
+          "3": 26,
+          "4": 28,
+          "5": 30,
+          "6": 34,
+          "7": 40,
+          "8": 46,
+          "9": 58,
           "10": 56,
           "11": 65,
           "12": 72,
@@ -28500,56 +28546,93 @@
           "14": 102,
           "15": 124,
           "16": 144,
-          "true": 24
+          "true": 24,
+          "xs": 22,
+          "sm": 24,
+          "base": 26,
+          "lg": 28,
+          "xl": 30,
+          "2xl": 34,
+          "3xl": 40,
+          "4xl": 46,
+          "5xl": 58
         },
         "weight": {
-          "1": "300",
-          "2": "300",
-          "3": "300",
-          "4": "300",
-          "5": "300",
-          "6": "300",
-          "7": "300",
-          "8": "300",
-          "9": "300",
-          "10": "300",
-          "11": "300",
-          "12": "300",
-          "13": "300",
-          "14": "300",
-          "15": "300",
-          "16": "300",
-          "true": "300"
+          "1": "400",
+          "2": "400",
+          "3": "500",
+          "4": "500",
+          "5": "600",
+          "6": "600",
+          "7": "700",
+          "8": "700",
+          "9": "800",
+          "10": "800",
+          "11": "800",
+          "12": "800",
+          "13": "800",
+          "14": "800",
+          "15": "800",
+          "16": "800",
+          "true": "800",
+          "xs": "800",
+          "sm": "800",
+          "base": "800",
+          "lg": "800",
+          "xl": "800",
+          "2xl": "800",
+          "3xl": "800",
+          "4xl": "800",
+          "5xl": "800",
+          "normal": "400",
+          "medium": "500",
+          "semibold": "600",
+          "bold": "700",
+          "extrabold": "800"
         },
         "letterSpacing": {
-          "1": 0,
-          "2": 0,
+          "1": -0.05,
+          "2": -0.025,
           "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 0,
-          "11": 0,
-          "12": 0,
-          "13": 0,
-          "14": 0,
-          "15": 0,
-          "16": 0,
-          "true": 0
+          "4": 0.025,
+          "5": 0.05,
+          "6": 0.05,
+          "7": 0.05,
+          "8": 0.05,
+          "9": 0.05,
+          "10": 0.05,
+          "11": 0.05,
+          "12": 0.05,
+          "13": 0.05,
+          "14": 0.05,
+          "15": 0.05,
+          "16": 0.05,
+          "true": 0.05,
+          "xs": 0.05,
+          "sm": 0.05,
+          "base": 0.05,
+          "lg": 0.05,
+          "xl": 0.05,
+          "2xl": 0.05,
+          "3xl": 0.05,
+          "4xl": 0.05,
+          "5xl": 0.05,
+          "tighter": -0.05,
+          "tight": -0.025,
+          "normal": 0,
+          "wide": 0.025,
+          "wider": 0.05
         },
         "size": {
-          "1": 11,
-          "2": 12,
-          "3": 13,
-          "4": 14,
-          "5": 16,
-          "6": 18,
-          "7": 20,
-          "8": 23,
-          "9": 30,
+          "1": 12,
+          "2": 14,
+          "3": 16,
+          "4": 18,
+          "5": 20,
+          "6": 24,
+          "7": 30,
+          "8": 36,
+          "9": 48,
           "10": 46,
           "11": 55,
           "12": 62,
@@ -28557,21 +28640,30 @@
           "14": 92,
           "15": 114,
           "16": 134,
-          "true": 14
+          "true": 14,
+          "xs": 12,
+          "sm": 14,
+          "base": 16,
+          "lg": 18,
+          "xl": 20,
+          "2xl": 24,
+          "3xl": 30,
+          "4xl": 36,
+          "5xl": 48
         }
       },
       "mono": {
         "family": "Inter",
         "lineHeight": {
-          "1": 21,
-          "2": 22,
-          "3": 23,
-          "4": 24,
-          "5": 26,
-          "6": 28,
-          "7": 30,
-          "8": 33,
-          "9": 40,
+          "1": 22,
+          "2": 24,
+          "3": 26,
+          "4": 28,
+          "5": 30,
+          "6": 34,
+          "7": 40,
+          "8": 46,
+          "9": 58,
           "10": 56,
           "11": 65,
           "12": 72,
@@ -28579,56 +28671,93 @@
           "14": 102,
           "15": 124,
           "16": 144,
-          "true": 24
+          "true": 24,
+          "xs": 22,
+          "sm": 24,
+          "base": 26,
+          "lg": 28,
+          "xl": 30,
+          "2xl": 34,
+          "3xl": 40,
+          "4xl": 46,
+          "5xl": 58
         },
         "weight": {
-          "1": "300",
-          "2": "300",
-          "3": "300",
-          "4": "300",
-          "5": "300",
-          "6": "300",
-          "7": "300",
-          "8": "300",
-          "9": "300",
-          "10": "300",
-          "11": "300",
-          "12": "300",
-          "13": "300",
-          "14": "300",
-          "15": "300",
-          "16": "300",
-          "true": "300"
+          "1": "400",
+          "2": "400",
+          "3": "500",
+          "4": "500",
+          "5": "600",
+          "6": "600",
+          "7": "700",
+          "8": "700",
+          "9": "800",
+          "10": "800",
+          "11": "800",
+          "12": "800",
+          "13": "800",
+          "14": "800",
+          "15": "800",
+          "16": "800",
+          "true": "800",
+          "xs": "800",
+          "sm": "800",
+          "base": "800",
+          "lg": "800",
+          "xl": "800",
+          "2xl": "800",
+          "3xl": "800",
+          "4xl": "800",
+          "5xl": "800",
+          "normal": "400",
+          "medium": "500",
+          "semibold": "600",
+          "bold": "700",
+          "extrabold": "800"
         },
         "letterSpacing": {
-          "1": 0,
-          "2": 0,
+          "1": -0.05,
+          "2": -0.025,
           "3": 0,
-          "4": 0,
-          "5": 0,
-          "6": 0,
-          "7": 0,
-          "8": 0,
-          "9": 0,
-          "10": 0,
-          "11": 0,
-          "12": 0,
-          "13": 0,
-          "14": 0,
-          "15": 0,
-          "16": 0,
-          "true": 0
+          "4": 0.025,
+          "5": 0.05,
+          "6": 0.05,
+          "7": 0.05,
+          "8": 0.05,
+          "9": 0.05,
+          "10": 0.05,
+          "11": 0.05,
+          "12": 0.05,
+          "13": 0.05,
+          "14": 0.05,
+          "15": 0.05,
+          "16": 0.05,
+          "true": 0.05,
+          "xs": 0.05,
+          "sm": 0.05,
+          "base": 0.05,
+          "lg": 0.05,
+          "xl": 0.05,
+          "2xl": 0.05,
+          "3xl": 0.05,
+          "4xl": 0.05,
+          "5xl": 0.05,
+          "tighter": -0.05,
+          "tight": -0.025,
+          "normal": 0,
+          "wide": 0.025,
+          "wider": 0.05
         },
         "size": {
-          "1": 11,
-          "2": 12,
-          "3": 13,
-          "4": 14,
-          "5": 16,
-          "6": 18,
-          "7": 20,
-          "8": 23,
-          "9": 30,
+          "1": 12,
+          "2": 14,
+          "3": 16,
+          "4": 18,
+          "5": 20,
+          "6": 24,
+          "7": 30,
+          "8": 36,
+          "9": 48,
           "10": 46,
           "11": 55,
           "12": 62,
@@ -28636,7 +28765,16 @@
           "14": 92,
           "15": 114,
           "16": 134,
-          "true": 14
+          "true": 14,
+          "xs": 12,
+          "sm": 14,
+          "base": 16,
+          "lg": 18,
+          "xl": 20,
+          "2xl": 24,
+          "3xl": 30,
+          "4xl": 36,
+          "5xl": 48
         }
       }
     },
@@ -30261,280 +30399,504 @@
           "isVar": true,
           "key": "$primary50",
           "name": "c-primary50",
-          "val": "#f0fdfa",
+          "val": "#EFF3F9",
           "variable": ""
         },
         "primary100": {
           "isVar": true,
           "key": "$primary100",
           "name": "c-primary100",
-          "val": "#ccfbf1",
+          "val": "#D9E2F1",
           "variable": ""
         },
         "primary200": {
           "isVar": true,
           "key": "$primary200",
           "name": "c-primary200",
-          "val": "#99f6e4",
+          "val": "#B3C5E3",
           "variable": ""
         },
         "primary300": {
           "isVar": true,
           "key": "$primary300",
           "name": "c-primary300",
-          "val": "#5eead4",
+          "val": "#8DA8D5",
           "variable": ""
         },
         "primary400": {
           "isVar": true,
           "key": "$primary400",
           "name": "c-primary400",
-          "val": "#2dd4bf",
+          "val": "#678BC7",
           "variable": ""
         },
         "primary500": {
           "isVar": true,
           "key": "$primary500",
           "name": "c-primary500",
-          "val": "#14b8a6",
+          "val": "#3A5BA0",
           "variable": ""
         },
         "primary600": {
           "isVar": true,
           "key": "$primary600",
           "name": "c-primary600",
-          "val": "#0d9488",
+          "val": "#2E4980",
           "variable": ""
         },
         "primary700": {
           "isVar": true,
           "key": "$primary700",
           "name": "c-primary700",
-          "val": "#0f766e",
+          "val": "#233760",
           "variable": ""
         },
         "primary800": {
           "isVar": true,
           "key": "$primary800",
           "name": "c-primary800",
-          "val": "#115e59",
+          "val": "#172540",
           "variable": ""
         },
         "primary900": {
           "isVar": true,
           "key": "$primary900",
           "name": "c-primary900",
-          "val": "#134e4a",
+          "val": "#0C1220",
           "variable": ""
         },
         "secondary50": {
           "isVar": true,
           "key": "$secondary50",
           "name": "c-secondary50",
-          "val": "#fff7ed",
+          "val": "#FFF8F5",
           "variable": ""
         },
         "secondary100": {
           "isVar": true,
           "key": "$secondary100",
           "name": "c-secondary100",
-          "val": "#ffedd5",
+          "val": "#FFEEE7",
           "variable": ""
         },
         "secondary200": {
           "isVar": true,
           "key": "$secondary200",
           "name": "c-secondary200",
-          "val": "#fed7aa",
+          "val": "#FFDCD0",
           "variable": ""
         },
         "secondary300": {
           "isVar": true,
           "key": "$secondary300",
           "name": "c-secondary300",
-          "val": "#fdba74",
+          "val": "#FFCAB8",
           "variable": ""
         },
         "secondary400": {
           "isVar": true,
           "key": "$secondary400",
           "name": "c-secondary400",
-          "val": "#fb923c",
+          "val": "#FFB79F",
           "variable": ""
         },
         "secondary500": {
           "isVar": true,
           "key": "$secondary500",
           "name": "c-secondary500",
-          "val": "#f97316",
+          "val": "#FFA387",
           "variable": ""
         },
         "secondary600": {
           "isVar": true,
           "key": "$secondary600",
           "name": "c-secondary600",
-          "val": "#ea580c",
+          "val": "#E88A6E",
           "variable": ""
         },
         "secondary700": {
           "isVar": true,
           "key": "$secondary700",
           "name": "c-secondary700",
-          "val": "#c2410c",
+          "val": "#D07156",
           "variable": ""
         },
         "secondary800": {
           "isVar": true,
           "key": "$secondary800",
           "name": "c-secondary800",
-          "val": "#9a3412",
+          "val": "#B8583E",
           "variable": ""
         },
         "secondary900": {
           "isVar": true,
           "key": "$secondary900",
           "name": "c-secondary900",
-          "val": "#7c2d12",
+          "val": "#A04026",
           "variable": ""
         },
         "success50": {
           "isVar": true,
           "key": "$success50",
           "name": "c-success50",
-          "val": "#f0fdf4",
+          "val": "#EFF8F5",
+          "variable": ""
+        },
+        "success100": {
+          "isVar": true,
+          "key": "$success100",
+          "name": "c-success100",
+          "val": "#D8EFE6",
+          "variable": ""
+        },
+        "success200": {
+          "isVar": true,
+          "key": "$success200",
+          "name": "c-success200",
+          "val": "#B1DFCD",
+          "variable": ""
+        },
+        "success300": {
+          "isVar": true,
+          "key": "$success300",
+          "name": "c-success300",
+          "val": "#8ACFB4",
+          "variable": ""
+        },
+        "success400": {
+          "isVar": true,
+          "key": "$success400",
+          "name": "c-success400",
+          "val": "#6ABF9B",
           "variable": ""
         },
         "success500": {
           "isVar": true,
           "key": "$success500",
           "name": "c-success500",
-          "val": "#22c55e",
+          "val": "#4A9B7F",
           "variable": ""
         },
         "success600": {
           "isVar": true,
           "key": "$success600",
           "name": "c-success600",
-          "val": "#16a34a",
+          "val": "#3B7C66",
+          "variable": ""
+        },
+        "success700": {
+          "isVar": true,
+          "key": "$success700",
+          "name": "c-success700",
+          "val": "#2C5D4C",
+          "variable": ""
+        },
+        "success800": {
+          "isVar": true,
+          "key": "$success800",
+          "name": "c-success800",
+          "val": "#1E3E33",
+          "variable": ""
+        },
+        "success900": {
+          "isVar": true,
+          "key": "$success900",
+          "name": "c-success900",
+          "val": "#0F1F19",
           "variable": ""
         },
         "warning50": {
           "isVar": true,
           "key": "$warning50",
           "name": "c-warning50",
-          "val": "#fefce8",
+          "val": "#FEFCE8",
+          "variable": ""
+        },
+        "warning100": {
+          "isVar": true,
+          "key": "$warning100",
+          "name": "c-warning100",
+          "val": "#FEF9C3",
+          "variable": ""
+        },
+        "warning200": {
+          "isVar": true,
+          "key": "$warning200",
+          "name": "c-warning200",
+          "val": "#FEF08A",
+          "variable": ""
+        },
+        "warning300": {
+          "isVar": true,
+          "key": "$warning300",
+          "name": "c-warning300",
+          "val": "#FDE047",
+          "variable": ""
+        },
+        "warning400": {
+          "isVar": true,
+          "key": "$warning400",
+          "name": "c-warning400",
+          "val": "#FACC15",
           "variable": ""
         },
         "warning500": {
           "isVar": true,
           "key": "$warning500",
           "name": "c-warning500",
-          "val": "#eab308",
+          "val": "#EAB308",
           "variable": ""
         },
         "warning600": {
           "isVar": true,
           "key": "$warning600",
           "name": "c-warning600",
-          "val": "#ca8a04",
+          "val": "#CA8A04",
+          "variable": ""
+        },
+        "warning700": {
+          "isVar": true,
+          "key": "$warning700",
+          "name": "c-warning700",
+          "val": "#A16207",
+          "variable": ""
+        },
+        "warning800": {
+          "isVar": true,
+          "key": "$warning800",
+          "name": "c-warning800",
+          "val": "#854D0E",
+          "variable": ""
+        },
+        "warning900": {
+          "isVar": true,
+          "key": "$warning900",
+          "name": "c-warning900",
+          "val": "#713F12",
           "variable": ""
         },
         "error50": {
           "isVar": true,
           "key": "$error50",
           "name": "c-error50",
-          "val": "#fef2f2",
+          "val": "#FEF2F2",
+          "variable": ""
+        },
+        "error100": {
+          "isVar": true,
+          "key": "$error100",
+          "name": "c-error100",
+          "val": "#FEE2E2",
+          "variable": ""
+        },
+        "error200": {
+          "isVar": true,
+          "key": "$error200",
+          "name": "c-error200",
+          "val": "#FECACA",
+          "variable": ""
+        },
+        "error300": {
+          "isVar": true,
+          "key": "$error300",
+          "name": "c-error300",
+          "val": "#FCA5A5",
+          "variable": ""
+        },
+        "error400": {
+          "isVar": true,
+          "key": "$error400",
+          "name": "c-error400",
+          "val": "#F87171",
           "variable": ""
         },
         "error500": {
           "isVar": true,
           "key": "$error500",
           "name": "c-error500",
-          "val": "#ef4444",
+          "val": "#EF4444",
           "variable": ""
         },
         "error600": {
           "isVar": true,
           "key": "$error600",
           "name": "c-error600",
-          "val": "#dc2626",
+          "val": "#DC2626",
+          "variable": ""
+        },
+        "error700": {
+          "isVar": true,
+          "key": "$error700",
+          "name": "c-error700",
+          "val": "#B91C1C",
+          "variable": ""
+        },
+        "error800": {
+          "isVar": true,
+          "key": "$error800",
+          "name": "c-error800",
+          "val": "#991B1B",
+          "variable": ""
+        },
+        "error900": {
+          "isVar": true,
+          "key": "$error900",
+          "name": "c-error900",
+          "val": "#7F1D1D",
+          "variable": ""
+        },
+        "info50": {
+          "isVar": true,
+          "key": "$info50",
+          "name": "c-info50",
+          "val": "#EFF6FF",
+          "variable": ""
+        },
+        "info100": {
+          "isVar": true,
+          "key": "$info100",
+          "name": "c-info100",
+          "val": "#DBEAFE",
+          "variable": ""
+        },
+        "info200": {
+          "isVar": true,
+          "key": "$info200",
+          "name": "c-info200",
+          "val": "#BFDBFE",
+          "variable": ""
+        },
+        "info300": {
+          "isVar": true,
+          "key": "$info300",
+          "name": "c-info300",
+          "val": "#93C5FD",
+          "variable": ""
+        },
+        "info400": {
+          "isVar": true,
+          "key": "$info400",
+          "name": "c-info400",
+          "val": "#60A5FA",
+          "variable": ""
+        },
+        "info500": {
+          "isVar": true,
+          "key": "$info500",
+          "name": "c-info500",
+          "val": "#3B82F6",
+          "variable": ""
+        },
+        "info600": {
+          "isVar": true,
+          "key": "$info600",
+          "name": "c-info600",
+          "val": "#2563EB",
+          "variable": ""
+        },
+        "info700": {
+          "isVar": true,
+          "key": "$info700",
+          "name": "c-info700",
+          "val": "#1D4ED8",
+          "variable": ""
+        },
+        "info800": {
+          "isVar": true,
+          "key": "$info800",
+          "name": "c-info800",
+          "val": "#1E40AF",
+          "variable": ""
+        },
+        "info900": {
+          "isVar": true,
+          "key": "$info900",
+          "name": "c-info900",
+          "val": "#1E3A8A",
+          "variable": ""
+        },
+        "gray0": {
+          "isVar": true,
+          "key": "$gray0",
+          "name": "c-gray0",
+          "val": "#FFFFFF",
           "variable": ""
         },
         "gray50": {
           "isVar": true,
           "key": "$gray50",
           "name": "c-gray50",
-          "val": "#fafafa",
+          "val": "#FAFAF8",
           "variable": ""
         },
         "gray100": {
           "isVar": true,
           "key": "$gray100",
           "name": "c-gray100",
-          "val": "#f4f4f5",
+          "val": "#F5F3EF",
           "variable": ""
         },
         "gray200": {
           "isVar": true,
           "key": "$gray200",
           "name": "c-gray200",
-          "val": "#e4e4e7",
+          "val": "#E8E6E2",
           "variable": ""
         },
         "gray300": {
           "isVar": true,
           "key": "$gray300",
           "name": "c-gray300",
-          "val": "#d4d4d8",
+          "val": "#D4D2CE",
           "variable": ""
         },
         "gray400": {
           "isVar": true,
           "key": "$gray400",
           "name": "c-gray400",
-          "val": "#a1a1aa",
+          "val": "#9A98A0",
           "variable": ""
         },
         "gray500": {
           "isVar": true,
           "key": "$gray500",
           "name": "c-gray500",
-          "val": "#71717a",
+          "val": "#6B697A",
           "variable": ""
         },
         "gray600": {
           "isVar": true,
           "key": "$gray600",
           "name": "c-gray600",
-          "val": "#52525b",
+          "val": "#4A4860",
           "variable": ""
         },
         "gray700": {
           "isVar": true,
           "key": "$gray700",
           "name": "c-gray700",
-          "val": "#3f3f46",
+          "val": "#353350",
           "variable": ""
         },
         "gray800": {
           "isVar": true,
           "key": "$gray800",
           "name": "c-gray800",
-          "val": "#27272a",
+          "val": "#2A2B4A",
           "variable": ""
         },
         "gray900": {
           "isVar": true,
           "key": "$gray900",
           "name": "c-gray900",
-          "val": "#18181b",
+          "val": "#1F2041",
           "variable": ""
         },
         "gray950": {
           "isVar": true,
           "key": "$gray950",
           "name": "c-gray950",
-          "val": "#121216",
+          "val": "#161530",
           "variable": ""
         }
       },
@@ -30643,6 +31005,55 @@
           "name": "t-radius-full",
           "val": 9999,
           "variable": ""
+        },
+        "xs": {
+          "isVar": true,
+          "key": "$xs",
+          "name": "t-radius-xs",
+          "val": 2,
+          "variable": ""
+        },
+        "sm": {
+          "isVar": true,
+          "key": "$sm",
+          "name": "t-radius-sm",
+          "val": 4,
+          "variable": ""
+        },
+        "md": {
+          "isVar": true,
+          "key": "$md",
+          "name": "t-radius-md",
+          "val": 8,
+          "variable": ""
+        },
+        "lg": {
+          "isVar": true,
+          "key": "$lg",
+          "name": "t-radius-lg",
+          "val": 12,
+          "variable": ""
+        },
+        "xl": {
+          "isVar": true,
+          "key": "$xl",
+          "name": "t-radius-xl",
+          "val": 16,
+          "variable": ""
+        },
+        "2xl": {
+          "isVar": true,
+          "key": "$2xl",
+          "name": "t-radius-2xl",
+          "val": 20,
+          "variable": ""
+        },
+        "3xl": {
+          "isVar": true,
+          "key": "$3xl",
+          "name": "t-radius-3xl",
+          "val": 24,
+          "variable": ""
         }
       },
       "zIndex": {
@@ -30686,6 +31097,55 @@
           "key": "$5",
           "name": "t-zIndex-5",
           "val": 500,
+          "variable": ""
+        },
+        "dropdown": {
+          "isVar": true,
+          "key": "$dropdown",
+          "name": "t-zIndex-dropdown",
+          "val": 100,
+          "variable": ""
+        },
+        "sticky": {
+          "isVar": true,
+          "key": "$sticky",
+          "name": "t-zIndex-sticky",
+          "val": 200,
+          "variable": ""
+        },
+        "modal": {
+          "isVar": true,
+          "key": "$modal",
+          "name": "t-zIndex-modal",
+          "val": 300,
+          "variable": ""
+        },
+        "popover": {
+          "isVar": true,
+          "key": "$popover",
+          "name": "t-zIndex-popover",
+          "val": 400,
+          "variable": ""
+        },
+        "overlay": {
+          "isVar": true,
+          "key": "$overlay",
+          "name": "t-zIndex-overlay",
+          "val": 500,
+          "variable": ""
+        },
+        "toast": {
+          "isVar": true,
+          "key": "$toast",
+          "name": "t-zIndex-toast",
+          "val": 600,
+          "variable": ""
+        },
+        "tooltip": {
+          "isVar": true,
+          "key": "$tooltip",
+          "name": "t-zIndex-tooltip",
+          "val": 700,
           "variable": ""
         }
       },
@@ -30835,6 +31295,27 @@
           "key": "$20",
           "name": "t-space-20",
           "val": 80,
+          "variable": ""
+        },
+        "24": {
+          "isVar": true,
+          "key": "$24",
+          "name": "t-space-24",
+          "val": 96,
+          "variable": ""
+        },
+        "28": {
+          "isVar": true,
+          "key": "$28",
+          "name": "t-space-28",
+          "val": 112,
+          "variable": ""
+        },
+        "32": {
+          "isVar": true,
+          "key": "$32",
+          "name": "t-space-32",
+          "val": 128,
           "variable": ""
         },
         "0.25": {
@@ -31172,8 +31653,8 @@
           "isVar": true,
           "key": "$11",
           "name": "t-size-11",
-          "val": 44,
-          "variable": ""
+          "val": 124,
+          "variable": "var(--t-size-11)"
         },
         "12": {
           "isVar": true,
@@ -31259,83 +31740,6 @@
           "val": 128,
           "variable": ""
         },
-        "36": {
-          "isVar": true,
-          "key": "$36",
-          "name": "t-size-36",
-          "val": 144,
-          "variable": ""
-        },
-        "40": {
-          "isVar": true,
-          "key": "$40",
-          "name": "t-size-40",
-          "val": 160,
-          "variable": ""
-        },
-        "44": {
-          "isVar": true,
-          "key": "$44",
-          "name": "t-size-44",
-          "val": 176,
-          "variable": ""
-        },
-        "48": {
-          "isVar": true,
-          "key": "$48",
-          "name": "t-size-48",
-          "val": 192,
-          "variable": ""
-        },
-        "52": {
-          "isVar": true,
-          "key": "$52",
-          "name": "t-size-52",
-          "val": 208,
-          "variable": ""
-        },
-        "56": {
-          "isVar": true,
-          "key": "$56",
-          "name": "t-size-56",
-          "val": 224,
-          "variable": ""
-        },
-        "60": {
-          "isVar": true,
-          "key": "$60",
-          "name": "t-size-60",
-          "val": 240,
-          "variable": ""
-        },
-        "64": {
-          "isVar": true,
-          "key": "$64",
-          "name": "t-size-64",
-          "val": 256,
-          "variable": ""
-        },
-        "72": {
-          "isVar": true,
-          "key": "$72",
-          "name": "t-size-72",
-          "val": 288,
-          "variable": ""
-        },
-        "80": {
-          "isVar": true,
-          "key": "$80",
-          "name": "t-size-80",
-          "val": 320,
-          "variable": ""
-        },
-        "96": {
-          "isVar": true,
-          "key": "$96",
-          "name": "t-size-96",
-          "val": 384,
-          "variable": ""
-        },
         "0.25": {
           "isVar": true,
           "key": "$0.25",
@@ -31391,6 +31795,110 @@
           "name": "t-size-4--5",
           "val": 48,
           "variable": "var(--t-size-4--5)"
+        },
+        "icon": {
+          "xs": {
+            "isVar": true,
+            "key": "$xs",
+            "name": "t-size-icon-xs",
+            "val": 16,
+            "variable": ""
+          },
+          "sm": {
+            "isVar": true,
+            "key": "$sm",
+            "name": "t-size-icon-sm",
+            "val": 20,
+            "variable": ""
+          },
+          "md": {
+            "isVar": true,
+            "key": "$md",
+            "name": "t-size-icon-md",
+            "val": 24,
+            "variable": ""
+          },
+          "lg": {
+            "isVar": true,
+            "key": "$lg",
+            "name": "t-size-icon-lg",
+            "val": 32,
+            "variable": ""
+          },
+          "xl": {
+            "isVar": true,
+            "key": "$xl",
+            "name": "t-size-icon-xl",
+            "val": 40,
+            "variable": ""
+          }
+        },
+        "button": {
+          "sm": {
+            "isVar": true,
+            "key": "$sm",
+            "name": "t-size-button-sm",
+            "val": 32,
+            "variable": ""
+          },
+          "md": {
+            "isVar": true,
+            "key": "$md",
+            "name": "t-size-button-md",
+            "val": 40,
+            "variable": ""
+          },
+          "lg": {
+            "isVar": true,
+            "key": "$lg",
+            "name": "t-size-button-lg",
+            "val": 48,
+            "variable": ""
+          },
+          "xl": {
+            "isVar": true,
+            "key": "$xl",
+            "name": "t-size-button-xl",
+            "val": 56,
+            "variable": ""
+          }
+        },
+        "avatar": {
+          "xs": {
+            "isVar": true,
+            "key": "$xs",
+            "name": "t-size-avatar-xs",
+            "val": 24,
+            "variable": ""
+          },
+          "sm": {
+            "isVar": true,
+            "key": "$sm",
+            "name": "t-size-avatar-sm",
+            "val": 32,
+            "variable": ""
+          },
+          "md": {
+            "isVar": true,
+            "key": "$md",
+            "name": "t-size-avatar-md",
+            "val": 40,
+            "variable": ""
+          },
+          "lg": {
+            "isVar": true,
+            "key": "$lg",
+            "name": "t-size-avatar-lg",
+            "val": 56,
+            "variable": ""
+          },
+          "xl": {
+            "isVar": true,
+            "key": "$xl",
+            "name": "t-size-avatar-xl",
+            "val": 80,
+            "variable": ""
+          }
         }
       }
     },
@@ -31620,76 +32128,130 @@
         "yellow10Dark": "hsl(54, 100%, 68.0%)",
         "yellow11Dark": "hsl(48, 100%, 47.0%)",
         "yellow12Dark": "hsl(53, 100%, 91.0%)",
-        "primary50": "#f0fdfa",
-        "primary100": "#ccfbf1",
-        "primary200": "#99f6e4",
-        "primary300": "#5eead4",
-        "primary400": "#2dd4bf",
-        "primary500": "#14b8a6",
-        "primary600": "#0d9488",
-        "primary700": "#0f766e",
-        "primary800": "#115e59",
-        "primary900": "#134e4a",
-        "secondary50": "#fff7ed",
-        "secondary100": "#ffedd5",
-        "secondary200": "#fed7aa",
-        "secondary300": "#fdba74",
-        "secondary400": "#fb923c",
-        "secondary500": "#f97316",
-        "secondary600": "#ea580c",
-        "secondary700": "#c2410c",
-        "secondary800": "#9a3412",
-        "secondary900": "#7c2d12",
-        "success50": "#f0fdf4",
-        "success500": "#22c55e",
-        "success600": "#16a34a",
-        "warning50": "#fefce8",
-        "warning500": "#eab308",
-        "warning600": "#ca8a04",
-        "error50": "#fef2f2",
-        "error500": "#ef4444",
-        "error600": "#dc2626",
-        "gray50": "#fafafa",
-        "gray100": "#f4f4f5",
-        "gray200": "#e4e4e7",
-        "gray300": "#d4d4d8",
-        "gray400": "#a1a1aa",
-        "gray500": "#71717a",
-        "gray600": "#52525b",
-        "gray700": "#3f3f46",
-        "gray800": "#27272a",
-        "gray900": "#18181b",
-        "gray950": "#121216",
-        "background": "#121216",
-        "backgroundHover": "#18181b",
-        "backgroundPress": "#27272a",
-        "backgroundFocus": "#18181b",
-        "backgroundStrong": "#18181b",
+        "primary50": "#EFF3F9",
+        "primary100": "#D9E2F1",
+        "primary200": "#B3C5E3",
+        "primary300": "#8DA8D5",
+        "primary400": "#678BC7",
+        "primary500": "#3A5BA0",
+        "primary600": "#2E4980",
+        "primary700": "#233760",
+        "primary800": "#172540",
+        "primary900": "#0C1220",
+        "secondary50": "#FFF8F5",
+        "secondary100": "#FFEEE7",
+        "secondary200": "#FFDCD0",
+        "secondary300": "#FFCAB8",
+        "secondary400": "#FFB79F",
+        "secondary500": "#FFA387",
+        "secondary600": "#E88A6E",
+        "secondary700": "#D07156",
+        "secondary800": "#B8583E",
+        "secondary900": "#A04026",
+        "success50": "#EFF8F5",
+        "success100": "#D8EFE6",
+        "success200": "#B1DFCD",
+        "success300": "#8ACFB4",
+        "success400": "#6ABF9B",
+        "success500": "#4A9B7F",
+        "success600": "#3B7C66",
+        "success700": "#2C5D4C",
+        "success800": "#1E3E33",
+        "success900": "#0F1F19",
+        "warning50": "#FEFCE8",
+        "warning100": "#FEF9C3",
+        "warning200": "#FEF08A",
+        "warning300": "#FDE047",
+        "warning400": "#FACC15",
+        "warning500": "#EAB308",
+        "warning600": "#CA8A04",
+        "warning700": "#A16207",
+        "warning800": "#854D0E",
+        "warning900": "#713F12",
+        "error50": "#FEF2F2",
+        "error100": "#FEE2E2",
+        "error200": "#FECACA",
+        "error300": "#FCA5A5",
+        "error400": "#F87171",
+        "error500": "#EF4444",
+        "error600": "#DC2626",
+        "error700": "#B91C1C",
+        "error800": "#991B1B",
+        "error900": "#7F1D1D",
+        "info50": "#EFF6FF",
+        "info100": "#DBEAFE",
+        "info200": "#BFDBFE",
+        "info300": "#93C5FD",
+        "info400": "#60A5FA",
+        "info500": "#3B82F6",
+        "info600": "#2563EB",
+        "info700": "#1D4ED8",
+        "info800": "#1E40AF",
+        "info900": "#1E3A8A",
+        "gray0": "#FFFFFF",
+        "gray50": "#FAFAF8",
+        "gray100": "#F5F3EF",
+        "gray200": "#E8E6E2",
+        "gray300": "#D4D2CE",
+        "gray400": "#9A98A0",
+        "gray500": "#6B697A",
+        "gray600": "#4A4860",
+        "gray700": "#353350",
+        "gray800": "#2A2B4A",
+        "gray900": "#1F2041",
+        "gray950": "#161530",
+        "background": "#1F2041",
+        "backgroundHover": "#2A2B4A",
+        "backgroundPress": "#353350",
+        "backgroundFocus": "#2A2B4A",
+        "backgroundStrong": "#2A2B4A",
         "backgroundTransparent": "rgba(0, 0, 0, 0)",
-        "color": "#fafafa",
-        "colorHover": "#f4f4f5",
-        "colorPress": "#e4e4e7",
-        "colorFocus": "#f4f4f5",
-        "colorMuted": "#a1a1aa",
-        "colorSubtle": "#71717a",
-        "borderColor": "#27272a",
-        "borderColorHover": "#3f3f46",
-        "borderColorPress": "#52525b",
-        "borderColorFocus": "#14b8a6",
-        "primary": "#14b8a6",
-        "primaryHover": "#2dd4bf",
-        "primaryPress": "#5eead4",
-        "primaryFocus": "#14b8a6",
-        "secondary": "#f97316",
-        "secondaryHover": "#fb923c",
-        "secondaryPress": "#fdba74",
-        "success": "#22c55e",
-        "warning": "#eab308",
-        "error": "#ef4444",
-        "cardBackground": "#18181b",
-        "cardBorder": "#27272a",
+        "backgroundSoft": "#2A2B4A",
+        "color": "#F5F3EF",
+        "colorHover": "#FAFAF8",
+        "colorPress": "#E8E6E2",
+        "colorFocus": "#FAFAF8",
+        "colorMuted": "#9A98A0",
+        "colorSubtle": "#6B697A",
+        "borderColor": "#353350",
+        "borderColorHover": "#4A4860",
+        "borderColorPress": "#6B697A",
+        "borderColorFocus": "#678BC7",
+        "primary": "#678BC7",
+        "primaryHover": "#8DA8D5",
+        "primaryPress": "#B3C5E3",
+        "primaryFocus": "#678BC7",
+        "primaryMuted": "#172540",
+        "primarySubtle": "#0C1220",
+        "secondary": "#FFB79F",
+        "secondaryHover": "#FFCAB8",
+        "secondaryPress": "#FFDCD0",
+        "secondaryMuted": "#B8583E",
+        "secondarySubtle": "#A04026",
+        "success": "#6ABF9B",
+        "successMuted": "#1E3E33",
+        "successSubtle": "#0F1F19",
+        "warning": "#FACC15",
+        "warningMuted": "#854D0E",
+        "warningSubtle": "#713F12",
+        "error": "#F87171",
+        "errorMuted": "#991B1B",
+        "errorSubtle": "#7F1D1D",
+        "info": "#60A5FA",
+        "infoMuted": "#1E40AF",
+        "infoSubtle": "#1E3A8A",
+        "cardBackground": "#2A2B4A",
+        "cardBorder": "#353350",
         "shadowColor": "rgba(0, 0, 0, 0.3)",
-        "shadowColorStrong": "rgba(0, 0, 0, 0.5)",
+        "shadowColorStrong": "rgba(0, 0, 0, 0.4)",
+        "switchTrackOn": "#6ABF9B",
+        "switchTrackOff": "#353350",
+        "switchThumb": "#F5F3EF",
+        "progressBackground": "#353350",
+        "progressFill": "#678BC7",
+        "trendUp": "#6ABF9B",
+        "trendDown": "#F87171",
+        "trendNeutral": "#6B697A",
         "id": "dark"
       },
       "light": {
@@ -31917,76 +32479,130 @@
         "yellow10Dark": "hsl(54, 100%, 68.0%)",
         "yellow11Dark": "hsl(48, 100%, 47.0%)",
         "yellow12Dark": "hsl(53, 100%, 91.0%)",
-        "primary50": "#f0fdfa",
-        "primary100": "#ccfbf1",
-        "primary200": "#99f6e4",
-        "primary300": "#5eead4",
-        "primary400": "#2dd4bf",
-        "primary500": "#14b8a6",
-        "primary600": "#0d9488",
-        "primary700": "#0f766e",
-        "primary800": "#115e59",
-        "primary900": "#134e4a",
-        "secondary50": "#fff7ed",
-        "secondary100": "#ffedd5",
-        "secondary200": "#fed7aa",
-        "secondary300": "#fdba74",
-        "secondary400": "#fb923c",
-        "secondary500": "#f97316",
-        "secondary600": "#ea580c",
-        "secondary700": "#c2410c",
-        "secondary800": "#9a3412",
-        "secondary900": "#7c2d12",
-        "success50": "#f0fdf4",
-        "success500": "#22c55e",
-        "success600": "#16a34a",
-        "warning50": "#fefce8",
-        "warning500": "#eab308",
-        "warning600": "#ca8a04",
-        "error50": "#fef2f2",
-        "error500": "#ef4444",
-        "error600": "#dc2626",
-        "gray50": "#fafafa",
-        "gray100": "#f4f4f5",
-        "gray200": "#e4e4e7",
-        "gray300": "#d4d4d8",
-        "gray400": "#a1a1aa",
-        "gray500": "#71717a",
-        "gray600": "#52525b",
-        "gray700": "#3f3f46",
-        "gray800": "#27272a",
-        "gray900": "#18181b",
-        "gray950": "#121216",
-        "background": "#fafafa",
-        "backgroundHover": "#f4f4f5",
-        "backgroundPress": "#e4e4e7",
-        "backgroundFocus": "#f4f4f5",
-        "backgroundStrong": "#ffffff",
+        "primary50": "#EFF3F9",
+        "primary100": "#D9E2F1",
+        "primary200": "#B3C5E3",
+        "primary300": "#8DA8D5",
+        "primary400": "#678BC7",
+        "primary500": "#3A5BA0",
+        "primary600": "#2E4980",
+        "primary700": "#233760",
+        "primary800": "#172540",
+        "primary900": "#0C1220",
+        "secondary50": "#FFF8F5",
+        "secondary100": "#FFEEE7",
+        "secondary200": "#FFDCD0",
+        "secondary300": "#FFCAB8",
+        "secondary400": "#FFB79F",
+        "secondary500": "#FFA387",
+        "secondary600": "#E88A6E",
+        "secondary700": "#D07156",
+        "secondary800": "#B8583E",
+        "secondary900": "#A04026",
+        "success50": "#EFF8F5",
+        "success100": "#D8EFE6",
+        "success200": "#B1DFCD",
+        "success300": "#8ACFB4",
+        "success400": "#6ABF9B",
+        "success500": "#4A9B7F",
+        "success600": "#3B7C66",
+        "success700": "#2C5D4C",
+        "success800": "#1E3E33",
+        "success900": "#0F1F19",
+        "warning50": "#FEFCE8",
+        "warning100": "#FEF9C3",
+        "warning200": "#FEF08A",
+        "warning300": "#FDE047",
+        "warning400": "#FACC15",
+        "warning500": "#EAB308",
+        "warning600": "#CA8A04",
+        "warning700": "#A16207",
+        "warning800": "#854D0E",
+        "warning900": "#713F12",
+        "error50": "#FEF2F2",
+        "error100": "#FEE2E2",
+        "error200": "#FECACA",
+        "error300": "#FCA5A5",
+        "error400": "#F87171",
+        "error500": "#EF4444",
+        "error600": "#DC2626",
+        "error700": "#B91C1C",
+        "error800": "#991B1B",
+        "error900": "#7F1D1D",
+        "info50": "#EFF6FF",
+        "info100": "#DBEAFE",
+        "info200": "#BFDBFE",
+        "info300": "#93C5FD",
+        "info400": "#60A5FA",
+        "info500": "#3B82F6",
+        "info600": "#2563EB",
+        "info700": "#1D4ED8",
+        "info800": "#1E40AF",
+        "info900": "#1E3A8A",
+        "gray0": "#FFFFFF",
+        "gray50": "#FAFAF8",
+        "gray100": "#F5F3EF",
+        "gray200": "#E8E6E2",
+        "gray300": "#D4D2CE",
+        "gray400": "#9A98A0",
+        "gray500": "#6B697A",
+        "gray600": "#4A4860",
+        "gray700": "#353350",
+        "gray800": "#2A2B4A",
+        "gray900": "#1F2041",
+        "gray950": "#161530",
+        "background": "#FAFAF8",
+        "backgroundHover": "#F5F3EF",
+        "backgroundPress": "#E8E6E2",
+        "backgroundFocus": "#F5F3EF",
+        "backgroundStrong": "#FFFFFF",
         "backgroundTransparent": "rgba(255, 255, 255, 0)",
-        "color": "#2B2B32",
-        "colorHover": "#3a3a42",
-        "colorPress": "#4a4a52",
-        "colorFocus": "#3a3a42",
-        "colorMuted": "#71717a",
-        "colorSubtle": "#a1a1aa",
-        "borderColor": "#e4e4e7",
-        "borderColorHover": "#d4d4d8",
-        "borderColorPress": "#a1a1aa",
-        "borderColorFocus": "#14b8a6",
-        "primary": "#14b8a6",
-        "primaryHover": "#0d9488",
-        "primaryPress": "#0f766e",
-        "primaryFocus": "#14b8a6",
-        "secondary": "#f97316",
-        "secondaryHover": "#ea580c",
-        "secondaryPress": "#c2410c",
-        "success": "#22c55e",
-        "warning": "#eab308",
-        "error": "#ef4444",
-        "cardBackground": "#ffffff",
-        "cardBorder": "#e4e4e7",
+        "backgroundSoft": "#F5F3EF",
+        "color": "#1F2041",
+        "colorHover": "#2A2B4A",
+        "colorPress": "#353350",
+        "colorFocus": "#2A2B4A",
+        "colorMuted": "#6B697A",
+        "colorSubtle": "#9A98A0",
+        "borderColor": "#E8E6E2",
+        "borderColorHover": "#D4D2CE",
+        "borderColorPress": "#9A98A0",
+        "borderColorFocus": "#3A5BA0",
+        "primary": "#3A5BA0",
+        "primaryHover": "#2E4980",
+        "primaryPress": "#233760",
+        "primaryFocus": "#3A5BA0",
+        "primaryMuted": "#D9E2F1",
+        "primarySubtle": "#EFF3F9",
+        "secondary": "#FFA387",
+        "secondaryHover": "#E88A6E",
+        "secondaryPress": "#D07156",
+        "secondaryMuted": "#FFEEE7",
+        "secondarySubtle": "#FFF8F5",
+        "success": "#4A9B7F",
+        "successMuted": "#D8EFE6",
+        "successSubtle": "#EFF8F5",
+        "warning": "#EAB308",
+        "warningMuted": "#FEF9C3",
+        "warningSubtle": "#FEFCE8",
+        "error": "#EF4444",
+        "errorMuted": "#FEE2E2",
+        "errorSubtle": "#FEF2F2",
+        "info": "#3B82F6",
+        "infoMuted": "#DBEAFE",
+        "infoSubtle": "#EFF6FF",
+        "cardBackground": "#F5F3EF",
+        "cardBorder": "#E8E6E2",
         "shadowColor": "rgba(0, 0, 0, 0.1)",
-        "shadowColorStrong": "rgba(0, 0, 0, 0.2)",
+        "shadowColorStrong": "rgba(0, 0, 0, 0.15)",
+        "switchTrackOn": "#4A9B7F",
+        "switchTrackOff": "#E8E6E2",
+        "switchThumb": "#FFFFFF",
+        "progressBackground": "#E8E6E2",
+        "progressFill": "#3A5BA0",
+        "trendUp": "#4A9B7F",
+        "trendDown": "#EF4444",
+        "trendNeutral": "#9A98A0",
         "id": "light"
       }
     },
@@ -32370,32 +32986,88 @@
         "val": "hsl(206, 100%, 50.0%)",
         "variable": "var(--c-blue9Light)"
       },
+      "$color.error100": {
+        "isVar": true,
+        "key": "$error100",
+        "name": "c-error100",
+        "val": "#FEE2E2",
+        "variable": ""
+      },
+      "$color.error200": {
+        "isVar": true,
+        "key": "$error200",
+        "name": "c-error200",
+        "val": "#FECACA",
+        "variable": ""
+      },
+      "$color.error300": {
+        "isVar": true,
+        "key": "$error300",
+        "name": "c-error300",
+        "val": "#FCA5A5",
+        "variable": ""
+      },
+      "$color.error400": {
+        "isVar": true,
+        "key": "$error400",
+        "name": "c-error400",
+        "val": "#F87171",
+        "variable": ""
+      },
       "$color.error50": {
         "isVar": true,
         "key": "$error50",
         "name": "c-error50",
-        "val": "#fef2f2",
+        "val": "#FEF2F2",
         "variable": ""
       },
       "$color.error500": {
         "isVar": true,
         "key": "$error500",
         "name": "c-error500",
-        "val": "#ef4444",
+        "val": "#EF4444",
         "variable": ""
       },
       "$color.error600": {
         "isVar": true,
         "key": "$error600",
         "name": "c-error600",
-        "val": "#dc2626",
+        "val": "#DC2626",
+        "variable": ""
+      },
+      "$color.error700": {
+        "isVar": true,
+        "key": "$error700",
+        "name": "c-error700",
+        "val": "#B91C1C",
+        "variable": ""
+      },
+      "$color.error800": {
+        "isVar": true,
+        "key": "$error800",
+        "name": "c-error800",
+        "val": "#991B1B",
+        "variable": ""
+      },
+      "$color.error900": {
+        "isVar": true,
+        "key": "$error900",
+        "name": "c-error900",
+        "val": "#7F1D1D",
+        "variable": ""
+      },
+      "$color.gray0": {
+        "isVar": true,
+        "key": "$gray0",
+        "name": "c-gray0",
+        "val": "#FFFFFF",
         "variable": ""
       },
       "$color.gray100": {
         "isVar": true,
         "key": "$gray100",
         "name": "c-gray100",
-        "val": "#f4f4f5",
+        "val": "#F5F3EF",
         "variable": ""
       },
       "$color.gray10Dark": {
@@ -32458,7 +33130,7 @@
         "isVar": true,
         "key": "$gray200",
         "name": "c-gray200",
-        "val": "#e4e4e7",
+        "val": "#E8E6E2",
         "variable": ""
       },
       "$color.gray2Dark": {
@@ -32479,7 +33151,7 @@
         "isVar": true,
         "key": "$gray300",
         "name": "c-gray300",
-        "val": "#d4d4d8",
+        "val": "#D4D2CE",
         "variable": ""
       },
       "$color.gray3Dark": {
@@ -32500,7 +33172,7 @@
         "isVar": true,
         "key": "$gray400",
         "name": "c-gray400",
-        "val": "#a1a1aa",
+        "val": "#9A98A0",
         "variable": ""
       },
       "$color.gray4Dark": {
@@ -32521,14 +33193,14 @@
         "isVar": true,
         "key": "$gray50",
         "name": "c-gray50",
-        "val": "#fafafa",
+        "val": "#FAFAF8",
         "variable": ""
       },
       "$color.gray500": {
         "isVar": true,
         "key": "$gray500",
         "name": "c-gray500",
-        "val": "#71717a",
+        "val": "#6B697A",
         "variable": ""
       },
       "$color.gray5Dark": {
@@ -32549,7 +33221,7 @@
         "isVar": true,
         "key": "$gray600",
         "name": "c-gray600",
-        "val": "#52525b",
+        "val": "#4A4860",
         "variable": ""
       },
       "$color.gray6Dark": {
@@ -32570,7 +33242,7 @@
         "isVar": true,
         "key": "$gray700",
         "name": "c-gray700",
-        "val": "#3f3f46",
+        "val": "#353350",
         "variable": ""
       },
       "$color.gray7Dark": {
@@ -32591,7 +33263,7 @@
         "isVar": true,
         "key": "$gray800",
         "name": "c-gray800",
-        "val": "#27272a",
+        "val": "#2A2B4A",
         "variable": ""
       },
       "$color.gray8Dark": {
@@ -32612,14 +33284,14 @@
         "isVar": true,
         "key": "$gray900",
         "name": "c-gray900",
-        "val": "#18181b",
+        "val": "#1F2041",
         "variable": ""
       },
       "$color.gray950": {
         "isVar": true,
         "key": "$gray950",
         "name": "c-gray950",
-        "val": "#121216",
+        "val": "#161530",
         "variable": ""
       },
       "$color.gray9Dark": {
@@ -32803,6 +33475,76 @@
         "name": "c-green9Light",
         "val": "hsl(151, 55.0%, 41.5%)",
         "variable": "var(--c-green9Light)"
+      },
+      "$color.info100": {
+        "isVar": true,
+        "key": "$info100",
+        "name": "c-info100",
+        "val": "#DBEAFE",
+        "variable": ""
+      },
+      "$color.info200": {
+        "isVar": true,
+        "key": "$info200",
+        "name": "c-info200",
+        "val": "#BFDBFE",
+        "variable": ""
+      },
+      "$color.info300": {
+        "isVar": true,
+        "key": "$info300",
+        "name": "c-info300",
+        "val": "#93C5FD",
+        "variable": ""
+      },
+      "$color.info400": {
+        "isVar": true,
+        "key": "$info400",
+        "name": "c-info400",
+        "val": "#60A5FA",
+        "variable": ""
+      },
+      "$color.info50": {
+        "isVar": true,
+        "key": "$info50",
+        "name": "c-info50",
+        "val": "#EFF6FF",
+        "variable": ""
+      },
+      "$color.info500": {
+        "isVar": true,
+        "key": "$info500",
+        "name": "c-info500",
+        "val": "#3B82F6",
+        "variable": ""
+      },
+      "$color.info600": {
+        "isVar": true,
+        "key": "$info600",
+        "name": "c-info600",
+        "val": "#2563EB",
+        "variable": ""
+      },
+      "$color.info700": {
+        "isVar": true,
+        "key": "$info700",
+        "name": "c-info700",
+        "val": "#1D4ED8",
+        "variable": ""
+      },
+      "$color.info800": {
+        "isVar": true,
+        "key": "$info800",
+        "name": "c-info800",
+        "val": "#1E40AF",
+        "variable": ""
+      },
+      "$color.info900": {
+        "isVar": true,
+        "key": "$info900",
+        "name": "c-info900",
+        "val": "#1E3A8A",
+        "variable": ""
       },
       "$color.orange10Dark": {
         "isVar": true,
@@ -33144,70 +33886,70 @@
         "isVar": true,
         "key": "$primary100",
         "name": "c-primary100",
-        "val": "#ccfbf1",
+        "val": "#D9E2F1",
         "variable": ""
       },
       "$color.primary200": {
         "isVar": true,
         "key": "$primary200",
         "name": "c-primary200",
-        "val": "#99f6e4",
+        "val": "#B3C5E3",
         "variable": ""
       },
       "$color.primary300": {
         "isVar": true,
         "key": "$primary300",
         "name": "c-primary300",
-        "val": "#5eead4",
+        "val": "#8DA8D5",
         "variable": ""
       },
       "$color.primary400": {
         "isVar": true,
         "key": "$primary400",
         "name": "c-primary400",
-        "val": "#2dd4bf",
+        "val": "#678BC7",
         "variable": ""
       },
       "$color.primary50": {
         "isVar": true,
         "key": "$primary50",
         "name": "c-primary50",
-        "val": "#f0fdfa",
+        "val": "#EFF3F9",
         "variable": ""
       },
       "$color.primary500": {
         "isVar": true,
         "key": "$primary500",
         "name": "c-primary500",
-        "val": "#14b8a6",
+        "val": "#3A5BA0",
         "variable": ""
       },
       "$color.primary600": {
         "isVar": true,
         "key": "$primary600",
         "name": "c-primary600",
-        "val": "#0d9488",
+        "val": "#2E4980",
         "variable": ""
       },
       "$color.primary700": {
         "isVar": true,
         "key": "$primary700",
         "name": "c-primary700",
-        "val": "#0f766e",
+        "val": "#233760",
         "variable": ""
       },
       "$color.primary800": {
         "isVar": true,
         "key": "$primary800",
         "name": "c-primary800",
-        "val": "#115e59",
+        "val": "#172540",
         "variable": ""
       },
       "$color.primary900": {
         "isVar": true,
         "key": "$primary900",
         "name": "c-primary900",
-        "val": "#134e4a",
+        "val": "#0C1220",
         "variable": ""
       },
       "$color.purple10Dark": {
@@ -33550,112 +34292,210 @@
         "isVar": true,
         "key": "$secondary100",
         "name": "c-secondary100",
-        "val": "#ffedd5",
+        "val": "#FFEEE7",
         "variable": ""
       },
       "$color.secondary200": {
         "isVar": true,
         "key": "$secondary200",
         "name": "c-secondary200",
-        "val": "#fed7aa",
+        "val": "#FFDCD0",
         "variable": ""
       },
       "$color.secondary300": {
         "isVar": true,
         "key": "$secondary300",
         "name": "c-secondary300",
-        "val": "#fdba74",
+        "val": "#FFCAB8",
         "variable": ""
       },
       "$color.secondary400": {
         "isVar": true,
         "key": "$secondary400",
         "name": "c-secondary400",
-        "val": "#fb923c",
+        "val": "#FFB79F",
         "variable": ""
       },
       "$color.secondary50": {
         "isVar": true,
         "key": "$secondary50",
         "name": "c-secondary50",
-        "val": "#fff7ed",
+        "val": "#FFF8F5",
         "variable": ""
       },
       "$color.secondary500": {
         "isVar": true,
         "key": "$secondary500",
         "name": "c-secondary500",
-        "val": "#f97316",
+        "val": "#FFA387",
         "variable": ""
       },
       "$color.secondary600": {
         "isVar": true,
         "key": "$secondary600",
         "name": "c-secondary600",
-        "val": "#ea580c",
+        "val": "#E88A6E",
         "variable": ""
       },
       "$color.secondary700": {
         "isVar": true,
         "key": "$secondary700",
         "name": "c-secondary700",
-        "val": "#c2410c",
+        "val": "#D07156",
         "variable": ""
       },
       "$color.secondary800": {
         "isVar": true,
         "key": "$secondary800",
         "name": "c-secondary800",
-        "val": "#9a3412",
+        "val": "#B8583E",
         "variable": ""
       },
       "$color.secondary900": {
         "isVar": true,
         "key": "$secondary900",
         "name": "c-secondary900",
-        "val": "#7c2d12",
+        "val": "#A04026",
+        "variable": ""
+      },
+      "$color.success100": {
+        "isVar": true,
+        "key": "$success100",
+        "name": "c-success100",
+        "val": "#D8EFE6",
+        "variable": ""
+      },
+      "$color.success200": {
+        "isVar": true,
+        "key": "$success200",
+        "name": "c-success200",
+        "val": "#B1DFCD",
+        "variable": ""
+      },
+      "$color.success300": {
+        "isVar": true,
+        "key": "$success300",
+        "name": "c-success300",
+        "val": "#8ACFB4",
+        "variable": ""
+      },
+      "$color.success400": {
+        "isVar": true,
+        "key": "$success400",
+        "name": "c-success400",
+        "val": "#6ABF9B",
         "variable": ""
       },
       "$color.success50": {
         "isVar": true,
         "key": "$success50",
         "name": "c-success50",
-        "val": "#f0fdf4",
+        "val": "#EFF8F5",
         "variable": ""
       },
       "$color.success500": {
         "isVar": true,
         "key": "$success500",
         "name": "c-success500",
-        "val": "#22c55e",
+        "val": "#4A9B7F",
         "variable": ""
       },
       "$color.success600": {
         "isVar": true,
         "key": "$success600",
         "name": "c-success600",
-        "val": "#16a34a",
+        "val": "#3B7C66",
+        "variable": ""
+      },
+      "$color.success700": {
+        "isVar": true,
+        "key": "$success700",
+        "name": "c-success700",
+        "val": "#2C5D4C",
+        "variable": ""
+      },
+      "$color.success800": {
+        "isVar": true,
+        "key": "$success800",
+        "name": "c-success800",
+        "val": "#1E3E33",
+        "variable": ""
+      },
+      "$color.success900": {
+        "isVar": true,
+        "key": "$success900",
+        "name": "c-success900",
+        "val": "#0F1F19",
+        "variable": ""
+      },
+      "$color.warning100": {
+        "isVar": true,
+        "key": "$warning100",
+        "name": "c-warning100",
+        "val": "#FEF9C3",
+        "variable": ""
+      },
+      "$color.warning200": {
+        "isVar": true,
+        "key": "$warning200",
+        "name": "c-warning200",
+        "val": "#FEF08A",
+        "variable": ""
+      },
+      "$color.warning300": {
+        "isVar": true,
+        "key": "$warning300",
+        "name": "c-warning300",
+        "val": "#FDE047",
+        "variable": ""
+      },
+      "$color.warning400": {
+        "isVar": true,
+        "key": "$warning400",
+        "name": "c-warning400",
+        "val": "#FACC15",
         "variable": ""
       },
       "$color.warning50": {
         "isVar": true,
         "key": "$warning50",
         "name": "c-warning50",
-        "val": "#fefce8",
+        "val": "#FEFCE8",
         "variable": ""
       },
       "$color.warning500": {
         "isVar": true,
         "key": "$warning500",
         "name": "c-warning500",
-        "val": "#eab308",
+        "val": "#EAB308",
         "variable": ""
       },
       "$color.warning600": {
         "isVar": true,
         "key": "$warning600",
         "name": "c-warning600",
-        "val": "#ca8a04",
+        "val": "#CA8A04",
+        "variable": ""
+      },
+      "$color.warning700": {
+        "isVar": true,
+        "key": "$warning700",
+        "name": "c-warning700",
+        "val": "#A16207",
+        "variable": ""
+      },
+      "$color.warning800": {
+        "isVar": true,
+        "key": "$warning800",
+        "name": "c-warning800",
+        "val": "#854D0E",
+        "variable": ""
+      },
+      "$color.warning900": {
+        "isVar": true,
+        "key": "$warning900",
+        "name": "c-warning900",
+        "val": "#713F12",
         "variable": ""
       },
       "$color.white0": {
@@ -33980,11 +34820,25 @@
         "val": 8,
         "variable": ""
       },
+      "$radius.2xl": {
+        "isVar": true,
+        "key": "$2xl",
+        "name": "t-radius-2xl",
+        "val": 20,
+        "variable": ""
+      },
       "$radius.3": {
         "isVar": true,
         "key": "$3",
         "name": "t-radius-3",
         "val": 12,
+        "variable": ""
+      },
+      "$radius.3xl": {
+        "isVar": true,
+        "key": "$3xl",
+        "name": "t-radius-3xl",
+        "val": 24,
         "variable": ""
       },
       "$radius.4": {
@@ -34036,12 +34890,47 @@
         "val": 9999,
         "variable": ""
       },
+      "$radius.lg": {
+        "isVar": true,
+        "key": "$lg",
+        "name": "t-radius-lg",
+        "val": 12,
+        "variable": ""
+      },
+      "$radius.md": {
+        "isVar": true,
+        "key": "$md",
+        "name": "t-radius-md",
+        "val": 8,
+        "variable": ""
+      },
+      "$radius.sm": {
+        "isVar": true,
+        "key": "$sm",
+        "name": "t-radius-sm",
+        "val": 4,
+        "variable": ""
+      },
       "$radius.true": {
         "isVar": true,
         "key": "$true",
         "name": "t-radius-true",
         "val": 9,
         "variable": "var(--t-radius-true)"
+      },
+      "$radius.xl": {
+        "isVar": true,
+        "key": "$xl",
+        "name": "t-radius-xl",
+        "val": 16,
+        "variable": ""
+      },
+      "$radius.xs": {
+        "isVar": true,
+        "key": "$xs",
+        "name": "t-radius-xs",
+        "val": 2,
+        "variable": ""
       },
       "$size.0": {
         "isVar": true,
@@ -34096,8 +34985,8 @@
         "isVar": true,
         "key": "$11",
         "name": "t-size-11",
-        "val": 44,
-        "variable": ""
+        "val": 124,
+        "variable": "var(--t-size-11)"
       },
       "$size.12": {
         "isVar": true,
@@ -34211,13 +35100,6 @@
         "val": 128,
         "variable": ""
       },
-      "$size.36": {
-        "isVar": true,
-        "key": "$36",
-        "name": "t-size-36",
-        "val": 144,
-        "variable": ""
-      },
       "$size.4": {
         "isVar": true,
         "key": "$4",
@@ -34232,46 +35114,11 @@
         "val": 48,
         "variable": "var(--t-size-4--5)"
       },
-      "$size.40": {
-        "isVar": true,
-        "key": "$40",
-        "name": "t-size-40",
-        "val": 160,
-        "variable": ""
-      },
-      "$size.44": {
-        "isVar": true,
-        "key": "$44",
-        "name": "t-size-44",
-        "val": 176,
-        "variable": ""
-      },
-      "$size.48": {
-        "isVar": true,
-        "key": "$48",
-        "name": "t-size-48",
-        "val": 192,
-        "variable": ""
-      },
       "$size.5": {
         "isVar": true,
         "key": "$5",
         "name": "t-size-5",
         "val": 20,
-        "variable": ""
-      },
-      "$size.52": {
-        "isVar": true,
-        "key": "$52",
-        "name": "t-size-52",
-        "val": 208,
-        "variable": ""
-      },
-      "$size.56": {
-        "isVar": true,
-        "key": "$56",
-        "name": "t-size-56",
-        "val": 224,
         "variable": ""
       },
       "$size.6": {
@@ -34281,32 +35128,11 @@
         "val": 24,
         "variable": ""
       },
-      "$size.60": {
-        "isVar": true,
-        "key": "$60",
-        "name": "t-size-60",
-        "val": 240,
-        "variable": ""
-      },
-      "$size.64": {
-        "isVar": true,
-        "key": "$64",
-        "name": "t-size-64",
-        "val": 256,
-        "variable": ""
-      },
       "$size.7": {
         "isVar": true,
         "key": "$7",
         "name": "t-size-7",
         "val": 28,
-        "variable": ""
-      },
-      "$size.72": {
-        "isVar": true,
-        "key": "$72",
-        "name": "t-size-72",
-        "val": 288,
         "variable": ""
       },
       "$size.8": {
@@ -34316,13 +35142,6 @@
         "val": 32,
         "variable": ""
       },
-      "$size.80": {
-        "isVar": true,
-        "key": "$80",
-        "name": "t-size-80",
-        "val": 320,
-        "variable": ""
-      },
       "$size.9": {
         "isVar": true,
         "key": "$9",
@@ -34330,12 +35149,109 @@
         "val": 36,
         "variable": ""
       },
-      "$size.96": {
-        "isVar": true,
-        "key": "$96",
-        "name": "t-size-96",
-        "val": 384,
-        "variable": ""
+      "$size.avatar": {
+        "xs": {
+          "isVar": true,
+          "key": "$xs",
+          "name": "t-size-avatar-xs",
+          "val": 24,
+          "variable": ""
+        },
+        "sm": {
+          "isVar": true,
+          "key": "$sm",
+          "name": "t-size-avatar-sm",
+          "val": 32,
+          "variable": ""
+        },
+        "md": {
+          "isVar": true,
+          "key": "$md",
+          "name": "t-size-avatar-md",
+          "val": 40,
+          "variable": ""
+        },
+        "lg": {
+          "isVar": true,
+          "key": "$lg",
+          "name": "t-size-avatar-lg",
+          "val": 56,
+          "variable": ""
+        },
+        "xl": {
+          "isVar": true,
+          "key": "$xl",
+          "name": "t-size-avatar-xl",
+          "val": 80,
+          "variable": ""
+        }
+      },
+      "$size.button": {
+        "sm": {
+          "isVar": true,
+          "key": "$sm",
+          "name": "t-size-button-sm",
+          "val": 32,
+          "variable": ""
+        },
+        "md": {
+          "isVar": true,
+          "key": "$md",
+          "name": "t-size-button-md",
+          "val": 40,
+          "variable": ""
+        },
+        "lg": {
+          "isVar": true,
+          "key": "$lg",
+          "name": "t-size-button-lg",
+          "val": 48,
+          "variable": ""
+        },
+        "xl": {
+          "isVar": true,
+          "key": "$xl",
+          "name": "t-size-button-xl",
+          "val": 56,
+          "variable": ""
+        }
+      },
+      "$size.icon": {
+        "xs": {
+          "isVar": true,
+          "key": "$xs",
+          "name": "t-size-icon-xs",
+          "val": 16,
+          "variable": ""
+        },
+        "sm": {
+          "isVar": true,
+          "key": "$sm",
+          "name": "t-size-icon-sm",
+          "val": 20,
+          "variable": ""
+        },
+        "md": {
+          "isVar": true,
+          "key": "$md",
+          "name": "t-size-icon-md",
+          "val": 24,
+          "variable": ""
+        },
+        "lg": {
+          "isVar": true,
+          "key": "$lg",
+          "name": "t-size-icon-lg",
+          "val": 32,
+          "variable": ""
+        },
+        "xl": {
+          "isVar": true,
+          "key": "$xl",
+          "name": "t-size-icon-xl",
+          "val": 40,
+          "variable": ""
+        }
       },
       "$size.true": {
         "isVar": true,
@@ -34673,6 +35589,20 @@
         "val": 80,
         "variable": ""
       },
+      "$space.24": {
+        "isVar": true,
+        "key": "$24",
+        "name": "t-space-24",
+        "val": 96,
+        "variable": ""
+      },
+      "$space.28": {
+        "isVar": true,
+        "key": "$28",
+        "name": "t-space-28",
+        "val": 112,
+        "variable": ""
+      },
       "$space.3": {
         "isVar": true,
         "key": "$3",
@@ -34685,6 +35615,13 @@
         "key": "$3.5",
         "name": "t-space-3--5",
         "val": 14,
+        "variable": ""
+      },
+      "$space.32": {
+        "isVar": true,
+        "key": "$32",
+        "name": "t-space-32",
+        "val": 128,
         "variable": ""
       },
       "$space.4": {
@@ -34783,6 +35720,55 @@
         "key": "$5",
         "name": "t-zIndex-5",
         "val": 500,
+        "variable": ""
+      },
+      "$zIndex.dropdown": {
+        "isVar": true,
+        "key": "$dropdown",
+        "name": "t-zIndex-dropdown",
+        "val": 100,
+        "variable": ""
+      },
+      "$zIndex.modal": {
+        "isVar": true,
+        "key": "$modal",
+        "name": "t-zIndex-modal",
+        "val": 300,
+        "variable": ""
+      },
+      "$zIndex.overlay": {
+        "isVar": true,
+        "key": "$overlay",
+        "name": "t-zIndex-overlay",
+        "val": 500,
+        "variable": ""
+      },
+      "$zIndex.popover": {
+        "isVar": true,
+        "key": "$popover",
+        "name": "t-zIndex-popover",
+        "val": 400,
+        "variable": ""
+      },
+      "$zIndex.sticky": {
+        "isVar": true,
+        "key": "$sticky",
+        "name": "t-zIndex-sticky",
+        "val": 200,
+        "variable": ""
+      },
+      "$zIndex.toast": {
+        "isVar": true,
+        "key": "$toast",
+        "name": "t-zIndex-toast",
+        "val": 600,
+        "variable": ""
+      },
+      "$zIndex.tooltip": {
+        "isVar": true,
+        "key": "$tooltip",
+        "name": "t-zIndex-tooltip",
+        "val": 700,
         "variable": ""
       }
     },

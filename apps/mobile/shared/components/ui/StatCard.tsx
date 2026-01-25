@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, styled, GetProps } from 'tamagui';
+import { XStack, Text } from 'tamagui';
 import { Card } from './Card';
 
 interface StatCardProps {
@@ -20,7 +20,8 @@ export function StatCard({
   trendValue,
   onPress,
 }: StatCardProps) {
-  const trendColor = trend === 'up' ? '$success' : trend === 'down' ? '$error' : '$colorMuted';
+  // Use semantic trend colors from theme
+  const trendColor = trend === 'up' ? '$trendUp' : trend === 'down' ? '$trendDown' : '$trendNeutral';
   const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '';
 
   return (
@@ -30,7 +31,7 @@ export function StatCard({
       gap="$2"
     >
       <XStack justifyContent="space-between" alignItems="flex-start">
-        <Text color="$colorMuted" fontSize="$3" fontWeight="500">
+        <Text color="$colorMuted" fontSize="$2" fontWeight="500">
           {label}
         </Text>
         {icon}
@@ -41,14 +42,14 @@ export function StatCard({
           {value}
         </Text>
         {trendValue && (
-          <Text color={trendColor} fontSize="$3" fontWeight="500">
+          <Text color={trendColor} fontSize="$2" fontWeight="500">
             {trendIcon} {trendValue}
           </Text>
         )}
       </XStack>
 
       {subtitle && (
-        <Text color="$colorMuted" fontSize="$3">
+        <Text color="$colorMuted" fontSize="$2">
           {subtitle}
         </Text>
       )}

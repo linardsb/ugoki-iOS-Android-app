@@ -1,12 +1,12 @@
 /**
  * Key benefit badge for research papers.
  * Displays icon + title + description in a compact format.
+ * Uses theme tokens for consistent styling.
  */
 
 import React from 'react';
-import { View, useColorScheme } from 'react-native';
-import { XStack, YStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { View } from 'react-native';
+import { XStack, YStack, Text, useTheme } from 'tamagui';
 import {
   ShieldCheck,
   Wrench,
@@ -48,18 +48,13 @@ interface BenefitBadgeProps {
 }
 
 export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
+  const theme = useTheme();
 
-  // Theme-aware colors matching dashboard cards
-  const cardBackground = isDark ? '#1c1c1e' : '#f9fafb';
-  const iconBackground = isDark ? '#2c2c2e' : '#f3f4f6';
-  const titleColor = isDark ? '#ffffff' : '#1f2937';
-  const bodyColor = isDark ? '#a1a1aa' : '#4b5563';
+  // Theme colors from tokens
+  const cardBackground = theme.backgroundSoft?.val || theme.backgroundHover.val;
+  const iconBackground = theme.backgroundHover.val;
+  const titleColor = theme.color.val;
+  const bodyColor = theme.colorMuted.val;
 
   const icon = getBenefitIcon(benefit);
 

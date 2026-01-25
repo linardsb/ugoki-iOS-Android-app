@@ -42,7 +42,7 @@ function MenuItem({ icon, label, onPress, isLast }: MenuItemProps) {
       activeOpacity={0.7}
     >
       <View style={styles.menuItemIcon}>{icon}</View>
-      <Text fontSize={16} fontWeight="600" color="#1f2937">
+      <Text fontSize={16} fontWeight="600" color="#1F2041">
         {label}
       </Text>
     </TouchableOpacity>
@@ -102,27 +102,27 @@ export function ProfilePopupMenu() {
         {/* Menu Bubble */}
         <View style={styles.menuBubble}>
           <MenuItem
-            icon={<UsersThree size={22} color="#14b8a6" weight="regular" />}
+            icon={<UsersThree size={22} color="#3A5BA0" weight="regular" />}
             label="Social"
             onPress={() => handleNavigate('/(modals)/social')}
           />
           <MenuItem
-            icon={<BookOpenText size={22} color="#6366f1" weight="regular" />}
+            icon={<BookOpenText size={22} color="#3A5BA0" weight="regular" />}
             label="Research"
             onPress={() => handleNavigate('/(modals)/research')}
           />
           <MenuItem
-            icon={<CookingPot size={22} color="#f97316" weight="regular" />}
+            icon={<CookingPot size={22} color="#FFA387" weight="regular" />}
             label="Recipes"
             onPress={() => handleNavigate('/(modals)/recipes')}
           />
           <MenuItem
-            icon={<Gear size={22} color="#6b7280" weight="regular" />}
+            icon={<Gear size={22} color="#6B697A" weight="regular" />}
             label="Settings"
             onPress={() => handleNavigate('/(modals)/settings')}
           />
           <MenuItem
-            icon={<User size={22} color="#8b5cf6" weight="regular" />}
+            icon={<User size={22} color="#4A9B7F" weight="regular" />}
             label="Profile"
             onPress={() => handleNavigate('/profile')}
             isLast
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   menuItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#E8E6E2',
   },
   menuItemIcon: {
     width: 28,

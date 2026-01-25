@@ -1,11 +1,11 @@
 /**
  * Topic selection pill/button for Research Hub.
+ * Uses theme tokens for consistent styling.
  */
 
 import React from 'react';
-import { TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import { XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import { XStack, Text, useTheme } from 'tamagui';
 import {
   ForkKnife,
   Lightning,
@@ -37,23 +37,17 @@ export function TopicPill({
   onPress,
   size = 'md',
 }: TopicPillProps) {
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
+  const theme = useTheme();
 
-  // Explicit colors for both themes - ensures text is always readable
-  const pillBackground = isDark ? '#27272a' : '#f4f4f5';
-  const pillBorder = isDark ? '#3f3f46' : '#e4e4e7';
-  // Unselected text must contrast with pill background
-  const unselectedTextColor = isDark ? '#e5e5e5' : '#27272a';
+  // Theme colors from tokens
+  const pillBackground = theme.backgroundHover.val;
+  const pillBorder = theme.borderColor.val;
+  const unselectedTextColor = theme.color.val;
 
   const Icon = TOPIC_ICONS[topic];
   const metadata = topic === 'all' ? null : TOPIC_METADATA[topic];
   const label = topic === 'all' ? 'All' : metadata?.label || topic;
-  const topicColor = topic === 'all' ? '#6b7280' : metadata?.color || '#6b7280';
+  const topicColor = topic === 'all' ? theme.colorMuted.val : metadata?.color || theme.colorMuted.val;
 
   const isSmall = size === 'sm';
 

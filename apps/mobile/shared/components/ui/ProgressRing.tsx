@@ -1,9 +1,7 @@
-import { View } from 'react-native';
-import { YStack, Text, useTheme } from 'tamagui';
+import { YStack, useTheme } from 'tamagui';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedProps,
-  withTiming,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
@@ -58,8 +56,9 @@ export function ProgressRing({
     };
   });
 
-  const strokeColor = color || theme.primary.val;
-  const bgColor = backgroundColor || theme.borderColor.val;
+  // Use theme tokens with fallback
+  const strokeColor = color || theme.progressFill?.val || theme.primary?.val;
+  const bgColor = backgroundColor || theme.progressBackground?.val || theme.borderColor?.val;
 
   return (
     <YStack width={size} height={size} alignItems="center" justifyContent="center">

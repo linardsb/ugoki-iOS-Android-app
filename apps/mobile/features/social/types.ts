@@ -182,10 +182,19 @@ export const CHALLENGE_TYPE_UNITS: Record<ChallengeType, string> = {
   consistency: 'days',
 };
 
+/**
+ * @deprecated Use theme tokens via useTheme() hook instead of hardcoded colors.
+ * Status colors should map to:
+ * - upcoming: theme.primary (Slate Blue)
+ * - active: theme.success (Sage Green)
+ * - completed: theme.colorMuted
+ *
+ * See ChallengeCard.tsx getStatusColors() for proper implementation.
+ */
 export const CHALLENGE_STATUS_COLORS: Record<ChallengeStatus, string> = {
-  upcoming: '#3b82f6', // blue
-  active: '#22c55e', // green
-  completed: '#6b7280', // gray
+  upcoming: '#3A5BA0', // theme.primary - Slate Blue
+  active: '#4A9B7F', // theme.success - Sage Green
+  completed: '#6B697A', // theme.colorMuted
 };
 
 export const LEADERBOARD_TYPE_LABELS: Record<LeaderboardType, string> = {

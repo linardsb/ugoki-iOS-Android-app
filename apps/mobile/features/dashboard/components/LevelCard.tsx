@@ -60,7 +60,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
         {/* Header */}
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
-            <Star size={20} color="#f59e0b" weight="fill" />
+            <Star size={20} color="#FFA387" weight="fill" />
             <Text fontSize="$5" fontWeight="bold" color="$color">
               Level {level.current_level}
             </Text>
@@ -84,7 +84,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
               style={{
                 height: '100%',
                 width: `${level.xp_progress_percent}%`,
-                backgroundColor: '#14b8a6',
+                backgroundColor: '#3A5BA0',
                 borderRadius: 4,
               }}
             />
@@ -104,7 +104,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
           <Text fontSize="$3" color="$primary" fontWeight="600">
             View Achievements
           </Text>
-          <CaretRight size={16} color="#14b8a6" weight="regular" />
+          <CaretRight size={16} color="#3A5BA0" weight="regular" />
         </XStack>
       </YStack>
     </Card>

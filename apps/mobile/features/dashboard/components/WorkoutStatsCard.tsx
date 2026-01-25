@@ -9,9 +9,9 @@ interface WorkoutStatsCardProps {
 
 export function WorkoutStatsCard({ stats, isLoading }: WorkoutStatsCardProps) {
   const theme = useTheme();
-  const primaryColor = theme.primary?.val || '#14b8a6';
-  const secondaryColor = theme.secondary?.val || '#f97316';
-  const mutedColor = theme.colorMuted?.val || '#6b7280';
+  const primaryColor = theme.primary?.val || '#3A5BA0';
+  const secondaryColor = theme.secondary?.val || '#FFA387';
+  const mutedColor = theme.colorMuted?.val || '#6B697A';
 
   if (isLoading) {
     return (

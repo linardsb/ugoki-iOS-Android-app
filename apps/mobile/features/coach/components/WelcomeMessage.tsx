@@ -16,22 +16,22 @@ const suggestions = [
   {
     icon: Timer,
     text: 'How long should I fast today?',
-    color: '#f97316',
+    color: '#FFA387',
   },
   {
     icon: Lightning,
     text: 'Suggest a quick workout',
-    color: '#14b8a6',
+    color: '#3A5BA0',
   },
   {
     icon: Scales,
     text: 'Help me reach my weight goal',
-    color: '#3b82f6',
+    color: '#3A5BA0',
   },
   {
     icon: Brain,
     text: 'Give me some motivation',
-    color: '#8b5cf6',
+    color: '#4A9B7F',
   },
 ];
 
