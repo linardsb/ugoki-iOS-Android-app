@@ -31,13 +31,6 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'special', label: 'Special' },
 ];
 
-const CATEGORY_COLORS: Record<AchievementType, string> = {
-  streak: '#f59e0b',
-  fasting: '#22c55e',
-  workout: '#3b82f6',
-  weight: '#8b5cf6',
-  special: '#ec4899',
-};
 
 // Map icon names to Phosphor icons
 function getIconComponent(iconName: string | undefined, size: number, color: string) {
@@ -71,8 +64,8 @@ function getIconComponent(iconName: string | undefined, size: number, color: str
 export default function AchievementsScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const backgroundColor = theme.background.val;
   const iconColor = theme.color.val;
-  const primaryColor = theme.primary.val;
   const mutedColor = theme.colorMuted.val;
   const [filter, setFilter] = useState<FilterType>('all');
   const { data: achievements, isLoading } = useAchievements(false);
@@ -128,7 +121,7 @@ export default function AchievementsScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor }} edges={['top']}>
         <YStack flex={1} backgroundColor="$background" alignItems="center" justifyContent="center">
           <Spinner size="large" color="$primary" />
           <Text color="$colorMuted" marginTop="$2">Loading achievements...</Text>
@@ -138,7 +131,7 @@ export default function AchievementsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor }} edges={['top']}>
       <YStack flex={1} backgroundColor="$background">
         {/* Header */}
         <XStack
@@ -175,7 +168,7 @@ export default function AchievementsScreen() {
             borderRadius="$3"
             alignItems="center"
           >
-            <Trophy size={24} color={primaryColor} weight="regular" />
+            <Trophy size={24} color={mutedColor} weight="regular" />
             <Text fontSize="$5" fontWeight="bold" color="$color" marginTop="$1">
               {stats.unlocked}
             </Text>
@@ -190,7 +183,7 @@ export default function AchievementsScreen() {
             borderRadius="$3"
             alignItems="center"
           >
-            <Star size={24} color="#f59e0b" weight="thin" />
+            <Star size={24} color={mutedColor} weight="regular" />
             <Text fontSize="$5" fontWeight="bold" color="$color" marginTop="$1">
               {stats.xpEarned.toLocaleString()}
             </Text>
@@ -280,9 +273,10 @@ export default function AchievementsScreen() {
 
 function AchievementCard({ userAchievement }: { userAchievement: UserAchievement }) {
   const theme = useTheme();
+  const iconColor = theme.color.val;
   const mutedColor = theme.colorMuted.val;
+  const primaryColor = theme.primary.val;
   const { achievement, is_unlocked, progress, unlocked_at } = userAchievement;
-  const categoryColor = CATEGORY_COLORS[achievement.achievement_type];
   const progressPercent = Math.min(100, (progress / achievement.requirement_value) * 100);
 
   // Don't show hidden achievements unless unlocked
@@ -297,9 +291,9 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
         opacity={0.5}
       >
         <XStack
-          width={56}
-          height={56}
-          borderRadius={28}
+          width={48}
+          height={48}
+          borderRadius={24}
           backgroundColor="$backgroundHover"
           justifyContent="center"
           alignItems="center"
@@ -325,38 +319,36 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
       borderRadius="$4"
       alignItems="center"
       gap="$3"
-      opacity={is_unlocked ? 1 : 0.7}
-      borderLeftWidth={4}
-      borderLeftColor={is_unlocked ? categoryColor : '$borderColor'}
+      opacity={is_unlocked ? 1 : 0.8}
     >
       {/* Icon */}
       <XStack
-        width={56}
-        height={56}
-        borderRadius={28}
-        backgroundColor={is_unlocked ? `${categoryColor}20` : '$backgroundHover'}
+        width={48}
+        height={48}
+        borderRadius={24}
+        backgroundColor="$backgroundHover"
         justifyContent="center"
         alignItems="center"
         position="relative"
       >
         {getIconComponent(
           achievement.icon,
-          28,
-          is_unlocked ? categoryColor : '#666'
+          24,
+          is_unlocked ? iconColor : mutedColor
         )}
         {is_unlocked && (
           <XStack
             position="absolute"
             bottom={-2}
             right={-2}
-            width={20}
-            height={20}
-            borderRadius={10}
-            backgroundColor="#22c55e"
+            width={18}
+            height={18}
+            borderRadius={9}
+            backgroundColor="$success"
             justifyContent="center"
             alignItems="center"
           >
-            <Check size={12} color="white" weight="thin" />
+            <Check size={10} color="white" weight="bold" />
           </XStack>
         )}
       </XStack>
@@ -372,7 +364,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
             {achievement.name}
           </Text>
           <XStack
-            backgroundColor={is_unlocked ? '#f59e0b20' : '$backgroundHover'}
+            backgroundColor="$backgroundHover"
             paddingHorizontal="$2"
             paddingVertical="$1"
             borderRadius="$2"
@@ -380,7 +372,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
             <Text
               fontSize="$3"
               fontWeight="600"
-              color={is_unlocked ? '#f59e0b' : '$colorMuted'}
+              color="$colorMuted"
             >
               +{achievement.xp_reward} XP
             </Text>
@@ -397,7 +389,7 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
             <YStack height={4} backgroundColor="$backgroundHover" borderRadius="$1">
               <YStack
                 height={4}
-                backgroundColor={categoryColor}
+                backgroundColor="$primary"
                 borderRadius="$1"
                 width={`${progressPercent}%`}
               />

@@ -13,7 +13,6 @@ import {
   useToggleSaveRecipe,
   useSavedRecipes,
   MEAL_TYPE_LABELS,
-  MEAL_TYPE_ICONS,
   DIET_TAG_LABELS,
 } from '@/features/recipes';
 
@@ -93,7 +92,6 @@ export default function RecipeDetailScreen() {
         {/* Header */}
         <YStack padding="$4" gap="$3">
           <XStack alignItems="center" gap="$2">
-            <Text fontSize={32}>{MEAL_TYPE_ICONS[recipe.meal_type]}</Text>
             <Badge variant="secondary">{MEAL_TYPE_LABELS[recipe.meal_type]}</Badge>
             {recipe.is_featured && <Badge variant="primary">Featured</Badge>}
           </XStack>
@@ -103,7 +101,7 @@ export default function RecipeDetailScreen() {
           </Text>
 
           {recipe.description && (
-            <Text fontSize="$3" color="$colorSubtle" lineHeight={22}>
+            <Text fontSize="$3" color="$colorMuted" lineHeight={22}>
               {recipe.description}
             </Text>
           )}
@@ -119,7 +117,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$primary">
                 {recipe.nutrition.calories}
               </Text>
-              <Text fontSize="$3" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorMuted">
                 Calories
               </Text>
             </YStack>
@@ -127,7 +125,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$primary">
                 {recipe.nutrition.protein_g}g
               </Text>
-              <Text fontSize="$3" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorMuted">
                 Protein
               </Text>
             </YStack>
@@ -135,7 +133,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$color">
                 {recipe.nutrition.carbs_g}g
               </Text>
-              <Text fontSize="$3" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorMuted">
                 Carbs
               </Text>
             </YStack>
@@ -143,7 +141,7 @@ export default function RecipeDetailScreen() {
               <Text fontSize="$6" fontWeight="700" color="$color">
                 {recipe.nutrition.fat_g}g
               </Text>
-              <Text fontSize="$3" color="$colorSubtle">
+              <Text fontSize="$3" color="$colorMuted">
                 Fat
               </Text>
             </YStack>
@@ -153,22 +151,22 @@ export default function RecipeDetailScreen() {
         {/* Time & Servings */}
         <XStack paddingHorizontal="$4" paddingVertical="$4" gap="$4" justifyContent="center">
           <XStack alignItems="center" gap="$2">
-            <Ionicons name="time-outline" size={20} color="#9ca3af" />
-            <Text color="$colorSubtle">
+            <Ionicons name="time-outline" size={18} color="#a1a1aa" />
+            <Text color="$colorMuted">
               Prep: {recipe.prep_time_minutes} min
             </Text>
           </XStack>
           {recipe.cook_time_minutes > 0 && (
             <XStack alignItems="center" gap="$2">
-              <Ionicons name="flame-outline" size={20} color="#9ca3af" />
-              <Text color="$colorSubtle">
+              <Ionicons name="flame-outline" size={18} color="#a1a1aa" />
+              <Text color="$colorMuted">
                 Cook: {recipe.cook_time_minutes} min
               </Text>
             </XStack>
           )}
           <XStack alignItems="center" gap="$2">
-            <Ionicons name="people-outline" size={20} color="#9ca3af" />
-            <Text color="$colorSubtle">
+            <Ionicons name="people-outline" size={18} color="#a1a1aa" />
+            <Text color="$colorMuted">
               {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'}
             </Text>
           </XStack>
@@ -181,11 +179,11 @@ export default function RecipeDetailScreen() {
               <View
                 key={tag}
                 backgroundColor="$backgroundHover"
-                paddingHorizontal="$3"
-                paddingVertical="$2"
-                borderRadius="$3"
+                paddingHorizontal="$4"
+                paddingVertical="$2.5"
+                borderRadius="$4"
               >
-                <Text fontSize="$3" color="$colorSubtle" fontWeight="500">
+                <Text fontSize="$4" color="$color" fontWeight="500">
                   {DIET_TAG_LABELS[tag]}
                 </Text>
               </View>
@@ -224,7 +222,7 @@ export default function RecipeDetailScreen() {
                     </Text>
                   </XStack>
                   {ingredient.notes && (
-                    <Text fontSize="$3" color="$colorSubtle" fontStyle="italic">
+                    <Text fontSize="$3" color="$colorMuted" fontStyle="italic">
                       {ingredient.notes}
                     </Text>
                   )}

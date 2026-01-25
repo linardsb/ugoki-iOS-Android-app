@@ -268,8 +268,8 @@ const darkTheme = {
   colorHover: flatColors.gray50,
   colorPress: flatColors.gray200,
   colorFocus: flatColors.gray50,
-  colorMuted: flatColors.gray400,
-  colorSubtle: flatColors.gray500,
+  colorMuted: flatColors.gray300,          // Brighter muted text for dark theme
+  colorSubtle: flatColors.gray400,         // Brighter subtle text for dark theme
 
   // Border
   borderColor: flatColors.gray700,

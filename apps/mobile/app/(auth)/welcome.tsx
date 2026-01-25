@@ -22,12 +22,10 @@ const logoImage = require('../../assets/splash.png');
 // Feature badge component
 function FeatureBadge({
   icon: Icon,
-  color,
   text,
   delay
 }: {
   icon: typeof Timer;
-  color: string;
   text: string;
   delay: number;
 }) {
@@ -47,16 +45,7 @@ function FeatureBadge({
   return (
     <Animated.View style={animatedStyle}>
       <XStack gap="$3" alignItems="center">
-        <XStack
-          width={44}
-          height={44}
-          borderRadius={22}
-          backgroundColor={color}
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Icon size={22} color="white" weight="fill" />
-        </XStack>
+        <Icon size={24} color="#52525b" weight="regular" />
         <Text fontSize="$4" color="#18181b" fontWeight="500">
           {text}
         </Text>
@@ -146,19 +135,16 @@ export default function WelcomeScreen() {
             <YStack gap="$4" marginTop="$4" alignItems="flex-start">
               <FeatureBadge
                 icon={Timer}
-                color="#14b8a6"
                 text="Personalized fasting protocols"
                 delay={600}
               />
               <FeatureBadge
                 icon={Lightning}
-                color="#f97316"
                 text="15-minute HIIT workouts"
                 delay={750}
               />
               <FeatureBadge
                 icon={Sparkle}
-                color="#8b5cf6"
                 text="AI-powered coaching"
                 delay={900}
               />

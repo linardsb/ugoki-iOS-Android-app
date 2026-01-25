@@ -113,9 +113,3 @@ export const DIET_TAG_LABELS: Record<DietTag, string> = {
   [DietTag.POST_WORKOUT]: 'Post Workout',
 };
 
-export const MEAL_TYPE_ICONS: Record<MealType, string> = {
-  [MealType.BREAKFAST]: '🌅',
-  [MealType.LUNCH]: '☀️',
-  [MealType.DINNER]: '🌙',
-  [MealType.SNACK]: '🍎',
-};

@@ -58,16 +58,16 @@ const BadgeContainer = styled(XStack, {
     },
     size: {
       sm: {
-        paddingHorizontal: '$1.5',
-        paddingVertical: '$0.5',
-      },
-      md: {
         paddingHorizontal: '$2',
         paddingVertical: '$1',
       },
-      lg: {
+      md: {
         paddingHorizontal: '$3',
         paddingVertical: '$1.5',
+      },
+      lg: {
+        paddingHorizontal: '$4',
+        paddingVertical: '$2',
       },
     },
   } as const,
@@ -123,7 +123,7 @@ export function Badge({ children, variant, ...props }: BadgeProps) {
   return (
     <BadgeContainer variant={variant} {...props}>
       {typeof children === 'string' ? (
-        <Text color={textColor} fontSize="$2" fontWeight="600">
+        <Text color={textColor} fontSize="$3" fontWeight="600">
           {children}
         </Text>
       ) : (

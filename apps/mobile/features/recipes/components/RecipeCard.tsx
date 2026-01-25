@@ -8,7 +8,7 @@ import { TouchableOpacity } from 'react-native';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { Card, Badge } from '@/shared/components/ui';
 import type { RecipeSummary } from '../types';
-import { MEAL_TYPE_ICONS, DIET_TAG_LABELS } from '../types';
+import { DIET_TAG_LABELS } from '../types';
 
 interface RecipeCardProps {
   recipe: RecipeSummary;
@@ -19,8 +19,6 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' }: RecipeCardProps) {
   const theme = useTheme();
-  const mealIcon = MEAL_TYPE_ICONS[recipe.meal_type];
-
   const primaryColor = theme.primary.val;
   const mutedColor = theme.colorMuted.val;
 
@@ -37,36 +35,29 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
           marginBottom="$2"
         >
           <XStack justifyContent="space-between" alignItems="center">
-            <XStack flex={1} alignItems="center" gap="$3">
-              <Text fontSize={24}>{mealIcon}</Text>
-              <YStack flex={1}>
-                <Text
-                  fontSize="$4"
-                  fontWeight="600"
-                  color="$color"
-                  numberOfLines={1}
-                >
-                  {recipe.name}
+            <YStack flex={1}>
+              <Text
+                fontSize="$4"
+                fontWeight="600"
+                color="$color"
+                numberOfLines={1}
+              >
+                {recipe.name}
+              </Text>
+              <XStack gap="$2" marginTop="$1">
+                <Text fontSize="$2" color="$colorMuted">
+                  {recipe.calories} cal
                 </Text>
-                <XStack gap="$2" marginTop="$1">
-                  <Text fontSize="$2" color="$colorSubtle">
-                    {recipe.calories} cal
-                  </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
-                    •
-                  </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
-                    {recipe.protein_g}g protein
-                  </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
-                    •
-                  </Text>
-                  <Text fontSize="$2" color="$colorSubtle">
-                    {recipe.prep_time_minutes} min
-                  </Text>
-                </XStack>
-              </YStack>
-            </XStack>
+                <Text fontSize="$2" color="$colorMuted">•</Text>
+                <Text fontSize="$2" color="$colorMuted">
+                  {recipe.protein_g}g protein
+                </Text>
+                <Text fontSize="$2" color="$colorMuted">•</Text>
+                <Text fontSize="$2" color="$colorMuted">
+                  {recipe.prep_time_minutes} min
+                </Text>
+              </XStack>
+            </YStack>
             {onToggleSave && (
               <TouchableOpacity
                 onPress={onToggleSave}
@@ -96,12 +87,11 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
       >
         <XStack justifyContent="space-between" alignItems="flex-start">
           <YStack flex={1}>
-            <XStack alignItems="center" gap="$2" marginBottom="$2">
-              <Text fontSize={28}>{mealIcon}</Text>
-              {recipe.is_featured && (
+            {recipe.is_featured && (
+              <XStack marginBottom="$2">
                 <Badge variant="primary" size="sm">Featured</Badge>
-              )}
-            </XStack>
+              </XStack>
+            )}
 
             <Text
               fontSize="$5"

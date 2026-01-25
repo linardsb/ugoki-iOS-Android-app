@@ -30889,7 +30889,7 @@
           "isVar": true,
           "key": "$gray900",
           "name": "c-gray900",
-          "val": "#1F2041",
+          "val": "#212020",
           "variable": ""
         },
         "gray950": {
@@ -32198,9 +32198,9 @@
         "gray600": "#4A4860",
         "gray700": "#353350",
         "gray800": "#2A2B4A",
-        "gray900": "#1F2041",
+        "gray900": "#212020",
         "gray950": "#161530",
-        "background": "#1F2041",
+        "background": "#212020",
         "backgroundHover": "#2A2B4A",
         "backgroundPress": "#353350",
         "backgroundFocus": "#2A2B4A",
@@ -32549,7 +32549,7 @@
         "gray600": "#4A4860",
         "gray700": "#353350",
         "gray800": "#2A2B4A",
-        "gray900": "#1F2041",
+        "gray900": "#212020",
         "gray950": "#161530",
         "background": "#FAFAF8",
         "backgroundHover": "#F5F3EF",
@@ -32558,7 +32558,7 @@
         "backgroundStrong": "#FFFFFF",
         "backgroundTransparent": "rgba(255, 255, 255, 0)",
         "backgroundSoft": "#F5F3EF",
-        "color": "#1F2041",
+        "color": "#212020",
         "colorHover": "#2A2B4A",
         "colorPress": "#353350",
         "colorFocus": "#2A2B4A",
@@ -33284,7 +33284,7 @@
         "isVar": true,
         "key": "$gray900",
         "name": "c-gray900",
-        "val": "#1F2041",
+        "val": "#212020",
         "variable": ""
       },
       "$color.gray950": {

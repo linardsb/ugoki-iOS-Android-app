@@ -26,6 +26,9 @@ import { NotificationProvider } from '@/features/notifications';
 // Keep splash screen visible while we load fonts and check auth
 SplashScreen.preventAutoHideAsync();
 
+// DEV BYPASS: Set to true to skip auth and go directly to onboarding
+const DEV_BYPASS_AUTH = false;
+
 function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
@@ -95,6 +98,29 @@ export default function RootLayout() {
 
         // Load theme preference
         await loadTheme();
+
+        // DEV BYPASS: Skip auth and create fake identity
+        if (DEV_BYPASS_AUTH) {
+          console.log('[DEV] Bypassing auth, creating fake identity');
+          // Clear onboarding to test onboarding flow
+          await appStorage.setOnboardingCompleted(false);
+          // Set fake auth state directly without API call
+          useAuthStore.setState({
+            identity: {
+              id: 'dev-bypass-id',
+              type: 'anonymous',
+              capabilities: ['basic'],
+              created_at: new Date().toISOString(),
+              last_active_at: new Date().toISOString(),
+            },
+            accessToken: 'dev-bypass-token',
+            isLoading: false,
+            isAuthenticated: false,
+            isAnonymous: true,
+          });
+          setAppReady(true);
+          return;
+        }
 
         // Check for existing auth
         const token = await appStorage.getAccessToken();

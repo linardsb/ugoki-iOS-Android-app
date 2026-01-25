@@ -1,25 +1,32 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { YStack, XStack, H2, Text, Button, Progress, Checkbox, Label, Input, useTheme } from 'tamagui';
+import React, { useState, useMemo } from 'react';
+import { ScrollView, StyleSheet, Pressable } from 'react-native';
+import { YStack, XStack, H2, Text, Button, Progress, useTheme } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { User, UserCircle, Check, Warning, FirstAid, Heart, CaretDown, CaretUp, Ruler, Scales } from 'phosphor-react-native';
+import { GenderMale, GenderFemale, Check, Warning, Heart, CaretDown, CaretUp, Target, Lightning, Barbell, Moon } from 'phosphor-react-native';
 
 import { appStorage } from '@/shared/stores/storage';
 import { useSaveOnboarding, type OnboardingData, type GoalType, type FitnessLevel, type Gender, type UnitSystem } from '@/features/profile';
+import {
+  CircularIconButton,
+  UnitToggle,
+  HorizontalNumberPicker,
+  VerticalRulerPicker,
+  PillSelector,
+} from '@/shared/components/ui/onboarding';
 
 // Onboarding steps data
-const GENDER_OPTIONS: { id: Gender; label: string }[] = [
-  { id: 'male', label: 'Male' },
-  { id: 'female', label: 'Female' },
+const GENDER_OPTIONS: { id: Gender; label: string; icon: 'male' | 'female' }[] = [
+  { id: 'male', label: 'Male', icon: 'male' },
+  { id: 'female', label: 'Female', icon: 'female' },
 ];
 
-const GOALS: { id: GoalType; label: string }[] = [
-  { id: 'weight_loss', label: 'Lose weight' },
-  { id: 'improve_fitness', label: 'Boost energy' },
-  { id: 'muscle_gain', label: 'Build strength' },
-  { id: 'better_sleep', label: 'Better wellness' },
+const GOALS: { id: GoalType; label: string; icon: React.ReactNode }[] = [
+  { id: 'weight_loss', label: 'Lose weight', icon: <Target size={24} weight="fill" /> },
+  { id: 'improve_fitness', label: 'Boost energy', icon: <Lightning size={24} weight="fill" /> },
+  { id: 'muscle_gain', label: 'Build strength', icon: <Barbell size={24} weight="fill" /> },
+  { id: 'better_sleep', label: 'Better wellness', icon: <Moon size={24} weight="fill" /> },
 ];
 
 const EXPERIENCE: { id: FitnessLevel; label: string; description: string }[] = [
@@ -28,29 +35,40 @@ const EXPERIENCE: { id: FitnessLevel; label: string; description: string }[] = [
   { id: 'advanced', label: 'I fast regularly', description: "You know what you're doing" },
 ];
 
-const EATING_TIMES: { id: 'early' | 'mid' | 'late'; label: string; window: string }[] = [
-  { id: 'early', label: 'Before 10am', window: '6am - 2pm' },
-  { id: 'mid', label: '10am - 12pm', window: '10am - 6pm' },
-  { id: 'late', label: 'After 12pm', window: '12pm - 8pm' },
+const EATING_TIMES: { id: 'early' | 'mid' | 'late'; label: string; description: string }[] = [
+  { id: 'early', label: 'Before 10am', description: 'Suggested window: 6am - 2pm' },
+  { id: 'mid', label: '10am - 12pm', description: 'Suggested window: 10am - 6pm' },
+  { id: 'late', label: 'After 12pm', description: 'Suggested window: 12pm - 8pm' },
 ];
 
 const TOTAL_STEPS = 6;
 
+// Height and weight ranges
+const HEIGHT_CM_MIN = 120;
+const HEIGHT_CM_MAX = 220;
+const HEIGHT_FT_MIN = 4;
+const HEIGHT_FT_MAX = 7;
+const HEIGHT_IN_MIN = 0;
+const HEIGHT_IN_MAX = 11;
+const WEIGHT_KG_MIN = 30;
+const WEIGHT_KG_MAX = 200;
+const WEIGHT_LBS_MIN = 66;
+const WEIGHT_LBS_MAX = 440;
+
 export default function OnboardingScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const mutedColor = theme.colorMuted.val;
   const [step, setStep] = useState(0);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [showFullDisclaimer, setShowFullDisclaimer] = useState(false);
 
   // Health metrics state
   const [unitSystem, setUnitSystem] = useState<UnitSystem>('metric');
-  const [heightCm, setHeightCm] = useState('');
-  const [heightFt, setHeightFt] = useState('');
-  const [heightIn, setHeightIn] = useState('');
-  const [weightKg, setWeightKg] = useState('');
-  const [weightLbs, setWeightLbs] = useState('');
+  const [heightCm, setHeightCm] = useState(170);
+  const [heightFt, setHeightFt] = useState(5);
+  const [heightIn, setHeightIn] = useState(7);
+  const [weightKg, setWeightKg] = useState(70);
+  const [weightLbs, setWeightLbs] = useState(154);
 
   const [data, setData] = useState<OnboardingData>({
     gender: null,
@@ -84,12 +102,9 @@ export default function OnboardingScreen() {
   // Calculate height in cm from inputs
   const getHeightCm = (): number | null => {
     if (unitSystem === 'metric') {
-      const cm = parseFloat(heightCm);
-      return isNaN(cm) ? null : cm;
+      return heightCm;
     } else {
-      const ft = parseFloat(heightFt) || 0;
-      const inches = parseFloat(heightIn) || 0;
-      const totalInches = ft * 12 + inches;
+      const totalInches = heightFt * 12 + heightIn;
       return totalInches > 0 ? Math.round(totalInches * 2.54) : null;
     }
   };
@@ -97,11 +112,9 @@ export default function OnboardingScreen() {
   // Calculate weight in kg from inputs
   const getWeightKg = (): number | null => {
     if (unitSystem === 'metric') {
-      const kg = parseFloat(weightKg);
-      return isNaN(kg) ? null : kg;
+      return weightKg;
     } else {
-      const lbs = parseFloat(weightLbs);
-      return isNaN(lbs) ? null : Math.round(lbs * 0.453592 * 10) / 10;
+      return Math.round(weightLbs * 0.453592 * 10) / 10;
     }
   };
 
@@ -247,44 +260,46 @@ export default function OnboardingScreen() {
                 </YStack>
 
                 {/* Full Disclaimer Collapsible */}
-                <XStack
-                  backgroundColor="$cardBackground"
-                  padding="$4"
-                  borderRadius="$4"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  pressStyle={{ opacity: 0.8 }}
+                <Pressable
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setShowFullDisclaimer(!showFullDisclaimer);
                   }}
                 >
-                  <XStack gap="$3" alignItems="center" flex={1}>
-                    <YStack
-                      width={40}
-                      height={40}
-                      borderRadius="$3"
-                      backgroundColor="#ef444420"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <Warning size={20} color="#ef4444" weight="fill" />
-                    </YStack>
-                    <YStack flex={1}>
-                      <Text fontSize="$4" fontWeight="600" color="$color">
-                        Full Health Disclaimer
-                      </Text>
-                      <Text fontSize="$3" color="$colorMuted">
-                        Important safety information
-                      </Text>
-                    </YStack>
+                  <XStack
+                    backgroundColor="$cardBackground"
+                    padding="$4"
+                    borderRadius="$4"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <XStack gap="$3" alignItems="center" flex={1}>
+                      <YStack
+                        width={40}
+                        height={40}
+                        borderRadius="$3"
+                        backgroundColor="#ef444420"
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Warning size={20} color="#ef4444" weight="fill" />
+                      </YStack>
+                      <YStack flex={1}>
+                        <Text fontSize="$4" fontWeight="600" color="$color">
+                          Full Health Disclaimer
+                        </Text>
+                        <Text fontSize="$3" color="$colorMuted">
+                          Important safety information
+                        </Text>
+                      </YStack>
+                    </XStack>
+                    {showFullDisclaimer ? (
+                      <CaretUp size={20} color="#666" />
+                    ) : (
+                      <CaretDown size={20} color="#666" />
+                    )}
                   </XStack>
-                  {showFullDisclaimer ? (
-                    <CaretUp size={20} color="#666" />
-                  ) : (
-                    <CaretDown size={20} color="#666" />
-                  )}
-                </XStack>
+                </Pressable>
 
                 {showFullDisclaimer && (
                   <YStack gap="$3">
@@ -367,364 +382,249 @@ export default function OnboardingScreen() {
             </ScrollView>
 
             {/* Acknowledgment Checkbox */}
-            <XStack
-              gap="$3"
-              alignItems="center"
-              padding="$4"
-              backgroundColor="$cardBackground"
-              borderRadius="$4"
-              pressStyle={{ opacity: 0.8 }}
+            <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setDisclaimerAccepted(!disclaimerAccepted);
               }}
             >
-              <YStack
-                width={24}
-                height={24}
-                borderRadius={12}
-                borderWidth={2}
-                borderColor={disclaimerAccepted ? '$primary' : '$borderColor'}
-                backgroundColor={disclaimerAccepted ? '$primary' : 'transparent'}
-                justifyContent="center"
+              <XStack
+                gap="$3"
                 alignItems="center"
+                padding="$4"
+                backgroundColor="$cardBackground"
+                borderRadius="$4"
               >
-                {disclaimerAccepted && <Check size={14} color="white" weight="bold" />}
-              </YStack>
-              <Text fontSize="$3" color="$color" flex={1} lineHeight={20}>
-                I understand and want to continue
-              </Text>
+                <YStack
+                  width={24}
+                  height={24}
+                  borderRadius={12}
+                  borderWidth={2}
+                  borderColor={disclaimerAccepted ? '$primary' : '$borderColor'}
+                  backgroundColor={disclaimerAccepted ? '$primary' : 'transparent'}
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  {disclaimerAccepted && <Check size={14} color="white" weight="bold" />}
+                </YStack>
+                <Text fontSize="$3" color="$color" flex={1} lineHeight={20}>
+                  I understand and want to continue
+                </Text>
+              </XStack>
+            </Pressable>
+          </YStack>
+        );
+
+      // Step 1: Gender Selection with Circular Icons
+      case 1:
+        return (
+          <YStack gap="$6" flex={1}>
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize="$7" fontWeight="700" color="$color" textAlign="center">Let's personalise your experience</Text>
+              <Text color="$colorMuted" textAlign="center">How should we address you?</Text>
+            </YStack>
+
+            <XStack justifyContent="center" gap="$8" paddingTop="$6">
+              {GENDER_OPTIONS.map((option) => (
+                <CircularIconButton
+                  key={option.id}
+                  icon={
+                    option.icon === 'male' ? (
+                      <GenderMale weight="bold" />
+                    ) : (
+                      <GenderFemale weight="bold" />
+                    )
+                  }
+                  label={option.label}
+                  selected={data.gender === option.id}
+                  onPress={() => handleSelect('gender', option.id)}
+                  size={90}
+                />
+              ))}
             </XStack>
           </YStack>
         );
 
-      // Step 1: Gender Selection
-      case 1:
-        return (
-          <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <H2 color="$color">Let's personalize your experience</H2>
-              <Text color="$colorMuted">How should we address you?</Text>
-            </YStack>
-
-            <YStack gap="$3" flex={1}>
-              {GENDER_OPTIONS.map((option) => (
-                <Button
-                  key={option.id}
-                  size="$6"
-                  height={60}
-                  backgroundColor={data.gender === option.id ? '$primary' : 'white'}
-                  borderWidth={2}
-                  borderColor={data.gender === option.id ? '$primary' : '$borderColor'}
-                  borderRadius="$4"
-                  pressStyle={{ backgroundColor: data.gender === option.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
-                  onPress={() => handleSelect('gender', option.id)}
-                >
-                  <Text
-                    color={data.gender === option.id ? 'white' : '$color'}
-                    fontWeight="600"
-                    fontSize="$5"
-                  >
-                    {option.label}
-                  </Text>
-                </Button>
-              ))}
-            </YStack>
-          </YStack>
-        );
-
-      // Step 2: Health Metrics (Height & Weight)
+      // Step 2: Health Metrics (Height & Weight) with Pickers
       case 2:
         return (
           <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <H2 color="$color">Your measurements</H2>
-              <Text color="$colorMuted">Optional - helps personalize recommendations</Text>
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize="$7" fontWeight="700" color="$color" textAlign="center">Your measurements</Text>
+              <Text color="$colorMuted" textAlign="center">Optional - helps personalise recommendations</Text>
             </YStack>
 
-            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-              <YStack gap="$4" paddingBottom="$4">
-                {/* Unit System Toggle */}
-                <YStack gap="$2">
-                  <Text color="$color" fontWeight="500" fontSize="$4">
-                    Measurement Units
-                  </Text>
-                  <XStack gap="$2">
-                    <Button
-                      flex={1}
-                      size="$5"
-                      height={48}
-                      backgroundColor={unitSystem === 'metric' ? '$primary' : 'white'}
-                      borderColor={unitSystem === 'metric' ? '$primary' : '$borderColor'}
-                      borderWidth={2}
-                      borderRadius="$4"
-                      pressStyle={{ scale: 0.98 }}
-                      onPress={() => setUnitSystem('metric')}
-                    >
-                      <Text
-                        color={unitSystem === 'metric' ? 'white' : '$color'}
-                        fontWeight="600"
-                        fontSize="$4"
-                      >
-                        Metric
-                      </Text>
-                    </Button>
-                    <Button
-                      flex={1}
-                      size="$5"
-                      height={48}
-                      backgroundColor={unitSystem === 'imperial' ? '$primary' : 'white'}
-                      borderColor={unitSystem === 'imperial' ? '$primary' : '$borderColor'}
-                      borderWidth={2}
-                      borderRadius="$4"
-                      pressStyle={{ scale: 0.98 }}
-                      onPress={() => setUnitSystem('imperial')}
-                    >
-                      <Text
-                        color={unitSystem === 'imperial' ? 'white' : '$color'}
-                        fontWeight="600"
-                        fontSize="$4"
-                      >
-                        Imperial
-                      </Text>
-                    </Button>
-                  </XStack>
-                </YStack>
+            <YStack gap="$5" flex={1}>
+              {/* Unit System Toggle */}
+              <UnitToggle
+                value={unitSystem}
+                onChange={setUnitSystem}
+                options={{ metric: 'Metric', imperial: 'Imperial' }}
+              />
 
-                {/* Height Input */}
-                <YStack gap="$2">
-                  <XStack gap="$2" alignItems="center">
-                    <Ruler size={20} color={mutedColor} weight="regular" />
-                    <Text color="$color" fontWeight="500" fontSize="$4">
-                      Height {unitSystem === 'metric' ? '(cm)' : '(ft / in)'}
-                    </Text>
-                  </XStack>
-                  {unitSystem === 'metric' ? (
-                    <Input
-                      size="$5"
-                      height={56}
-                      placeholder="e.g. 175"
-                      placeholderTextColor={mutedColor}
-                      keyboardType="numeric"
-                      backgroundColor="white"
-                      borderColor="$borderColor"
-                      borderWidth={2}
-                      borderRadius="$4"
-                      color="$color"
-                      fontSize="$5"
-                      textAlign="center"
-                      focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
-                      value={heightCm}
-                      onChangeText={setHeightCm}
-                    />
-                  ) : (
-                    <XStack gap="$2">
-                      <YStack flex={1} gap="$1">
-                        <Input
-                          size="$5"
-                          height={56}
-                          placeholder="ft"
-                          placeholderTextColor={mutedColor}
-                          keyboardType="numeric"
-                          backgroundColor="white"
-                          borderColor="$borderColor"
-                          borderWidth={2}
-                          borderRadius="$4"
-                          color="$color"
-                          fontSize="$5"
-                          textAlign="center"
-                          focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
-                          value={heightFt}
-                          onChangeText={setHeightFt}
-                        />
-                        <Text color="$colorMuted" fontSize="$2" textAlign="center">feet</Text>
-                      </YStack>
-                      <YStack flex={1} gap="$1">
-                        <Input
-                          size="$5"
-                          height={56}
-                          placeholder="in"
-                          placeholderTextColor={mutedColor}
-                          keyboardType="numeric"
-                          backgroundColor="white"
-                          borderColor="$borderColor"
-                          borderWidth={2}
-                          borderRadius="$4"
-                          color="$color"
-                          fontSize="$5"
-                          textAlign="center"
-                          focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
-                          value={heightIn}
-                          onChangeText={setHeightIn}
-                        />
-                        <Text color="$colorMuted" fontSize="$2" textAlign="center">inches</Text>
-                      </YStack>
-                    </XStack>
-                  )}
-                </YStack>
-
-                {/* Weight Input */}
-                <YStack gap="$2">
-                  <XStack gap="$2" alignItems="center">
-                    <Scales size={20} color={mutedColor} weight="regular" />
-                    <Text color="$color" fontWeight="500" fontSize="$4">
-                      Weight {unitSystem === 'metric' ? '(kg)' : '(lbs)'}
-                    </Text>
-                  </XStack>
-                  <Input
-                    size="$5"
-                    height={56}
-                    placeholder={unitSystem === 'metric' ? 'e.g. 70' : 'e.g. 154'}
-                    placeholderTextColor={mutedColor}
-                    keyboardType="numeric"
-                    backgroundColor="white"
-                    borderColor="$borderColor"
-                    borderWidth={2}
-                    borderRadius="$4"
-                    color="$color"
-                    fontSize="$5"
-                    textAlign="center"
-                    focusStyle={{ borderColor: '$primary', borderWidth: 2 }}
-                    value={unitSystem === 'metric' ? weightKg : weightLbs}
-                    onChangeText={unitSystem === 'metric' ? setWeightKg : setWeightLbs}
+              {/* Height Picker */}
+              <YStack gap="$2">
+                <Text color="$colorMuted" fontWeight="500" fontSize="$3" textAlign="center">
+                  Height
+                </Text>
+                {unitSystem === 'metric' ? (
+                  <VerticalRulerPicker
+                    min={HEIGHT_CM_MIN}
+                    max={HEIGHT_CM_MAX}
+                    value={heightCm}
+                    onChange={setHeightCm}
+                    unit="cm"
                   />
-                </YStack>
-
-                {/* Info note */}
-                <YStack
-                  backgroundColor="$cardBackground"
-                  padding="$3"
-                  borderRadius="$3"
-                  gap="$2"
-                >
-                  <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
-                    You can update these anytime in Settings, and log weight changes from the dashboard.
-                  </Text>
-                </YStack>
+                ) : (
+                  <XStack gap="$4" justifyContent="center">
+                    <YStack flex={1} gap="$1" alignItems="center">
+                      <Text color="$color" fontSize="$6" fontWeight="700">{heightFt} <Text fontSize="$3" color="$colorMuted">ft</Text></Text>
+                      <HorizontalNumberPicker
+                        min={HEIGHT_FT_MIN}
+                        max={HEIGHT_FT_MAX}
+                        value={heightFt}
+                        onChange={setHeightFt}
+                        unit="ft"
+                        compact
+                      />
+                    </YStack>
+                    <YStack flex={1} gap="$1" alignItems="center">
+                      <Text color="$color" fontSize="$6" fontWeight="700">{heightIn} <Text fontSize="$3" color="$colorMuted">in</Text></Text>
+                      <HorizontalNumberPicker
+                        min={HEIGHT_IN_MIN}
+                        max={HEIGHT_IN_MAX}
+                        value={heightIn}
+                        onChange={setHeightIn}
+                        unit="in"
+                        compact
+                      />
+                    </YStack>
+                  </XStack>
+                )}
               </YStack>
-            </ScrollView>
+
+              {/* Weight Picker */}
+              <YStack gap="$2" marginTop="$2" marginBottom="$4">
+                <Text color="$colorMuted" fontWeight="500" fontSize="$3" textAlign="center">
+                  Weight
+                </Text>
+                <HorizontalNumberPicker
+                  min={unitSystem === 'metric' ? WEIGHT_KG_MIN : WEIGHT_LBS_MIN}
+                  max={unitSystem === 'metric' ? WEIGHT_KG_MAX : WEIGHT_LBS_MAX}
+                  value={unitSystem === 'metric' ? weightKg : weightLbs}
+                  onChange={unitSystem === 'metric' ? setWeightKg : setWeightLbs}
+                  unit={unitSystem === 'metric' ? 'kg' : 'lbs'}
+                />
+              </YStack>
+            </YStack>
           </YStack>
         );
 
-      // Step 3: Goals
+      // Step 3: Goals with Card List
       case 3:
         return (
           <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <H2 color="$color">What brings you to UGOKI?</H2>
-              <Text color="$colorMuted">Choose your primary goal</Text>
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize="$7" fontWeight="700" color="$color" textAlign="center">What brings you to UGOKI?</Text>
+              <Text color="$colorMuted" textAlign="center">Choose your primary goal</Text>
             </YStack>
 
-            <YStack gap="$3" flex={1}>
-              {GOALS.map((goal) => (
-                <Button
-                  key={goal.id}
-                  size="$6"
-                  height={60}
-                  backgroundColor={data.goal === goal.id ? '$primary' : 'white'}
-                  borderWidth={2}
-                  borderColor={data.goal === goal.id ? '$primary' : '$borderColor'}
-                  borderRadius="$4"
-                  pressStyle={{ backgroundColor: data.goal === goal.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
-                  onPress={() => handleSelect('goal', goal.id)}
-                >
-                  <Text
-                    color={data.goal === goal.id ? 'white' : '$color'}
-                    fontWeight="600"
-                    fontSize="$5"
-                  >
-                    {goal.label}
-                  </Text>
-                </Button>
-              ))}
+            <YStack gap="$3" flex={1} paddingTop="$2">
+              {GOALS.map((goal) => {
+                const isSelected = data.goal === goal.id;
+                return (
+                  <Pressable key={goal.id} onPress={() => handleSelect('goal', goal.id)}>
+                    <XStack
+                      backgroundColor={isSelected ? '$primary' : '$cardBackground'}
+                      borderRadius="$4"
+                      paddingVertical="$4"
+                      paddingHorizontal="$4"
+                      borderWidth={2}
+                      borderColor={isSelected ? '$primary' : '$borderColor'}
+                      alignItems="center"
+                      gap="$3"
+                    >
+                      {/* Icon */}
+                      <YStack
+                        width={44}
+                        height={44}
+                        borderRadius={22}
+                        backgroundColor={isSelected ? 'rgba(255,255,255,0.2)' : '$background'}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        {React.isValidElement(goal.icon)
+                          ? React.cloneElement(goal.icon as React.ReactElement<{ color?: string }>, {
+                              color: isSelected ? '#FFFFFF' : (theme.primary?.val ?? '#3A5BA0'),
+                            })
+                          : goal.icon}
+                      </YStack>
+
+                      {/* Label */}
+                      <Text
+                        flex={1}
+                        fontSize="$5"
+                        fontWeight="600"
+                        color={isSelected ? 'white' : '$color'}
+                      >
+                        {goal.label}
+                      </Text>
+
+                      {/* Selection indicator */}
+                      <YStack
+                        width={24}
+                        height={24}
+                        borderRadius={12}
+                        borderWidth={2}
+                        borderColor={isSelected ? 'white' : '$borderColor'}
+                        backgroundColor={isSelected ? 'white' : 'transparent'}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        {isSelected && <Check size={14} color="#3A5BA0" weight="bold" />}
+                      </YStack>
+                    </XStack>
+                  </Pressable>
+                );
+              })}
             </YStack>
           </YStack>
         );
 
-      // Step 4: Experience
+      // Step 4: Experience with Pill Selector
       case 4:
         return (
           <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <H2 color="$color">Fasting experience?</H2>
-              <Text color="$colorMuted">We'll personalize your plan</Text>
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize="$7" fontWeight="700" color="$color" textAlign="center">Fasting experience?</Text>
+              <Text color="$colorMuted" textAlign="center">We'll personalize your plan</Text>
             </YStack>
 
-            <YStack gap="$3" flex={1}>
-              {EXPERIENCE.map((exp) => (
-                <Button
-                  key={exp.id}
-                  size="$6"
-                  height={72}
-                  paddingVertical="$4"
-                  backgroundColor={data.experience === exp.id ? '$primary' : 'white'}
-                  borderWidth={2}
-                  borderColor={data.experience === exp.id ? '$primary' : '$borderColor'}
-                  borderRadius="$4"
-                  pressStyle={{ backgroundColor: data.experience === exp.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
-                  onPress={() => handleSelect('experience', exp.id)}
-                >
-                  <YStack gap="$1" alignItems="flex-start" width="100%">
-                    <Text
-                      color={data.experience === exp.id ? 'white' : '$color'}
-                      fontWeight="600"
-                      fontSize="$5"
-                    >
-                      {exp.label}
-                    </Text>
-                    <Text
-                      color={data.experience === exp.id ? 'rgba(255,255,255,0.8)' : '$colorMuted'}
-                      fontSize="$3"
-                    >
-                      {exp.description}
-                    </Text>
-                  </YStack>
-                </Button>
-              ))}
+            <YStack flex={1} paddingTop="$2">
+              <PillSelector
+                options={EXPERIENCE}
+                value={data.experience}
+                onChange={(value) => handleSelect('experience', value)}
+              />
             </YStack>
           </YStack>
         );
 
-      // Step 5: Eating Times
+      // Step 5: Eating Times with Pill Selector
       case 5:
         return (
           <YStack gap="$4" flex={1}>
-            <YStack gap="$2">
-              <H2 color="$color">When do you eat?</H2>
-              <Text color="$colorMuted">We'll suggest an eating window</Text>
+            <YStack gap="$2" alignItems="center">
+              <Text fontSize="$7" fontWeight="700" color="$color" textAlign="center">When do you eat?</Text>
+              <Text color="$colorMuted" textAlign="center">We'll suggest an eating window</Text>
             </YStack>
 
-            <YStack gap="$3" flex={1}>
-              {EATING_TIMES.map((time) => (
-                <Button
-                  key={time.id}
-                  size="$6"
-                  height={72}
-                  paddingVertical="$4"
-                  backgroundColor={data.eatingTime === time.id ? '$primary' : 'white'}
-                  borderWidth={2}
-                  borderColor={data.eatingTime === time.id ? '$primary' : '$borderColor'}
-                  borderRadius="$4"
-                  pressStyle={{ backgroundColor: data.eatingTime === time.id ? '$primaryPress' : '$backgroundHover', scale: 0.98 }}
-                  onPress={() => handleSelect('eatingTime', time.id)}
-                >
-                  <YStack gap="$1" alignItems="flex-start" width="100%">
-                    <Text
-                      color={data.eatingTime === time.id ? 'white' : '$color'}
-                      fontWeight="600"
-                      fontSize="$5"
-                    >
-                      {time.label}
-                    </Text>
-                    <Text
-                      color={data.eatingTime === time.id ? 'rgba(255,255,255,0.8)' : '$colorMuted'}
-                      fontSize="$3"
-                    >
-                      Suggested window: {time.window}
-                    </Text>
-                  </YStack>
-                </Button>
-              ))}
+            <YStack flex={1} paddingTop="$2">
+              <PillSelector
+                options={EATING_TIMES}
+                value={data.eatingTime}
+                onChange={(value) => handleSelect('eatingTime', value)}
+              />
             </YStack>
           </YStack>
         );
@@ -764,7 +664,7 @@ export default function OnboardingScreen() {
           size="$6"
           height={56}
           backgroundColor={canContinue() ? '$primary' : '$backgroundHover'}
-          borderRadius="$4"
+          borderRadius={999}
           pressStyle={{ backgroundColor: '$primaryPress', scale: 0.98 }}
           onPress={handleNext}
           disabled={!canContinue() || saveProfile.isPending}
