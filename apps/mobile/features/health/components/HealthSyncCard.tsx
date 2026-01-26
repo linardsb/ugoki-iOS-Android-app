@@ -215,7 +215,7 @@ export function HealthSyncCard({ onSyncComplete }: HealthSyncCardProps) {
       )}
 
       {/* Info text */}
-      <Text fontSize="$1" color="$colorMuted" textAlign="center">
+      <Text fontSize="$2" color="$colorMuted" textAlign="center">
         Your health data helps personalize fasting and workout recommendations
       </Text>
     </Card>

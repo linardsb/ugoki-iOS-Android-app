@@ -3,7 +3,8 @@
  * Shows the 3 most recent activities with a "See All" link
  */
 
-import { View, Text, XStack, YStack, Card, useTheme } from 'tamagui';
+import { View, Text, XStack, YStack, useTheme } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';

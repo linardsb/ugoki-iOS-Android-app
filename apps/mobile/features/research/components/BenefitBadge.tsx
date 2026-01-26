@@ -55,6 +55,7 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
   const iconBackground = theme.backgroundHover.val;
   const titleColor = theme.color.val;
   const bodyColor = theme.colorMuted.val;
+  const borderColor = theme.cardBorder?.val || 'transparent';
 
   const icon = getBenefitIcon(benefit);
 
@@ -82,6 +83,8 @@ export function BenefitBadge({ benefit, compact = false }: BenefitBadgeProps) {
     <XStack
       backgroundColor={cardBackground}
       borderRadius="$3"
+      borderWidth={1}
+      borderColor={borderColor}
       padding="$3"
       gap="$3"
       alignItems="flex-start"

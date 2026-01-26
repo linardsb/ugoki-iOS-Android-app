@@ -70,8 +70,8 @@ export function LeaderboardEntryRow({ entry, valueLabel = 'XP', onPress }: Leade
         padding="$3"
         alignItems="center"
         gap="$3"
-        borderWidth={entry.is_current_user ? 2 : 0}
-        borderColor={entry.is_current_user ? highlightBorder : 'transparent'}
+        borderWidth={entry.is_current_user ? 2 : 1}
+        borderColor={entry.is_current_user ? highlightBorder : '$cardBorder'}
       >
         {/* Rank */}
         <RNView style={styles.rankContainer}>{getRankDisplay()}</RNView>

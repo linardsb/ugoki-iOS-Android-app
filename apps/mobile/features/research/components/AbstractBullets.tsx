@@ -17,6 +17,7 @@ export function AbstractBullets({ bullets }: AbstractBulletsProps) {
   const cardBackground = theme.backgroundSoft?.val || theme.backgroundHover.val;
   const bulletColor = theme.primary.val;
   const textColor = theme.color.val;
+  const borderColor = theme.cardBorder?.val || 'transparent';
 
   if (!bullets || bullets.length === 0) {
     return null;
@@ -26,6 +27,8 @@ export function AbstractBullets({ bullets }: AbstractBulletsProps) {
     <YStack
       backgroundColor={cardBackground}
       borderRadius="$3"
+      borderWidth={1}
+      borderColor={borderColor}
       padding="$3"
       gap="$2"
     >

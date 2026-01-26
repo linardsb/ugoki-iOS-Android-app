@@ -1,4 +1,5 @@
-import { YStack, XStack, Text, Card, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { Scales, TrendDown, TrendUp, Minus } from 'phosphor-react-native';
 import type { Metric, MetricTrend } from '../types';
 

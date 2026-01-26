@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
-import { YStack, XStack, Text, Card } from 'tamagui';
+import { YStack, XStack, Text } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Fire, Clock, Trophy } from 'phosphor-react-native';

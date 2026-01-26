@@ -117,6 +117,8 @@ export default function LogWeightScreen() {
                 backgroundColor="$cardBackground"
                 padding="$3"
                 borderRadius="$3"
+                borderWidth={1}
+                borderColor="$cardBorder"
                 gap="$1"
               >
                 <XStack gap="$2" alignItems="center">
@@ -133,6 +135,8 @@ export default function LogWeightScreen() {
                 backgroundColor="$cardBackground"
                 padding="$3"
                 borderRadius="$3"
+                borderWidth={1}
+                borderColor="$cardBorder"
                 gap="$1"
               >
                 <XStack gap="$2" alignItems="center">
@@ -153,6 +157,8 @@ export default function LogWeightScreen() {
               <XStack
                 backgroundColor="$cardBackground"
                 borderRadius="$4"
+                borderWidth={1}
+                borderColor="$cardBorder"
                 padding="$1"
                 alignItems="center"
               >

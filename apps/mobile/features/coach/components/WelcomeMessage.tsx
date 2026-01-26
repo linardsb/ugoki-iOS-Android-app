@@ -103,6 +103,8 @@ export function WelcomeMessage({ onSuggestionPress, userGender }: WelcomeMessage
                 backgroundColor="$cardBackground"
                 padding="$3"
                 borderRadius="$3"
+                borderWidth={1}
+                borderColor="$cardBorder"
                 gap="$3"
                 alignItems="center"
                 pressStyle={{ opacity: 0.8, scale: 0.98 }}

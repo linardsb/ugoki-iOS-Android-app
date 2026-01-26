@@ -90,6 +90,7 @@ export default function CreateChallengeScreen() {
   const cardBackground = isDark ? '#1c1c1e' : 'white';
   const inputBackground = isDark ? '#2c2c2e' : 'white';
   const borderColor = isDark ? '#3c3c3e' : '#e4e4e7';
+  const cardBorderColor = isDark ? 'transparent' : '#D4D2CE'; // Design system token: $cardBorder
   const textColor = isDark ? '#ffffff' : '#1f2937';
   const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
   const placeholderColor = isDark ? '#71717a' : '#9ca3af';
@@ -190,7 +191,7 @@ export default function CreateChallengeScreen() {
               Challenge Name
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor: cardBorderColor, color: textColor }]}
               placeholder="e.g., 7-Day Fasting Challenge"
               placeholderTextColor={placeholderColor}
               value={name}
@@ -205,7 +206,7 @@ export default function CreateChallengeScreen() {
               Description (optional)
             </Text>
             <TextInput
-              style={[styles.input, styles.textArea, { backgroundColor: inputBackground, borderColor, color: textColor }]}
+              style={[styles.input, styles.textArea, { backgroundColor: inputBackground, borderColor: cardBorderColor, color: textColor }]}
               placeholder="What is this challenge about?"
               placeholderTextColor={placeholderColor}
               value={description}
@@ -233,7 +234,7 @@ export default function CreateChallengeScreen() {
                       borderRadius="$3"
                       padding="$3"
                       borderWidth={challengeType === type.value ? 2 : 1}
-                      borderColor={challengeType === type.value ? '#14b8a6' : borderColor}
+                      borderColor={challengeType === type.value ? '#14b8a6' : cardBorderColor}
                       alignItems="center"
                     >
                       <YStack flex={1}>
@@ -261,7 +262,7 @@ export default function CreateChallengeScreen() {
               Goal ({unit})
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor: cardBorderColor, color: textColor }]}
               placeholder="e.g., 7"
               placeholderTextColor={placeholderColor}
               value={goalValue}
@@ -278,7 +279,7 @@ export default function CreateChallengeScreen() {
               </Text>
               <TouchableOpacity
                 onPress={() => setShowStartPicker(true)}
-                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor }]}
+                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor: cardBorderColor }]}
               >
                 <Text fontSize={15} style={{ color: textColor }}>
                   {formatDate(startDate)}
@@ -292,7 +293,7 @@ export default function CreateChallengeScreen() {
               </Text>
               <TouchableOpacity
                 onPress={() => setShowEndPicker(true)}
-                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor }]}
+                style={[styles.dateButton, { backgroundColor: inputBackground, borderColor: cardBorderColor }]}
               >
                 <Text fontSize={15} style={{ color: textColor }}>
                   {formatDate(endDate)}
@@ -333,7 +334,7 @@ export default function CreateChallengeScreen() {
               Max Participants
             </Text>
             <TextInput
-              style={[styles.input, { backgroundColor: inputBackground, borderColor, color: textColor }]}
+              style={[styles.input, { backgroundColor: inputBackground, borderColor: cardBorderColor, color: textColor }]}
               placeholder="50"
               placeholderTextColor={placeholderColor}
               value={maxParticipants}
@@ -351,7 +352,7 @@ export default function CreateChallengeScreen() {
               justifyContent="space-between"
               alignItems="center"
               borderWidth={1}
-              borderColor={borderColor}
+              borderColor={cardBorderColor}
             >
               <YStack flex={1}>
                 <Text fontSize={15} fontWeight="600" style={{ color: textColor }}>

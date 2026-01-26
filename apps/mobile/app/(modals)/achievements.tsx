@@ -166,6 +166,8 @@ export default function AchievementsScreen() {
             backgroundColor="$cardBackground"
             padding="$3"
             borderRadius="$3"
+            borderWidth={1}
+            borderColor="$cardBorder"
             alignItems="center"
           >
             <Trophy size={24} color={mutedColor} weight="regular" />
@@ -181,6 +183,8 @@ export default function AchievementsScreen() {
             backgroundColor="$cardBackground"
             padding="$3"
             borderRadius="$3"
+            borderWidth={1}
+            borderColor="$cardBorder"
             alignItems="center"
           >
             <Star size={24} color={mutedColor} weight="regular" />

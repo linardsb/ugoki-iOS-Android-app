@@ -1,4 +1,5 @@
-import { XStack, YStack, Text, Card } from 'tamagui';
+import { XStack, YStack, Text } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { useRouter } from 'expo-router';
 import { Timer, Barbell, Chat, BookOpenText, CookingPot, Scales } from 'phosphor-react-native';
 import type { IconProps } from 'phosphor-react-native';

@@ -79,6 +79,8 @@ export default function BreakFastGuideScreen() {
                   backgroundColor="$cardBackground"
                   padding="$3"
                   borderRadius="$3"
+                  borderWidth={1}
+                  borderColor="$cardBorder"
                   gap="$3"
                   alignItems="center"
                 >
@@ -119,6 +121,8 @@ export default function BreakFastGuideScreen() {
               backgroundColor="$cardBackground"
               padding="$4"
               borderRadius="$3"
+              borderWidth={1}
+              borderColor="$cardBorder"
               gap="$2"
             >
               {BREAK_FAST_GUIDE.tips.map((tip, i) => (
@@ -144,6 +148,8 @@ export default function BreakFastGuideScreen() {
               backgroundColor="$cardBackground"
               padding="$4"
               borderRadius="$3"
+              borderWidth={1}
+              borderColor="$cardBorder"
               gap="$2"
             >
               {BREAK_FAST_GUIDE.avoid.map((item, i) => (

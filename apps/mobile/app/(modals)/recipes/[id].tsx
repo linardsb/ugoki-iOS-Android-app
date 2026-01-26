@@ -3,7 +3,8 @@
  */
 
 import { ScrollView, ActivityIndicator, Pressable } from 'react-native';
-import { View, Text, YStack, XStack, Card } from 'tamagui';
+import { View, Text, YStack, XStack } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

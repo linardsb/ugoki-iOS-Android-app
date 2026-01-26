@@ -105,11 +105,11 @@ export function ActiveFastCard() {
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
             <Timer size={20} color="white" weight="thin" />
-            <Text fontSize="$2" color="rgba(255,255,255,0.8)">
+            <Text fontSize="$3" color="rgba(255,255,255,0.9)">
               {isComplete ? 'Fast Complete!' : isPaused ? 'Fast Paused' : 'Fasting Now'}
             </Text>
           </XStack>
-          <Text fontSize="$2" fontWeight="bold" color="white">
+          <Text fontSize="$3" fontWeight="bold" color="white">
             {Math.round(progressPercent)}%
           </Text>
         </XStack>
@@ -120,7 +120,7 @@ export function ActiveFastCard() {
             {formatTime(elapsedMs)}
           </Text>
           {remainingMs !== null && !isComplete && (
-            <Text fontSize="$2" color="rgba(255,255,255,0.8)">
+            <Text fontSize="$3" color="rgba(255,255,255,0.9)">
               {formatTime(remainingMs)} left
             </Text>
           )}

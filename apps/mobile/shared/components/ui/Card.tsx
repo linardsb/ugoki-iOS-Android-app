@@ -25,7 +25,6 @@ export const Card = styled(YStack, {
         shadowOpacity: 1,
         shadowRadius: 8,
         elevation: 3,
-        borderWidth: 0,
       },
       sm: {
         shadowColor: '$shadowColor',
@@ -33,7 +32,6 @@ export const Card = styled(YStack, {
         shadowOpacity: 1,
         shadowRadius: 2,
         elevation: 1,
-        borderWidth: 0,
       },
       md: {
         shadowColor: '$shadowColor',
@@ -41,7 +39,6 @@ export const Card = styled(YStack, {
         shadowOpacity: 1,
         shadowRadius: 4,
         elevation: 3,
-        borderWidth: 0,
       },
       lg: {
         shadowColor: '$shadowColor',
@@ -49,7 +46,6 @@ export const Card = styled(YStack, {
         shadowOpacity: 1,
         shadowRadius: 8,
         elevation: 5,
-        borderWidth: 0,
       },
       xl: {
         shadowColor: '$shadowColorStrong',
@@ -57,7 +53,6 @@ export const Card = styled(YStack, {
         shadowOpacity: 1,
         shadowRadius: 16,
         elevation: 8,
-        borderWidth: 0,
       },
     },
     padded: {

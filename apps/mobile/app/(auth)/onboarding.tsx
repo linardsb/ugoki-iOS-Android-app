@@ -227,6 +227,8 @@ export default function OnboardingScreen() {
                   backgroundColor="$cardBackground"
                   padding="$4"
                   borderRadius="$4"
+                  borderWidth={1}
+                  borderColor="$cardBorder"
                   gap="$3"
                 >
                   <XStack gap="$2" alignItems="center">
@@ -249,6 +251,8 @@ export default function OnboardingScreen() {
                   backgroundColor="$cardBackground"
                   padding="$4"
                   borderRadius="$4"
+                  borderWidth={1}
+                  borderColor="$cardBorder"
                   gap="$2"
                 >
                   <Text fontSize="$3" color="$colorMuted" lineHeight={20}>
@@ -270,6 +274,8 @@ export default function OnboardingScreen() {
                     backgroundColor="$cardBackground"
                     padding="$4"
                     borderRadius="$4"
+                    borderWidth={1}
+                    borderColor="$cardBorder"
                     alignItems="center"
                     justifyContent="space-between"
                   >
@@ -308,6 +314,8 @@ export default function OnboardingScreen() {
                       backgroundColor="$cardBackground"
                       padding="$4"
                       borderRadius="$4"
+                      borderWidth={1}
+                      borderColor="$cardBorder"
                       borderLeftWidth={3}
                       borderLeftColor="#ef4444"
                     >
@@ -327,6 +335,8 @@ export default function OnboardingScreen() {
                       backgroundColor="$cardBackground"
                       padding="$4"
                       borderRadius="$4"
+                      borderWidth={1}
+                      borderColor="$cardBorder"
                       borderLeftWidth={3}
                       borderLeftColor="#f97316"
                     >
@@ -349,6 +359,8 @@ export default function OnboardingScreen() {
                       backgroundColor="$cardBackground"
                       padding="$4"
                       borderRadius="$4"
+                      borderWidth={1}
+                      borderColor="$cardBorder"
                       borderLeftWidth={3}
                       borderLeftColor="#3b82f6"
                     >
@@ -394,6 +406,8 @@ export default function OnboardingScreen() {
                 padding="$4"
                 backgroundColor="$cardBackground"
                 borderRadius="$4"
+                borderWidth={1}
+                borderColor="$cardBorder"
               >
                 <YStack
                   width={24}

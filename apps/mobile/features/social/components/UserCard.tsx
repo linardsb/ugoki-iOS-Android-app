@@ -57,6 +57,8 @@ export function UserCard({
       <XStack
         backgroundColor="$cardBackground"
         borderRadius="$3"
+        borderWidth={1}
+        borderColor="$cardBorder"
         padding="$3"
         alignItems="center"
         gap="$3"

@@ -228,7 +228,7 @@ const lightTheme = {
 
   // Card
   cardBackground: flatColors.gray100,      // Pearl Mist for cards
-  cardBorder: flatColors.gray200,
+  cardBorder: flatColors.gray300,          // Visible grey border on light theme
 
   // Shadows (light theme uses standard shadows)
   shadowColor: shadows.md.shadowColor,
@@ -311,7 +311,7 @@ const darkTheme = {
 
   // Card
   cardBackground: flatColors.gray800,      // Slightly lighter than Midnight Indigo
-  cardBorder: flatColors.gray700,
+  cardBorder: 'transparent',               // No visible border on dark theme
 
   // Shadows (dark theme uses darker shadows)
   shadowColor: shadowsDark.md.shadowColor,

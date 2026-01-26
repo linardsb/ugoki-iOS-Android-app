@@ -221,7 +221,7 @@ export default function SettingsScreen() {
       <YStack padding="$4" gap="$4">
           {/* Profile Section */}
           <SettingsSection title="Profile">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$3">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$3">
               <YStack gap="$1">
                 <Text fontSize="$3" color="$colorMuted">Display Name</Text>
                 <XStack gap="$2" alignItems="center">
@@ -304,7 +304,7 @@ export default function SettingsScreen() {
 
           {/* Notifications Section */}
           <SettingsSection title="Notifications">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$2">
               {/* Master toggle */}
               <XStack justifyContent="space-between" alignItems="center" opacity={isNotificationUpdating ? 0.6 : 1}>
                 <YStack flex={1} marginRight="$3">
@@ -419,7 +419,7 @@ export default function SettingsScreen() {
               <HealthSyncCard />
 
               {/* Bloodwork Button */}
-              <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3">
+              <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder">
                 <Button
                   size="$5"
                   height={56}
@@ -461,7 +461,7 @@ export default function SettingsScreen() {
 
           {/* Goals Section */}
           <SettingsSection title="Goals">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$2">
               <YStack gap="$2">
                 <Text fontSize="$3" color="$colorMuted">Primary Goal</Text>
                 <Button
@@ -507,7 +507,7 @@ export default function SettingsScreen() {
 
           {/* Fasting Section */}
           <SettingsSection title="Fasting">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$2">
               <YStack gap="$2">
                 <Text fontSize="$3" color="$colorMuted">Default Protocol</Text>
                 <Button
@@ -553,7 +553,7 @@ export default function SettingsScreen() {
 
           {/* Units Section */}
           <SettingsSection title="Units">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$2">
               <XStack gap="$2">
                 <Button
                   flex={1}
@@ -593,7 +593,7 @@ export default function SettingsScreen() {
 
           {/* Coach Personality */}
           <SettingsSection title="AI Coach">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$2">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$2">
               <Text fontSize="$3" color="$colorMuted">Coach Personality</Text>
               <YStack gap="$2">
                 <XStack gap="$2">
@@ -663,7 +663,7 @@ export default function SettingsScreen() {
 
           {/* Legal & Health Section */}
           <SettingsSection title="Legal & Health">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$3">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$3">
               {/* Health Disclaimer Button */}
               <Button
                 size="$5"
@@ -788,7 +788,7 @@ export default function SettingsScreen() {
 
           {/* Developer Tools Section */}
           <SettingsSection title="Developer Tools">
-            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" gap="$3">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$3">
               {/* New Test Account Button */}
               <Button
                 size="$5"

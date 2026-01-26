@@ -1,4 +1,5 @@
-import { YStack, XStack, Text, Card, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { Card } from '@/shared/components/ui';
 import { Barbell, Clock, Fire } from 'phosphor-react-native';
 import type { WorkoutStats } from '../types';
 

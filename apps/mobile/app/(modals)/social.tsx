@@ -35,6 +35,7 @@ export default function SocialScreen() {
 
   // Theme-aware colors from Tamagui theme tokens
   const cardBackground = theme.cardBackground?.val || theme.backgroundHover.val;
+  const cardBorderColor = theme.cardBorder?.val || 'transparent';
   const textColor = theme.color.val;
   const mutedColor = theme.colorMuted.val;
   const subtleBackground = theme.backgroundHover.val;
@@ -97,7 +98,7 @@ export default function SocialScreen() {
           {/* Stats Row */}
           <XStack gap="$3">
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <Users size={24} color={successColor} weight="regular" />
@@ -115,7 +116,7 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <UserPlus size={24} color={infoColor} weight="regular" />
@@ -126,7 +127,7 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground }]}
+              style={[styles.statCard, { flex: 1, backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/challenges')}
             >
               <Flag size={24} color={secondaryColor} weight="regular" />
@@ -183,7 +184,7 @@ export default function SocialScreen() {
               </YStack>
             ) : (
               <TouchableOpacity
-                style={[styles.emptyCard, { backgroundColor: cardBackground }]}
+                style={[styles.emptyCard, { backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
                 onPress={() => router.push('/(modals)/challenges')}
               >
                 <Flag size={32} color={mutedColor} weight="regular" />
@@ -215,6 +216,8 @@ export default function SocialScreen() {
             <YStack
               backgroundColor="$cardBackground"
               borderRadius="$4"
+              borderWidth={1}
+              borderColor="$cardBorder"
               padding="$3"
               gap="$2"
             >
@@ -244,7 +247,7 @@ export default function SocialScreen() {
             </Text>
 
             <TouchableOpacity
-              style={[styles.menuItem, { backgroundColor: cardBackground }]}
+              style={[styles.menuItem, { backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/friends')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
@@ -260,7 +263,7 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.menuItem, { backgroundColor: cardBackground }]}
+              style={[styles.menuItem, { backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/leaderboards')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>
@@ -276,7 +279,7 @@ export default function SocialScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.menuItem, { backgroundColor: cardBackground }]}
+              style={[styles.menuItem, { backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
               onPress={() => router.push('/(modals)/challenges')}
             >
               <XStack alignItems="center" gap="$3" flex={1}>

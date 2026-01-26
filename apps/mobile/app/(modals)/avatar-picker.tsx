@@ -98,6 +98,8 @@ export default function AvatarPickerScreen() {
               backgroundColor="$cardBackground"
               padding="$4"
               borderRadius="$4"
+              borderWidth={1}
+              borderColor="$cardBorder"
               gap="$3"
               alignItems="center"
               opacity={isLoading ? 0.5 : 1}
@@ -128,6 +130,8 @@ export default function AvatarPickerScreen() {
               backgroundColor="$cardBackground"
               padding="$4"
               borderRadius="$4"
+              borderWidth={1}
+              borderColor="$cardBorder"
               gap="$3"
               alignItems="center"
               opacity={isLoading ? 0.5 : 1}
