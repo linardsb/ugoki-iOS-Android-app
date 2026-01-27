@@ -50,13 +50,13 @@ export function MetricCard({
               {value}
             </Text>
             {unit && (
-              <Text color="$colorMuted" fontSize="$2">
+              <Text color="$colorMuted" fontSize="$3">
                 {unit}
               </Text>
             )}
           </XStack>
         </XStack>
-        <Text color="$colorMuted" fontSize="$1" numberOfLines={1}>
+        <Text color="$colorMuted" fontSize="$3" numberOfLines={1}>
           {label}
         </Text>
       </Card>
@@ -72,11 +72,11 @@ export function MetricCard({
       >
         <XStack justifyContent="space-between" alignItems="flex-start">
           <YStack gap="$1">
-            <Text color="$colorMuted" fontSize="$2" fontWeight="500">
+            <Text color="$colorMuted" fontSize="$3" fontWeight="500">
               {label}
             </Text>
             {subtitle && (
-              <Text color="$colorSubtle" fontSize="$1">
+              <Text color="$colorSubtle" fontSize="$3">
                 {subtitle}
               </Text>
             )}
@@ -97,10 +97,10 @@ export function MetricCard({
 
         {trendValue && (
           <XStack alignItems="center" gap="$1">
-            <Text color={trendColor} fontSize="$2" fontWeight="500">
+            <Text color={trendColor} fontSize="$3" fontWeight="500">
               {trendIcon} {trendValue}
             </Text>
-            <Text color="$colorMuted" fontSize="$2">
+            <Text color="$colorMuted" fontSize="$3">
               vs. last week
             </Text>
           </XStack>
@@ -117,7 +117,7 @@ export function MetricCard({
       gap="$2"
     >
       <XStack justifyContent="space-between" alignItems="flex-start">
-        <Text color="$colorMuted" fontSize="$2" fontWeight="500">
+        <Text color="$colorMuted" fontSize="$3" fontWeight="500">
           {label}
         </Text>
         {icon}
@@ -133,14 +133,14 @@ export function MetricCard({
           </Text>
         )}
         {trendValue && (
-          <Text color={trendColor} fontSize="$2" fontWeight="500">
+          <Text color={trendColor} fontSize="$3" fontWeight="500">
             {trendIcon} {trendValue}
           </Text>
         )}
       </XStack>
 
       {subtitle && (
-        <Text color="$colorMuted" fontSize="$2">
+        <Text color="$colorMuted" fontSize="$3">
           {subtitle}
         </Text>
       )}

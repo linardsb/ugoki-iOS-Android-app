@@ -96,13 +96,13 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             <XStack gap="$2" alignItems="center">
               <XStack gap="$1" alignItems="center">
                 <Clock size={16} color={mutedIconColor} weight="thin" />
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">
                   {workout.duration_minutes}m
                 </Text>
               </XStack>
               <Text color="$colorMuted">·</Text>
               <Text
-                fontSize="$2"
+                fontSize="$3"
                 color={difficultyColor}
                 fontWeight="500"
                 textTransform="capitalize"
@@ -120,7 +120,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
                 {workout.calories_estimate}
               </Text>
             </XStack>
-            <Text fontSize="$2" color="$colorMuted">cal</Text>
+            <Text fontSize="$3" color="$colorMuted">cal</Text>
           </YStack>
         </XStack>
       </Card>
@@ -173,10 +173,10 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
             <XStack
               backgroundColor={difficultyColor}
               paddingHorizontal="$3"
-              paddingVertical="$1.5"
+              paddingVertical="$2"
               borderRadius="$3"
             >
-              <Text fontSize="$2" color="white" fontWeight="700" textTransform="capitalize">
+              <Text fontSize="$3" color="white" fontWeight="700" textTransform="capitalize">
                 {workout.difficulty}
               </Text>
             </XStack>
@@ -184,10 +184,10 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               <XStack
                 backgroundColor="$primary"
                 paddingHorizontal="$3"
-                paddingVertical="$1.5"
+                paddingVertical="$2"
                 borderRadius="$3"
               >
-                <Text fontSize="$2" color="white" fontWeight="700">Featured</Text>
+                <Text fontSize="$3" color="white" fontWeight="700">Featured</Text>
               </XStack>
             )}
           </XStack>
@@ -198,15 +198,15 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               {workout.name}
             </Text>
             <XStack gap="$3">
-              <XStack gap="$1" alignItems="center">
-                <Clock size={14} color="white" weight="thin" />
-                <Text fontSize="$2" color="rgba(255,255,255,0.8)">
+              <XStack gap="$1.5" alignItems="center">
+                <Clock size={18} color="white" weight="thin" />
+                <Text fontSize="$3" color="rgba(255,255,255,0.9)">
                   {workout.duration_minutes} min
                 </Text>
               </XStack>
-              <XStack gap="$1" alignItems="center">
-                <Fire size={14} color="white" weight="thin" />
-                <Text fontSize="$2" color="rgba(255,255,255,0.8)">
+              <XStack gap="$1.5" alignItems="center">
+                <Fire size={18} color="white" weight="thin" />
+                <Text fontSize="$3" color="rgba(255,255,255,0.9)">
                   {workout.calories_estimate} cal
                 </Text>
               </XStack>
@@ -257,8 +257,8 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
           gap="$1"
           alignItems="center"
         >
-          <Clock size={12} color="white" weight="thin" />
-          <Text fontSize="$2" color="white" fontWeight="500">
+          <Clock size={14} color="white" weight="thin" />
+          <Text fontSize="$3" color="white" fontWeight="500">
             {workout.duration_minutes}m
           </Text>
         </XStack>
@@ -271,7 +271,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
         </Text>
 
         {workout.description && (
-          <Text fontSize="$2" color="$colorMuted" numberOfLines={2}>
+          <Text fontSize="$3" color="$colorMuted" numberOfLines={2}>
             {workout.description}
           </Text>
         )}
@@ -285,7 +285,7 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               paddingVertical="$1"
               borderRadius="$2"
             >
-              <Text fontSize="$2" color={difficultyColor} fontWeight="600" textTransform="capitalize">
+              <Text fontSize="$3" color={difficultyColor} fontWeight="600" textTransform="capitalize">
                 {workout.difficulty}
               </Text>
             </XStack>
@@ -295,15 +295,15 @@ export function WorkoutCard({ workout, variant = 'default', onPress }: WorkoutCa
               paddingVertical="$1"
               borderRadius="$2"
             >
-              <Text fontSize="$2" color="$colorMuted" textTransform="capitalize">
+              <Text fontSize="$3" color="$colorMuted" textTransform="capitalize">
                 {workout.workout_type}
               </Text>
             </XStack>
           </XStack>
 
           <XStack gap="$1" alignItems="center">
-            <Fire size={14} color={iconColor} weight="thin" />
-            <Text fontSize="$2" fontWeight="500" color="$color">
+            <Fire size={16} color={iconColor} weight="thin" />
+            <Text fontSize="$3" fontWeight="500" color="$color">
               {workout.calories_estimate}
             </Text>
           </XStack>

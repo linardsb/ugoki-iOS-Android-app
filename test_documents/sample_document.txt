@@ -1,0 +1,25 @@
+# Welcome to the RAG Pipeline Test
+
+This is a sample document to test your RAG (Retrieval Augmented Generation) pipeline.
+
+## What is RAG?
+
+RAG combines the power of large language models with the ability to retrieve relevant information from a knowledge base. This allows AI agents to answer questions based on specific documents and data.
+
+## How it works:
+
+1. Documents are processed and split into chunks
+2. Each chunk is converted into a vector embedding using the nomic-embed-text model
+3. Embeddings are stored in a Supabase vector database
+4. When a user asks a question, the agent searches for relevant chunks
+5. The agent uses the retrieved information to generate accurate responses
+
+## Test Information:
+
+- Company: Acme Corp
+- Product: Widget Pro 3000
+- Release Date: January 2026
+- Price: $299.99
+- Features: AI-powered, cloud-connected, energy efficient
+
+This document should be successfully processed by your RAG pipeline!

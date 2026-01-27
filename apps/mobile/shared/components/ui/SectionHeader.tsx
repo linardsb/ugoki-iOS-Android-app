@@ -59,7 +59,7 @@ export function SectionHeader({
         <Pressable onPress={action.onPress}>
           <Text
             color="$primary"
-            fontSize="$2"
+            fontSize="$3"
             fontWeight="600"
           >
             {action.label}

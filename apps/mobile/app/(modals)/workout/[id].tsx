@@ -8,7 +8,6 @@ import {
   Fire,
   Barbell,
   Play,
-  CaretRight,
   Lightning,
 } from 'phosphor-react-native';
 import { useWorkout, useStartWorkout } from '@/features/workouts';
@@ -270,6 +269,8 @@ export default function WorkoutDetailScreen() {
                     <XStack
                       key={item}
                       backgroundColor="$cardBackground"
+                      borderWidth={1}
+                      borderColor="$cardBorder"
                       paddingHorizontal="$3"
                       paddingVertical="$2"
                       borderRadius="$3"
@@ -286,14 +287,9 @@ export default function WorkoutDetailScreen() {
             {/* Exercises */}
             {workout.exercises.length > 0 && (
               <YStack gap="$3">
-                <XStack justifyContent="space-between" alignItems="center">
-                  <Text fontSize="$4" fontWeight="600" color="$color">
-                    Exercises
-                  </Text>
-                  <Text fontSize="$3" color="$colorMuted">
-                    ~{exercisesDuration} min total
-                  </Text>
-                </XStack>
+                <Text fontSize="$4" fontWeight="600" color="$color">
+                  Exercises
+                </Text>
 
                 <YStack gap="$2">
                   {workout.exercises.map((exercise, index) => (
@@ -339,7 +335,6 @@ export default function WorkoutDetailScreen() {
 function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }) {
   const theme = useTheme();
   const primaryColor = theme.primary.val;
-  const mutedIconColor = theme.colorMuted.val;
   const formatTime = (seconds: number) => {
     if (seconds >= 60) {
       const mins = Math.floor(seconds / 60);
@@ -352,6 +347,8 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
   return (
     <XStack
       backgroundColor="$cardBackground"
+      borderWidth={1}
+      borderColor="$cardBorder"
       padding="$3"
       borderRadius="$3"
       gap="$3"
@@ -378,7 +375,7 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
         </Text>
         <XStack gap="$2" alignItems="center">
           <XStack gap="$1" alignItems="center">
-            <Clock size={12} color={primaryColor} weight="regular" />
+            <Clock size={14} color={primaryColor} weight="regular" />
             <Text fontSize="$3" color="$colorMuted">
               {formatTime(exercise.duration_seconds)}
             </Text>
@@ -393,8 +390,6 @@ function ExerciseItem({ exercise, index }: { exercise: Exercise; index: number }
           )}
         </XStack>
       </YStack>
-
-      <CaretRight size={16} color={mutedIconColor} weight="regular" />
     </XStack>
   );
 }

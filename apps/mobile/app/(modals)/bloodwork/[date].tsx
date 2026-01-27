@@ -7,13 +7,11 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -30,18 +28,19 @@ import type { Metric, BiomarkerFlag } from '@/features/bloodwork';
 export default function BloodworkDateScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const { date } = useLocalSearchParams<{ date: string }>();
 
-  // Theme
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
+  // Theme-aware colors from design tokens
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const successColor = theme.success.val;
+  const warningColor = theme.warning.val;
+  const errorColor = theme.error.val;
+  const primaryColor = theme.primary.val;
 
   const { data: biomarkers, isLoading, error } = useBiomarkersForDate(date || '');
 
@@ -67,27 +66,27 @@ export default function BloodworkDateScreen() {
   const getFlagIcon = (flag: BiomarkerFlag | null) => {
     switch (flag) {
       case 'low':
-        return <ArrowDown size={16} color="#f59e0b" weight="fill" />;
+        return <ArrowDown size={16} color={warningColor} weight="fill" />;
       case 'high':
-        return <ArrowUp size={16} color="#ef4444" weight="fill" />;
+        return <ArrowUp size={16} color={errorColor} weight="fill" />;
       case 'abnormal':
-        return <Warning size={16} color="#ef4444" weight="fill" />;
+        return <Warning size={16} color={errorColor} weight="fill" />;
       case 'normal':
       default:
-        return <CheckCircle size={16} color="#22c55e" weight="fill" />;
+        return <CheckCircle size={16} color={successColor} weight="fill" />;
     }
   };
 
   const getFlagColor = (flag: BiomarkerFlag | null) => {
     switch (flag) {
       case 'low':
-        return '#f59e0b';
+        return warningColor;
       case 'high':
       case 'abnormal':
-        return '#ef4444';
+        return errorColor;
       case 'normal':
       default:
-        return '#22c55e';
+        return successColor;
     }
   };
 
@@ -165,8 +164,8 @@ export default function BloodworkDateScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Blood Test" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator size="large" color="#14b8a6" />
-          <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }}>
+          <ActivityIndicator size="large" color={primaryColor} />
+          <Text fontSize={14} marginTop="$2" color="$colorMuted">
             Loading results...
           </Text>
         </YStack>
@@ -179,7 +178,7 @@ export default function BloodworkDateScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         <ScreenHeader title="Blood Test" showClose />
         <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
-          <Text fontSize={16} style={{ color: textColor }}>
+          <Text fontSize={16} color="$color">
             Failed to load blood test results
           </Text>
         </YStack>
@@ -201,37 +200,39 @@ export default function BloodworkDateScreen() {
       >
         {/* Summary Card */}
         <YStack
-          backgroundColor={cardBackground}
+          backgroundColor="$cardBackground"
           padding="$4"
           borderRadius="$3"
+          borderWidth={1}
+          borderColor="$cardBorder"
           marginBottom="$4"
         >
-          <Text fontSize={18} fontWeight="bold" style={{ color: textColor }}>
+          <Text fontSize={18} fontWeight="bold" color="$color">
             {formatDate(date || '')}
           </Text>
 
           <XStack gap="$4" marginTop="$3">
             <YStack alignItems="center" flex={1}>
-              <Text fontSize={24} fontWeight="bold" color="#22c55e">
+              <Text fontSize={24} fontWeight="bold" color="$success">
                 {normalCount}
               </Text>
-              <Text fontSize={13} style={{ color: mutedColor }}>
+              <Text fontSize={13} color="$colorMuted">
                 Normal
               </Text>
             </YStack>
             <YStack alignItems="center" flex={1}>
-              <Text fontSize={24} fontWeight="bold" color={abnormalCount > 0 ? '#f59e0b' : mutedColor}>
+              <Text fontSize={24} fontWeight="bold" color={abnormalCount > 0 ? warningColor : mutedColor}>
                 {abnormalCount}
               </Text>
-              <Text fontSize={13} style={{ color: mutedColor }}>
+              <Text fontSize={13} color="$colorMuted">
                 Flagged
               </Text>
             </YStack>
             <YStack alignItems="center" flex={1}>
-              <Text fontSize={24} fontWeight="bold" color="#14b8a6">
+              <Text fontSize={24} fontWeight="bold" color="$primary">
                 {biomarkers.length}
               </Text>
-              <Text fontSize={13} style={{ color: mutedColor }}>
+              <Text fontSize={13} color="$colorMuted">
                 Total
               </Text>
             </YStack>
@@ -243,17 +244,17 @@ export default function BloodworkDateScreen() {
           <YStack key={category} marginBottom="$4">
             <XStack alignItems="center" gap="$2" marginBottom="$2">
               {markers.some(m => m.flag && m.flag !== 'normal') && (
-                <Warning size={16} color="#f59e0b" weight="fill" />
+                <Warning size={16} color={warningColor} weight="fill" />
               )}
-              <Text fontSize={16} fontWeight="600" style={{ color: textColor }}>
+              <Text fontSize={16} fontWeight="600" color="$color">
                 {category}
               </Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{markers.length}</Text>
+              <View style={[styles.badge, { backgroundColor: `${primaryColor}15` }]}>
+                <Text style={[styles.badgeText, { color: primaryColor }]}>{markers.length}</Text>
               </View>
             </XStack>
 
-            <YStack backgroundColor={cardBackground} borderRadius="$3" overflow="hidden">
+            <YStack backgroundColor="$cardBackground" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" overflow="hidden">
               {markers.map((metric, index) => (
                 <TouchableOpacity
                   key={metric.id}
@@ -264,20 +265,20 @@ export default function BloodworkDateScreen() {
                     padding="$3"
                     alignItems="center"
                     borderBottomWidth={index < markers.length - 1 ? 1 : 0}
-                    borderBottomColor={isDark ? '#2c2c2e' : '#f3f4f6'}
+                    borderBottomColor="$borderColor"
                   >
                     {/* Flag icon */}
-                    <View style={styles.flagIcon}>
+                    <View style={[styles.flagIcon, { backgroundColor: theme.backgroundHover.val }]}>
                       {getFlagIcon(metric.flag)}
                     </View>
 
                     {/* Name and reference */}
                     <YStack flex={1} marginLeft="$3">
-                      <Text fontSize={15} fontWeight="500" style={{ color: textColor }}>
+                      <Text fontSize={15} fontWeight="500" color="$color">
                         {formatBiomarkerName(metric.metric_type)}
                       </Text>
                       {formatReferenceRange(metric) && (
-                        <Text fontSize={12} style={{ color: mutedColor }}>
+                        <Text fontSize={12} color="$colorMuted">
                           Ref: {formatReferenceRange(metric)} {metric.unit || ''}
                         </Text>
                       )}
@@ -293,7 +294,7 @@ export default function BloodworkDateScreen() {
                         {metric.value}
                       </Text>
                       {metric.unit && (
-                        <Text fontSize={12} style={{ color: mutedColor }}>
+                        <Text fontSize={12} color="$colorMuted">
                           {metric.unit}
                         </Text>
                       )}
@@ -328,16 +329,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.05)',
   },
   badge: {
-    backgroundColor: 'rgba(20, 184, 166, 0.15)',
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   badgeText: {
-    color: '#14b8a6',
     fontSize: 12,
     fontWeight: '600',
   },

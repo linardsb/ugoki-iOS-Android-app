@@ -4,10 +4,9 @@
  */
 
 import React, { useState } from 'react';
-import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useThemeStore } from '@/shared/stores/theme';
 import { Trophy, Users, Flame, Star } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import { useLeaderboard } from '@/features/social/hooks';
@@ -24,20 +23,16 @@ export default function LeaderboardsScreen() {
   const [metric, setMetric] = useState<MetricType>('xp');
   const [period, setPeriod] = useState<LeaderboardPeriod>('week');
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const subtleColor = isDark ? '#71717a' : '#9ca3af';
-  const borderColor = isDark ? '#2c2c2e' : '#e4e4e7';
-  const myRankBg = isDark ? '#14b8a620' : '#d1fae5';
+  // Theme-aware colors from design tokens
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleColor = theme.colorSubtle.val;
+  const borderColor = theme.borderColor.val;
+  const primaryColor = theme.primary.val;
+  const successColor = theme.success.val;
+  const successSubtle = theme.successSubtle.val;
 
   const leaderboardType: LeaderboardType = `${scope}_${metric}` as LeaderboardType;
   const valueLabel = metric === 'xp' ? 'XP' : 'days';
@@ -60,7 +55,10 @@ export default function LeaderboardsScreen() {
       {/* Scope Toggle */}
       <XStack paddingHorizontal="$4" paddingVertical="$3" gap="$3">
         <TouchableOpacity
-          style={[styles.scopeButton, { backgroundColor: cardBackground }, scope === 'global' && styles.scopeButtonActive]}
+          style={[
+            styles.scopeButton,
+            { backgroundColor: scope === 'global' ? primaryColor : cardBackground, borderColor: cardBorder, borderWidth: 1 },
+          ]}
           onPress={() => setScope('global')}
         >
           <Trophy size={18} color={scope === 'global' ? 'white' : mutedColor} weight="fill" />
@@ -74,7 +72,10 @@ export default function LeaderboardsScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.scopeButton, { backgroundColor: cardBackground }, scope === 'friends' && styles.scopeButtonActive]}
+          style={[
+            styles.scopeButton,
+            { backgroundColor: scope === 'friends' ? primaryColor : cardBackground, borderColor: cardBorder, borderWidth: 1 },
+          ]}
           onPress={() => setScope('friends')}
         >
           <Users size={18} color={scope === 'friends' ? 'white' : mutedColor} weight="fill" />
@@ -91,28 +92,40 @@ export default function LeaderboardsScreen() {
       {/* Metric Toggle */}
       <XStack paddingHorizontal="$4" gap="$3">
         <TouchableOpacity
-          style={[styles.metricButton, { backgroundColor: cardBackground, borderColor: borderColor }, metric === 'xp' && styles.metricButtonActive]}
+          style={[
+            styles.metricButton,
+            {
+              backgroundColor: metric === 'xp' ? successSubtle : cardBackground,
+              borderColor: metric === 'xp' ? successColor : borderColor,
+            },
+          ]}
           onPress={() => setMetric('xp')}
         >
-          <Star size={16} color={metric === 'xp' ? '#14b8a6' : mutedColor} weight="fill" />
+          <Star size={16} color={metric === 'xp' ? successColor : mutedColor} weight="fill" />
           <Text
             fontSize={13}
             fontWeight="500"
-            style={{ color: metric === 'xp' ? '#14b8a6' : mutedColor }}
+            style={{ color: metric === 'xp' ? successColor : mutedColor }}
           >
             XP
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.metricButton, { backgroundColor: cardBackground, borderColor: borderColor }, metric === 'streaks' && styles.metricButtonActive]}
+          style={[
+            styles.metricButton,
+            {
+              backgroundColor: metric === 'streaks' ? successSubtle : cardBackground,
+              borderColor: metric === 'streaks' ? successColor : borderColor,
+            },
+          ]}
           onPress={() => setMetric('streaks')}
         >
-          <Flame size={16} color={metric === 'streaks' ? '#14b8a6' : mutedColor} weight="fill" />
+          <Flame size={16} color={metric === 'streaks' ? successColor : mutedColor} weight="fill" />
           <Text
             fontSize={13}
             fontWeight="500"
-            style={{ color: metric === 'streaks' ? '#14b8a6' : mutedColor }}
+            style={{ color: metric === 'streaks' ? successColor : mutedColor }}
           >
             Streaks
           </Text>
@@ -128,7 +141,14 @@ export default function LeaderboardsScreen() {
         {periods.map((p) => (
           <TouchableOpacity
             key={p.value}
-            style={[styles.periodButton, { backgroundColor: cardBackground }, period === p.value && styles.periodButtonActive]}
+            style={[
+              styles.periodButton,
+              {
+                backgroundColor: period === p.value ? primaryColor : cardBackground,
+                borderColor: cardBorder,
+                borderWidth: 1,
+              },
+            ]}
             onPress={() => setPeriod(p.value)}
           >
             <Text
@@ -147,23 +167,25 @@ export default function LeaderboardsScreen() {
         <XStack
           marginHorizontal="$4"
           marginTop="$3"
-          backgroundColor={myRankBg}
+          backgroundColor="$successSubtle"
           borderRadius="$3"
+          borderWidth={1}
+          borderColor="$cardBorder"
           padding="$3"
           justifyContent="space-between"
           alignItems="center"
         >
           <XStack alignItems="center" gap="$2">
-            <Trophy size={20} color="#14b8a6" weight="fill" />
-            <Text fontSize={14} fontWeight="600" color="#14b8a6">
+            <Trophy size={20} color={successColor} weight="fill" />
+            <Text fontSize={14} fontWeight="600" color="$success">
               Your Rank
             </Text>
           </XStack>
           <XStack alignItems="center" gap="$3">
-            <Text fontSize={18} fontWeight="700" color="#14b8a6">
+            <Text fontSize={18} fontWeight="700" color="$success">
               #{leaderboard.my_rank}
             </Text>
-            <Text fontSize={14} color="#14b8a6">
+            <Text fontSize={14} color="$success">
               {Math.round(leaderboard.my_value || 0).toLocaleString()} {valueLabel}
             </Text>
           </XStack>
@@ -224,9 +246,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
   },
-  scopeButtonActive: {
-    backgroundColor: '#14b8a6',
-  },
   metricButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,10 +254,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-  },
-  metricButtonActive: {
-    borderColor: '#14b8a6',
-    backgroundColor: '#d1fae5',
   },
   periodContainer: {
     paddingHorizontal: 16,
@@ -250,8 +265,5 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     marginRight: 8,
-  },
-  periodButtonActive: {
-    backgroundColor: '#6b7280',
   },
 });

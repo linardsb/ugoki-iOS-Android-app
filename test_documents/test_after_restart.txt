@@ -1,0 +1,11 @@
+# Testing RAG Pipeline After Supabase Restart
+
+This file was created to test if the RAG pipeline works correctly after restarting Supabase.
+
+## Test Data
+
+- Timestamp: January 14, 2026 - 13:51
+- Purpose: Verify database connectivity and embedding generation
+- Expected: This content should be chunked, embedded, and stored in Supabase
+
+If you can retrieve this document through the RAG system, the setup is working correctly!

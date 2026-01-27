@@ -81,7 +81,7 @@ def get_llm_config() -> dict[str, Any]:
     elif provider == "anthropic":
         return {
             "provider": "anthropic",
-            "model": os.getenv("LLM_CHOICE") or settings.llm_choice or "claude-3-haiku-20240307",
+            "model": os.getenv("LLM_CHOICE") or settings.llm_choice or settings.anthropic_model or "claude-3-5-haiku-20241022",
             "api_key": os.getenv("LLM_API_KEY") or settings.llm_api_key or settings.anthropic_api_key,
         }
     else:

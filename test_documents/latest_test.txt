@@ -1,0 +1,17 @@
+  # RAG Pipeline Live Test
+
+  This file was just created to test the RAG pipeline processing.
+
+  ## Company Info:
+  - Name: TechStart Inc.
+  - Founded: 2026
+  - Location: San Francisco, CA
+  - Product: AI-powered developer tools
+
+  ## Key Features:
+  - Real-time code analysis
+  - Automated testing
+  - Smart debugging assistance
+
+  Contact: support@techstart.example
+  EOF

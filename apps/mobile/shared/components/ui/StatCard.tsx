@@ -31,7 +31,7 @@ export function StatCard({
       gap="$2"
     >
       <XStack justifyContent="space-between" alignItems="flex-start">
-        <Text color="$colorMuted" fontSize="$2" fontWeight="500">
+        <Text color="$colorMuted" fontSize="$3" fontWeight="500">
           {label}
         </Text>
         {icon}
@@ -42,14 +42,14 @@ export function StatCard({
           {value}
         </Text>
         {trendValue && (
-          <Text color={trendColor} fontSize="$2" fontWeight="500">
+          <Text color={trendColor} fontSize="$3" fontWeight="500">
             {trendIcon} {trendValue}
           </Text>
         )}
       </XStack>
 
       {subtitle && (
-        <Text color="$colorMuted" fontSize="$2">
+        <Text color="$colorMuted" fontSize="$3">
           {subtitle}
         </Text>
       )}

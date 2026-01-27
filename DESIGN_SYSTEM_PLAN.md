@@ -28,11 +28,11 @@ Visual refresh of UGOKI mobile app with a robust, modular design system.
 ### Files With Hardcoded Colors
 - `features/research/components/ResearchCard.tsx` - 5 hardcoded colors
 - `features/social/components/ChallengeCard.tsx` - theme detection + hardcoded
-- `features/recipes/components/RecipeCard.tsx` - `#14b8a6`, `#9ca3af`
+- `features/recipes/components/RecipeCard.tsx` - 
 - `features/workouts/components/WorkoutCard.tsx` - difficulty colors
 - `features/dashboard/components/ActiveFastCard.tsx` - success/warning
-- `features/health/components/HealthSyncCard.tsx` - `#10b981`
-- `shared/components/ui/AppSwitch.tsx` - `#22c55e`, `#e4e4e7`
+- `features/health/components/HealthSyncCard.tsx` - 
+- `shared/components/ui/AppSwitch.tsx` - 
 
 ---
 
@@ -148,7 +148,7 @@ Convert all hardcoded colors to theme tokens:
 
 ```typescript
 // BEFORE (bad)
-const textColor = isDark ? '#ffffff' : '#1f2937';
+const textColor = isDark ? 'current color' : 'current color';
 
 // AFTER (good)
 <Text color="$color">...</Text>

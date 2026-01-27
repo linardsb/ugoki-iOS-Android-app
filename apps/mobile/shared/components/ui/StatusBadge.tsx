@@ -108,7 +108,7 @@ export function StatusBadge({
       }
     : STATUS_CONFIG[status];
 
-  const fontSize = size === 'sm' ? '$1' : size === 'lg' ? '$3' : '$2';
+  const fontSize = size === 'sm' ? '$2' : size === 'lg' ? '$3' : '$3';
 
   return (
     <BadgeContainer

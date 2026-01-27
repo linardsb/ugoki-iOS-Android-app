@@ -1,0 +1,27 @@
+# Product Catalog - Q1 2026
+
+## Premium Laptops
+
+### UltraBook Pro X1
+- Processor: Intel Core i9-14900H
+- RAM: 32GB DDR5
+- Storage: 2TB NVMe SSD
+- Display: 15.6" 4K OLED
+- Price: $2,499
+- Availability: In Stock
+
+### Business Elite 14
+- Processor: AMD Ryzen 7 7840U
+- RAM: 16GB DDR5
+- Storage: 1TB NVMe SSD
+- Display: 14" Full HD IPS
+- Price: $1,299
+- Availability: Pre-order (Ships Feb 2026)
+
+## Customer Reviews
+
+"The UltraBook Pro X1 is incredibly fast and the display quality is outstanding!" - Sarah J.
+
+"Perfect for business travel. Lightweight and powerful." - Michael T.
+
+For more information, contact sales@example.com

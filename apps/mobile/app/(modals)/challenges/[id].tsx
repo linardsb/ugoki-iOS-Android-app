@@ -12,12 +12,10 @@ import {
   TouchableOpacity,
   Alert,
   Share,
-  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import { Users, Calendar, Trophy, Clock, ShareNetwork, SignOut, Copy } from 'phosphor-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -38,20 +36,15 @@ export default function ChallengeDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const subtleBackground = isDark ? '#2c2c2e' : '#f3f4f6';
-  const progressCardBg = isDark ? '#14b8a620' : '#d1fae5';
-  const borderColor = isDark ? '#2c2c2e' : '#e4e4e7';
+  // Theme-aware colors from design tokens
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleBackground = theme.backgroundHover.val;
+  const successSubtle = theme.successSubtle.val;
+  const borderColor = theme.borderColor.val;
+  const primaryColor = theme.primary.val;
 
   const { data: challenge, isLoading, refetch, isRefetching } = useChallenge(id);
   const { data: leaderboard } = useChallengeLeaderboard(id);
@@ -259,7 +252,7 @@ export default function ChallengeDetailScreen() {
           <YStack
             marginHorizontal="$4"
             marginTop="$4"
-            backgroundColor={progressCardBg}
+            backgroundColor={successSubtle}
             borderRadius="$4"
             padding="$4"
             gap="$3"

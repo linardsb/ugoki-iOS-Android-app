@@ -68,7 +68,7 @@ export function UserCard({
           <Image source={{ uri: avatarUrl }} style={[styles.avatar, { backgroundColor: theme.backgroundHover.val }]} />
         ) : (
           <RNView style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
-            <Text color="white" fontSize={16} fontWeight="600">
+            <Text color="white" fontSize="$4" fontWeight="600">
               {initials}
             </Text>
           </RNView>
@@ -76,16 +76,16 @@ export function UserCard({
 
         {/* User Info */}
         <YStack flex={1} gap="$1">
-          <Text fontSize={16} fontWeight="600" color="$color">
+          <Text fontSize="$4" fontWeight="600" color="$color">
             {name}
           </Text>
           {username && displayName && (
-            <Text fontSize={13} color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               @{username}
             </Text>
           )}
           {subtitle && (
-            <Text fontSize={13} color="$colorMuted">
+            <Text fontSize="$3" color="$colorMuted">
               {subtitle}
             </Text>
           )}
@@ -94,7 +94,7 @@ export function UserCard({
         {/* Level Badge */}
         {level && (
           <RNView style={[styles.levelBadge, { backgroundColor: primaryBgColor }]}>
-            <Text fontSize={12} fontWeight="600" color="$primary">
+            <Text fontSize="$3" fontWeight="600" color="$primary">
               Lvl {level}
             </Text>
           </RNView>

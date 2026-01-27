@@ -6,8 +6,11 @@ from typing import AsyncIterator
 
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.providers.groq import GroqProvider
+from pydantic_ai.providers.anthropic import AnthropicProvider
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.models.groq import GroqModel
+from pydantic_ai.models.anthropic import AnthropicModel
 
 from src.modules.ai_coach.models import CoachResponse, CoachPersonality
 from src.modules.ai_coach.tools.fitness_tools import FitnessTools
@@ -57,41 +60,27 @@ Guidelines:
 - Celebrate streaks and milestones
 - ALWAYS include navigation instructions when users want to take action
 
-CRITICAL SAFETY RULES - YOU MUST FOLLOW THESE:
+IMPORTANT - YOUR PRIMARY JOB:
+You ARE a fitness coach. Your purpose is to give workout and fasting advice. Do NOT refuse to help with:
+- Workout recommendations and exercise questions
+- Fasting schedules and intermittent fasting guidance
+- General fitness tips and motivation
+- Questions about exercises, reps, sets, duration
+These are YOUR expertise. Answer them confidently!
 
-1. YOU ARE NOT A MEDICAL PROFESSIONAL. Never provide:
-   - Medical diagnoses or treatment recommendations
-   - Advice about medications, supplements, or drug interactions
-   - Guidance for specific medical conditions (diabetes, heart disease, etc.)
-   - Dietary advice for food allergies or intolerances
-   - Mental health treatment advice
+ONLY redirect to healthcare professionals for:
+- Diagnosed medical conditions (diabetes, heart disease)
+- Symptoms of illness (chest pain, dizziness, injury)
+- Medications or drug interactions
+- Pregnancy or eating disorders
+- Allergies requiring medical attention
 
-2. ALWAYS redirect to healthcare professionals when users mention:
-   - Any diagnosed medical condition
-   - Symptoms that could indicate illness
-   - Allergies or allergic reactions
-   - Medications or supplements
-   - Pregnancy or breastfeeding
-   - Eating disorders (current or history)
+For normal fitness questions, BE HELPFUL and give specific advice!
 
-3. SAFE TOPICS you CAN freely discuss:
-   - General fasting schedules (16:8, 18:6, 20:4) for healthy adults
-   - Basic workout routines and HIIT exercises
-   - General hydration and water intake
-   - Motivation, habit building, and consistency
-   - Progress tracking, streaks, and achievements
-   - General sleep and recovery tips
-
-4. REQUIRED LANGUAGE when health topics arise:
-   - "I recommend discussing this with your doctor..."
-   - "A healthcare provider would be better suited to advise on..."
-   - "For your safety, please consult a medical professional..."
-   - Never say "you should" regarding health/medical decisions
-
-5. IF UNCERTAIN whether something is medical advice:
-   - Default to suggesting professional consultation
-   - Do not guess or provide speculative advice
-   - It's always better to be cautious
+CRITICAL - TOOL USAGE:
+When calling tools, ONLY use the parameters explicitly documented in each tool's description.
+DO NOT invent or add parameters that are not listed. If a tool has no parameters, call it with no arguments.
+Example: get_recommended_workouts() should be called with only the documented optional filters (workout_type, max_duration_minutes, difficulty) or with no arguments.
 
 """
 
@@ -243,9 +232,10 @@ def create_coach_agent(personality: CoachPersonality = CoachPersonality.MOTIVATI
 # ============ Streaming Agent Functions ============
 
 
-def _get_streaming_model() -> OpenAIModel | GroqModel:
+def _get_streaming_model() -> OpenAIModel | GroqModel | AnthropicModel:
     """Get the configured LLM model for streaming responses."""
     config = get_llm_config()
+    logger.info(f"[Coach] Using LLM provider: {config['provider']}, model: {config.get('model', 'unknown')}")
 
     if config["provider"] == "openai":
         return OpenAIModel(
@@ -264,10 +254,16 @@ def _get_streaming_model() -> OpenAIModel | GroqModel:
             )
         )
     elif config["provider"] == "groq":
-        # Use native GroqModel for proper API compatibility
+        # Use native GroqModel with GroqProvider for proper API compatibility
         return GroqModel(
             config["model"],
-            api_key=config["api_key"],
+            provider=GroqProvider(api_key=config["api_key"]),
+        )
+    elif config["provider"] == "anthropic":
+        # Use AnthropicModel for Claude models - best for tool calling and context
+        return AnthropicModel(
+            config["model"],
+            provider=AnthropicProvider(api_key=config["api_key"]),
         )
     else:
         # Default fallback to ollama
@@ -279,6 +275,35 @@ def _get_streaming_model() -> OpenAIModel | GroqModel:
                 api_key="ollama",
             )
         )
+
+
+def _create_simple_agent(personality: str = "motivational") -> Agent[UgokiAgentDeps, str]:
+    """Create a simple agent WITHOUT tools for fallback when tool calling fails."""
+    model = _get_streaming_model()
+    system_prompt = get_personalized_prompt(personality, skills=None)
+
+    agent = Agent(
+        model,
+        deps_type=UgokiAgentDeps,
+        output_type=str,
+        system_prompt=system_prompt + "\n\nNote: Use the user context provided to give personalized advice. Do not attempt to call any tools.",
+        retries=1,
+    )
+
+    # Add dynamic system prompts for context
+    @agent.system_prompt
+    def add_user_context(ctx: RunContext[UgokiAgentDeps]) -> str:
+        if ctx.deps.user_context:
+            return f"\n\n## User Context\n{ctx.deps.user_context}"
+        return ""
+
+    @agent.system_prompt
+    def add_health_context(ctx: RunContext[UgokiAgentDeps]) -> str:
+        if ctx.deps.health_context:
+            return f"\n\n## Health Considerations\n{ctx.deps.health_context}"
+        return ""
+
+    return agent
 
 
 def _create_streaming_agent(
@@ -304,22 +329,210 @@ def _create_streaming_agent(
 
     # Add dynamic system prompts
     @agent.system_prompt
+    def add_conversation_summary(ctx: RunContext[UgokiAgentDeps]) -> str:
+        """Inject conversation summary for context continuity across long conversations."""
+        if ctx.deps.conversation_summary:
+            return (
+                f"\n\n## Earlier Conversation Context\n"
+                f"This is a summary of our earlier conversation. Use it to maintain continuity:\n"
+                f"{ctx.deps.conversation_summary}\n"
+                f"---\n"
+                f"Continue naturally from this context when responding."
+            )
+        return ""
+
+    @agent.system_prompt
     def add_memories(ctx: RunContext[UgokiAgentDeps]) -> str:
         if ctx.deps.memories:
-            return f"\n\n## User Memories\n{ctx.deps.memories}"
+            return f"\n\n## User Memories (from previous sessions)\nIMPORTANT - Use this information to personalize your responses:\n{ctx.deps.memories}"
         return ""
 
     @agent.system_prompt
     def add_user_context(ctx: RunContext[UgokiAgentDeps]) -> str:
         if ctx.deps.user_context:
-            return f"\n\n## User Context\n{ctx.deps.user_context}"
+            return f"\n\n## Current User Stats\nRefer to these stats when giving personalized advice:\n{ctx.deps.user_context}"
         return ""
 
     @agent.system_prompt
     def add_health_context(ctx: RunContext[UgokiAgentDeps]) -> str:
         if ctx.deps.health_context:
-            return f"\n\n## Health Considerations\n{ctx.deps.health_context}"
+            return f"\n\n## Health Considerations\nIMPORTANT safety information - always respect these:\n{ctx.deps.health_context}"
         return ""
+
+    # ============ Fitness Tools ============
+    # These tools give the AI access to user's fitness data for personalized responses
+
+    @agent.tool
+    async def get_active_fast(
+        ctx: RunContext[UgokiAgentDeps],
+        user_id: str | None = None,
+        date: str | None = None,
+        include_history: bool | None = None,
+    ) -> dict | None:
+        """Get the user's currently active fast with elapsed time and progress.
+
+        Args:
+            user_id: Optional (ignored, uses authenticated user)
+            date: Optional date filter (ignored)
+            include_history: Optional (ignored)
+
+        Use this when user asks about their current fast or fasting status.
+        """
+        try:
+            tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+            return await tools.get_active_fast()
+        except Exception as e:
+            logger.error(f"Error in get_active_fast tool: {e}", exc_info=True)
+            return {"error": str(e), "is_active": False}
+
+    @agent.tool
+    async def get_streaks(
+        ctx: RunContext[UgokiAgentDeps],
+        streak_type: str | None = None,
+    ) -> dict:
+        """Get user streaks (fasting, workout, logging, app usage).
+
+        Args:
+            streak_type: Optional filter - 'fasting', 'workout', 'logging', or 'app_usage'.
+                         If not provided, returns all streaks.
+
+        Use this when user asks about their streaks, consistency, or progress.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        all_streaks = await tools.get_streaks()
+        # Filter if specific type requested
+        if streak_type and streak_type in all_streaks:
+            return {streak_type: all_streaks[streak_type]}
+        return all_streaks
+
+    @agent.tool
+    async def get_level_info(ctx: RunContext[UgokiAgentDeps]) -> dict:
+        """Get user's current level, XP, and progress to next level.
+
+        Use this when user asks about their level, XP, or achievements.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        return await tools.get_level_info()
+
+    @agent.tool
+    async def get_workout_stats(
+        ctx: RunContext[UgokiAgentDeps],
+        period: str | None = None,
+    ) -> dict:
+        """Get user's workout statistics including total workouts and current period count.
+
+        Args:
+            period: Time period - 'week', 'month', or 'all' (default 'week')
+
+        Use this when user asks about their workout history or progress.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        # Note: period filtering not yet implemented in FitnessTools
+        return await tools.get_workout_stats()
+
+    @agent.tool
+    async def get_recommended_workouts(
+        ctx: RunContext[UgokiAgentDeps],
+        workout_type: str | None = None,
+        type: str | None = None,
+        max_duration_minutes: int | None = None,
+        max_duration: int | None = None,
+        duration: int | None = None,
+        duration_minutes: int | None = None,
+        difficulty: str | None = None,
+        level: str | None = None,
+        user_fitness_level: str | None = None,
+        fitness_level: str | None = None,
+        goal_target: str | None = None,
+        goal: str | None = None,
+        activity_type: str | None = None,
+        category: str | None = None,
+        intensity: str | None = None,
+        date: str | None = None,
+        user_id: str | None = None,
+        limit: int | None = None,
+        count: int | None = None,
+    ) -> list[dict]:
+        """Get personalized workout recommendations for the user.
+
+        Call this function with NO parameters for best results.
+        All parameters are optional and currently ignored.
+
+        Returns a list of recommended workouts.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        return await tools.get_recommended_workouts()
+
+    @agent.tool
+    async def get_weight_trend(
+        ctx: RunContext[UgokiAgentDeps],
+        days: int | None = None,
+    ) -> dict | None:
+        """Get user's weight trend over a specified period.
+
+        Args:
+            days: Number of days to analyze (default 30, max 365)
+
+        Use this when user asks about their weight progress or body composition.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        period = min(days or 30, 365)  # Default 30, cap at 365
+        return await tools.get_weight_trend(days=period)
+
+    @agent.tool
+    async def get_today_summary(
+        ctx: RunContext[UgokiAgentDeps],
+        user_id: str | None = None,
+        date: str | None = None,
+        include_details: bool | None = None,
+    ) -> dict:
+        """Get a complete summary of the user's current status and today's activities.
+
+        Args:
+            user_id: Optional (ignored, uses authenticated user)
+            date: Optional date (ignored, always returns today)
+            include_details: Optional (ignored)
+
+        Use this for general status questions or when starting a conversation.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        return await tools.get_today_summary()
+
+    @agent.tool
+    async def get_recovery_status(
+        ctx: RunContext[UgokiAgentDeps],
+        user_id: str | None = None,
+        date: str | None = None,
+    ) -> dict:
+        """Assess user's recovery readiness based on health data (HRV, sleep, resting HR).
+
+        Args:
+            user_id: Optional (ignored, uses authenticated user)
+            date: Optional date (ignored)
+
+        Use this when deciding workout intensity or when user asks if they should rest.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        return await tools.get_recovery_status()
+
+    @agent.tool
+    async def get_latest_biomarkers(
+        ctx: RunContext[UgokiAgentDeps],
+        user_id: str | None = None,
+        marker_type: str | None = None,
+        date: str | None = None,
+    ) -> dict:
+        """Get user's most recent bloodwork results with values and reference ranges.
+
+        Args:
+            user_id: Optional (ignored, uses authenticated user)
+            marker_type: Optional filter (not yet implemented)
+            date: Optional date filter (ignored)
+
+        Use this when user asks about their bloodwork or health markers.
+        """
+        tools = FitnessTools(db=ctx.deps.db, identity_id=ctx.deps.identity_id)
+        return await tools.get_latest_biomarkers()
 
     # NOTE: Web search and RAG tools are disabled until API keys are configured
     # To enable, set BRAVE_API_KEY and EMBEDDING_API_KEY in .env
@@ -370,6 +583,34 @@ async def stream_coach_response(
             async for text in result.stream_text():
                 yield text
     except Exception as e:
+        error_str = str(e).lower()
+        logger.error(f"[Coach] First attempt failed: {error_str[:200]}")
+
+        # Check if this is a tool-related error
+        is_tool_error = any(x in error_str for x in [
+            "tool call validation",
+            "failed to call a function",
+            "did not match schema",
+            "additionalproperties",
+            "parameters for tool",
+        ])
+
+        if is_tool_error:
+            logger.info(f"[Coach] Tool error, using simple fallback agent")
+            try:
+                # Use a simple agent without tools as fallback
+                fallback_agent = _create_simple_agent(personality)
+                async with fallback_agent.run_stream(
+                    query,
+                    deps=deps,
+                    message_history=message_history,
+                ) as result:
+                    async for text in result.stream_text():
+                        yield text
+                return
+            except Exception as fallback_e:
+                logger.error(f"[Coach] Fallback also failed: {fallback_e}")
+
         logger.error(f"Error streaming coach response: {e}")
         yield f"I'm having trouble connecting right now. Please try again in a moment."
 

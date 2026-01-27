@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   Image,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,7 +28,6 @@ import {
   Medal,
 } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
-import { useThemeStore } from '@/shared/stores/theme';
 import {
   usePublicProfile,
   useSendFriendRequest,
@@ -53,20 +51,15 @@ export default function UserProfileModal() {
   const unfollowUser = useUnfollowUser();
   const blockUser = useBlockUser();
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const bioColor = isDark ? '#d1d5db' : '#4b5563';
-  const buttonBackground = isDark ? '#2c2c2e' : 'white';
-  const pendingBackground = isDark ? '#3a3a3c' : '#f3f4f6';
+  // Theme-aware colors from design tokens
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const bioColor = theme.colorMuted.val;
+  const buttonBackground = theme.backgroundHover.val;
+  const pendingBackground = theme.backgroundHover.val;
+  const primaryColor = theme.primary.val;
 
   if (!userId) {
     return (

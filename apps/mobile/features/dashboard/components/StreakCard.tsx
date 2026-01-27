@@ -1,4 +1,4 @@
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { Card } from '@/shared/components/ui';
 import { Fire, Barbell, Calendar } from 'phosphor-react-native';
 import type { IconProps } from 'phosphor-react-native';
@@ -10,11 +10,12 @@ interface StreakCardProps {
   isLoading?: boolean;
 }
 
-const STREAK_CONFIG: Record<StreakType, { icon: ComponentType<IconProps>; label: string; color: string }> = {
-  fasting: { icon: Fire, label: 'Fasting', color: '#FFA387' },
-  workout: { icon: Barbell, label: 'Workout', color: '#3A5BA0' },
-  logging: { icon: Calendar, label: 'Logging', color: '#4A9B7F' },
-  app_usage: { icon: Calendar, label: 'Daily', color: '#3A5BA0' },
+// Streak config with theme color keys
+const STREAK_CONFIG: Record<StreakType, { icon: ComponentType<IconProps>; label: string; colorKey: 'secondary' | 'primary' | 'success' }> = {
+  fasting: { icon: Fire, label: 'Fasting', colorKey: 'secondary' },
+  workout: { icon: Barbell, label: 'Workout', colorKey: 'primary' },
+  logging: { icon: Calendar, label: 'Logging', colorKey: 'success' },
+  app_usage: { icon: Calendar, label: 'Daily', colorKey: 'primary' },
 };
 
 export function StreakCard({ streaks, isLoading }: StreakCardProps) {
@@ -55,10 +56,14 @@ function StreakItem({
   type: StreakType;
   flex?: number;
 }) {
+  const theme = useTheme();
   const config = STREAK_CONFIG[type];
   const Icon = config.icon;
   const count = streak?.current_count ?? 0;
   const longest = streak?.longest_count ?? 0;
+
+  // Get color from theme based on colorKey
+  const color = theme[config.colorKey]?.val || theme.primary.val;
 
   return (
     <Card
@@ -72,11 +77,11 @@ function StreakItem({
           width={48}
           height={48}
           borderRadius="$6"
-          backgroundColor={`${config.color}20`}
+          backgroundColor={`${color}20`}
           justifyContent="center"
           alignItems="center"
         >
-          <Icon size={24} color={config.color} weight="thin" />
+          <Icon size={24} color={color} weight="thin" />
         </XStack>
 
         <Text fontSize="$7" fontWeight="bold" color="$color">

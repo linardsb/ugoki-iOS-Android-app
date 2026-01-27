@@ -25,15 +25,21 @@ class FitnessTools:
         window = await service.get_active_window(self.identity_id, WindowType.FAST)
         if not window:
             return None
-        
-        elapsed = (datetime.now(UTC) - window.started_at).total_seconds() / 3600
-        target = window.target_duration_minutes / 60 if window.target_duration_minutes else 16
-        
+
+        now = datetime.now(UTC)
+        elapsed = (now - window.start_time).total_seconds() / 3600
+
+        # Calculate target from scheduled_end or default to 16 hours
+        if window.scheduled_end:
+            target = (window.scheduled_end - window.start_time).total_seconds() / 3600
+        else:
+            target = 16.0
+
         return {
             "is_active": True,
-            "started_at": window.started_at.isoformat(),
+            "started_at": window.start_time.isoformat(),
             "elapsed_hours": round(elapsed, 1),
-            "target_hours": target,
+            "target_hours": round(target, 1),
             "progress_percent": round((elapsed / target) * 100, 1) if target else 0,
             "remaining_hours": round(max(0, target - elapsed), 1),
         }

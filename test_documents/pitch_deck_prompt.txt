@@ -1,0 +1,232 @@
+hey Claude, please use vc-pitch-deck-fitness SKILL to create a pitch deck for my business. UGOKI fitness application. There is further information available in the attached files. I need you to create as well a 1-page executive summary. 
+
+<MVP>
+- IMPORTANT:  Github to the MVP that’s already built (features functioning): https://github.com/linardsb/ugoki-iOS-Android-app/tree/main
+- Ready to move to production
+</MVP>
+
+<branding>
+- UGOKI still needs a social presence
+- Brand still needs to be discovered
+</branding>
+
+<potential references to use in deck>
+The "Why Now" Story
+- Post-pandemic health consciousness
+- Remote work → flexible fitness
+- Wearables + data proliferation
+- Gen Z wants gamified social
+- Corporate wellness spending surge
+</potential references to use in deck>
+
+<your task>
+- combine attached file’s context and research, to create a new Pitch deck using vc-pitch-deck-fitness SKILL
+- Create a pitch deck 10-15 pages 
+- <features in planning mode> is there to add to pitch deck, as features in planning and early development mode
+- please note, IMPORTANT: attached files are not for you to copy from, its for your reference. 
+- IMPORTANT: first, create a simple .md file with all necessary sections, instead of full powerpoint or HTML or Javascript
+</your task>
+
+<features in planning mode> 
+- Utility based AI agent = (Personalisation at Scale) (Intelligent Trade-off Management) (Contextual Decision Making
+) (Predictive Optimisation) 
+- Real-Time Biometric Integration & Adaptive Protocols
+- Expand on Social & Community Features
+- Financial Incentive System (Stake & Earn) - Corporate Rewards
+- Progressive Avatar Evolution System (Visual Progress) 
+- Nutrition AI with Photo Recognition & Database
+- Corporate Wellness Integration/partnership & Reporting
+- Information on Biodynamic (most nutrient dense soils) farms around work/home Post code of user
+</features in planning mode>
+
+cd /Users/Berzins/Desktop/AI/UGOKI/ugoki_1_0/apps/mobile && bun run start
+
+You are a helpful personal assistant who helps answer questions from a corpus of documents. The documents are either text based (txt, docs, extracted PDFs, etc) or tabular data (CSVs or Excel documents). 
+
+You are given tools to perform  RAG in the 'documents' table, loo up the documents available in your knowledge base in the 'document_metadata' table, extract all the text from a given document, and query the tabular files with SQL in the 'document_rows' table. 
+
+Always start by performing RAG unless the question requires a SQL query for tabular data (fetching a sum finding a max, something RAG lookup would be unreliable for). If RAG doesn't help, then look at the documents that are available to you, find a few that you think would contain the answer, and then analyse those. 
+
+Always tell the user if you didn't find the answer. Don't make up something up, just to please them. 
+      
+
+
+  Quick Reference:
+  ┌──────────────────────┬────────────────────────────────┐
+  │       Command        │          What It Does          │
+  ├──────────────────────┼────────────────────────────────┤
+  │ ./start_agent.sh     │ Start everything after restart │
+  ├──────────────────────┼────────────────────────────────┤
+  │ ./stop_agent.sh      │ Stop all services              │
+  ├──────────────────────┼────────────────────────────────┤
+  │ ./check_status.sh    │ See what's running             │
+  ├──────────────────────┼────────────────────────────────┤
+  │ cat STARTUP_GUIDE.md │ Read the full manual  
+
+This guide outlines a repeatable, structured process for working with AI coding assistants to build production-quality AI agents. We'll use the example of building an AI agent with Pydantic AI, but a similar process can be followed for any AI agent.
+Note that the examples in this guide focus on building the AI agent itself, not the frontend or API which we will get into in later modules in the AI Agent Mastery course!
+
+1. 🔑 Golden Rules
+These are the high-level principles that guide how to work with AI tools efficiently and effectively. We’ll be implementing these through global rules and our prompting throughout the process:
+Use markdown files to manage the project (README.md,PLANNING.md, TASK.md).
+
+
+Keep files under 500 lines. Split into modules when needed.
+
+
+Modularize your agent code - agent.py, tools.py, prompts.py, etc.
+
+
+Start fresh conversations often. Long threads degrade response quality.
+
+
+Don’t overload the model. One task per message is ideal.
+
+
+Test early, test often. Every new function (especially new tools) should have unit tests.
+
+
+Be specific in your requests. The more context, the better. Examples help a lot.
+
+
+Write docs and comments as you go. Don’t delay documentation.
+
+
+Implement environment variables yourself. Don’t trust the LLM with API keys.
+
+
+2. 🧠 Planning & Task Management
+
+Before writing any code, it’s important to have a conversation with the LLM to plan the initial scope and tasks for the agent. Scope goes into PLANNING.md, and specific tasks go into TASK.md. These should be updated by the AI coding assistant as the project progresses.
+
+PLANNING.md
+Purpose: High-level vision, architecture, constraints, tech stack, tools for the agent, etc.
+Prompt to AI: “Use the structure and decisions outlined in PLANNING.md.”
+Have the LLM reference this file at the beginning of any new conversation.
+
+
+TASK.md
+Purpose: Tracks current tasks, backlog, and sub-tasks.
+Includes: Bullet list of active work, milestones, and anything discovered mid-process.
+Prompt to AI: “Update TASK.md to mark XYZ as done and add ABC as a new task.”
+Can prompt the LLM to automatically update and create tasks as well (through global rules).
+
+
+
+3. ⚙️ Global Rules (For AI IDEs)
+Global (or project level) rules are the best way to enforce the use of the golden rules for your AI coding assistants.
+Global rules apply to all projects. Project rules apply to your current workspace. All AI IDEs support both.
+
+Cursor Rules: https://docs.cursor.com/context/rules-for-ai
+Windsurf Rules: https://docs.windsurf.com/windsurf/getting-started#windsurfrules
+Cline Rules: https://docs.cline.bot/improving-your-prompting-skills/prompting
+
+Roo Code Rules: Works the same way as Cline
+Use the below example (for our Pydantic AI agent) as a starting point for your agent to add global rules to your AI IDE system prompt to enforce consistency:
+### 🔄 Project Awareness & Context
+- **Always read `PLANNING.md`** at the start of a new conversation to understand the project's architecture, goals, style, and constraints.
+- **Check `TASK.md`** before starting a new task. If the task isn’t listed, add it with a brief description and today's date.
+- **Use consistent naming conventions, file structure, and architecture patterns** as described in `PLANNING.md`.
+
+### 🧱 Code Structure & Modularity
+- **Never create a file longer than 500 lines of code.** If a file approaches this limit, refactor by splitting it into modules or helper files.
+- **Organize code into clearly separated modules**, grouped by feature or responsibility.
+  For agents this looks like:
+    - `agent.py` - Main agent definition and execution logic 
+    - `tools.py` - Tool functions used by the agent 
+    - `prompts.py` - System prompts
+- **Use clear, consistent imports** (prefer relative imports within packages).
+
+### 🧪 Testing & Reliability
+- **Always create Pytest unit tests for new features** (functions, classes, routes, etc).
+- **After updating any logic**, check whether existing unit tests need to be updated. If so, do it.
+- **Tests should live in a `/tests` folder** mirroring the main app structure.
+  - Include at least:
+    - 1 test for expected use
+    - 1 edge case
+    - 1 failure case
+- Always test the individual functions for agent tools.
+
+### ✅ Task Completion
+- **Mark completed tasks in `TASK.md`** immediately after finishing them.
+- Add new sub-tasks or TODOs discovered during development to `TASK.md` under a “Discovered During Work” section.
+
+### 📎 Style & Conventions
+- **Use Python** as the primary language.
+- **Follow PEP8**, use type hints, and format with `black`.
+- **Use `pydantic` for data validation**.
+- Write **docstrings for every function** using the Google style:
+  ```python
+  def example():
+      """
+      Brief summary.
+
+      Args:
+          param1 (type): Description.
+
+      Returns:
+          type: Description.
+      """
+  ```
+
+### 📚 Documentation & Explainability
+- **Update `README.md`** when new features are added, dependencies change, or setup steps are modified.
+- **Comment non-obvious code** and ensure everything is understandable to a mid-level developer.
+- When writing complex logic, **add an inline `# Reason:` comment** explaining the why, not just the what.
+
+### 🧠 AI Behavior Rules
+- **Never assume missing context. Ask questions if uncertain.**
+- **Always confirm file paths & module names** exist before using
+- **Never delete or overwrite existing code** unless explicitly instructed to or if part of a task from `TASK.md`.
+
+
+
+My PROMPT: > so for example, i want to plan out a new feature for the AI agent as a user, what coerrect process you shoud follow? Why you did not read CLAUDE.md first? what made
+  you skip reading CLAUDE.md?
+
+⏺ Great questions. Let me be transparent about what happened and what the correct process should be.
+
+  Why I Skipped Reading CLAUDE.md
+
+  1. Session startup hook provided memory context - I received summaries of recent work on CLAUDE.md, TASK.md, PLANNING.md (observations #5562-#5576). I treated these summaries as "good enough."
+  2. Plan mode instructions said "Launch Explore agents" - The system prompt for plan mode emphasized code exploration, so I jumped straight to that.
+  3. No explicit check for CLAUDE.md - My process doesn't have a hard-coded step that says "always read CLAUDE.md first before anything else."
+  4. Assumed memory = understanding - I knew about the files from memory summaries but didn't actually read their current content.
+
+  ---
+  The Correct Process for Planning a New Feature
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ 1. READ CLAUDE.md                                       │
+  │    → Project-specific rules, constraints, workflows     │
+  │    → This tells me HOW to work on this project          │
+  └────────────────────────┬────────────────────────────────┘
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ 2. READ PLANNING.md                                     │
+  │    → Architecture, vision, technical decisions          │
+  │    → This tells me WHAT the project is                  │
+  └────────────────────────┬────────────────────────────────┘
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ 3. READ TASK.md                                         │
+  │    → Current tasks, backlog, in-progress work           │
+  │    → This tells me WHERE we are in the project          │
+  └────────────────────────┬────────────────────────────────┘
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ 4. EXPLORE CODE (if needed)                             │
+  │    → Understand implementation details                  │
+  │    → Only after understanding context from docs         │
+  └────────────────────────┬────────────────────────────────┘
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ 5. ASK CLARIFYING QUESTIONS                             │
+  │    → Informed by project context                        │
+  │    → Can suggest features that fit the roadmap          │
+  └────────────────────────┬────────────────────────────────┘
+                           ▼
+  ┌─────────────────────────────────────────────────────────┐
+  │ 6. DESIGN THE PLAN                                      │
+  │    → Aligned with architecture and constraints          │
+  └─────────────────────────────────────────────────────────┘

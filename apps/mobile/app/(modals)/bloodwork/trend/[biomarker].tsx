@@ -7,14 +7,12 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { ScreenHeader } from '@/shared/components/ui';
 import Svg, { Path, Circle, Line, Text as SvgText, Rect } from 'react-native-svg';
 import {
@@ -36,20 +34,21 @@ const CHART_PADDING = { top: 20, right: 20, bottom: 30, left: 50 };
 export default function BiomarkerTrendScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const { biomarker } = useLocalSearchParams<{ biomarker: string }>();
   const decodedBiomarker = biomarker ? decodeURIComponent(biomarker) : '';
 
-  // Theme
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const gridColor = isDark ? '#2c2c2e' : '#e5e7eb';
+  // Theme-aware colors from design tokens
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const gridColor = theme.borderColor.val;
+  const primaryColor = theme.primary.val;
+  const successColor = theme.success.val;
+  const warningColor = theme.warning.val;
+  const errorColor = theme.error.val;
 
   const { data, isLoading, error } = useBiomarkerTrend(decodedBiomarker);
 

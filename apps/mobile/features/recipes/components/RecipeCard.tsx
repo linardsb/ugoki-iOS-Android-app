@@ -45,15 +45,15 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 {recipe.name}
               </Text>
               <XStack gap="$2" marginTop="$1">
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">
                   {recipe.calories} cal
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">•</Text>
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">•</Text>
+                <Text fontSize="$3" color="$colorMuted">
                   {recipe.protein_g}g protein
                 </Text>
-                <Text fontSize="$2" color="$colorMuted">•</Text>
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">•</Text>
+                <Text fontSize="$3" color="$colorMuted">
                   {recipe.prep_time_minutes} min
                 </Text>
               </XStack>
@@ -106,7 +106,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
             {/* Nutrition Info */}
             <XStack gap="$4" marginBottom="$3">
               <YStack alignItems="center">
-                <Text fontSize={22} fontWeight="700" color="$primary">
+                <Text fontSize="$6" fontWeight="700" color="$primary">
                   {recipe.calories}
                 </Text>
                 <Text fontSize="$3" color="$colorMuted">
@@ -114,7 +114,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 </Text>
               </YStack>
               <YStack alignItems="center">
-                <Text fontSize={22} fontWeight="700" color="$primary">
+                <Text fontSize="$6" fontWeight="700" color="$primary">
                   {recipe.protein_g}g
                 </Text>
                 <Text fontSize="$3" color="$colorMuted">
@@ -122,7 +122,7 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 </Text>
               </YStack>
               <YStack alignItems="center">
-                <Text fontSize={22} fontWeight="700" color="$color">
+                <Text fontSize="$6" fontWeight="700" color="$color">
                   {recipe.prep_time_minutes}
                 </Text>
                 <Text fontSize="$3" color="$colorMuted">
@@ -137,12 +137,14 @@ export function RecipeCard({ recipe, onPress, onToggleSave, variant = 'default' 
                 {displayTags.map((tag) => (
                   <View
                     key={tag}
-                    backgroundColor="$backgroundHover"
+                    backgroundColor="transparent"
+                    borderWidth={1}
+                    borderColor="$primary"
                     paddingHorizontal="$3"
                     paddingVertical="$2"
                     borderRadius="$3"
                   >
-                    <Text fontSize="$3" color="$colorMuted" fontWeight="500">
+                    <Text fontSize="$3" color="$primary" fontWeight="500">
                       {DIET_TAG_LABELS[tag]}
                     </Text>
                   </View>

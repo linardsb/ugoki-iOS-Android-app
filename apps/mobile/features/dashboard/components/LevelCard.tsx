@@ -15,6 +15,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
   const theme = useTheme();
   const progressBarBg = theme.backgroundHover.val;
   const primaryColor = theme.primary.val;
+  const secondaryColor = theme.secondary.val;
 
   const handlePress = () => {
     router.push('/(modals)/achievements');
@@ -61,7 +62,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
         {/* Header */}
         <XStack justifyContent="space-between" alignItems="center">
           <XStack gap="$2" alignItems="center">
-            <Star size={20} color="#FFA387" weight="fill" />
+            <Star size={20} color={secondaryColor} weight="fill" />
             <Text fontSize="$5" fontWeight="bold" color="$color">
               Level {level.current_level}
             </Text>
@@ -85,7 +86,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
               style={{
                 height: '100%',
                 width: `${level.xp_progress_percent}%`,
-                backgroundColor: '#3A5BA0',
+                backgroundColor: primaryColor,
                 borderRadius: 4,
               }}
             />
@@ -105,7 +106,7 @@ export function LevelCard({ level, isLoading }: LevelCardProps) {
           <Text fontSize="$3" color="$primary" fontWeight="600">
             View Achievements
           </Text>
-          <CaretRight size={16} color="#3A5BA0" weight="regular" />
+          <CaretRight size={16} color={primaryColor} weight="regular" />
         </XStack>
       </YStack>
     </Card>

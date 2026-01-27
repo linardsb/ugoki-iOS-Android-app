@@ -82,12 +82,12 @@ export function ResearchCard({
               {/* Topic badge */}
               <XStack
                 backgroundColor={`${topicColor}20`}
-                paddingHorizontal="$2"
-                paddingVertical="$1"
+                paddingHorizontal="$3"
+                paddingVertical="$1.5"
                 borderRadius="$2"
                 alignSelf="flex-start"
               >
-                <Text fontSize="$2" fontWeight="600" color={topicColor}>
+                <Text fontSize="$3" fontWeight="600" color={topicColor}>
                   {topicMeta?.label || paper.topic}
                 </Text>
               </XStack>
@@ -104,7 +104,7 @@ export function ResearchCard({
 
               {/* One-liner */}
               {digest?.one_liner && (
-                <Text fontSize="$2" numberOfLines={2} color="$colorMuted">
+                <Text fontSize="$3" numberOfLines={2} color="$colorMuted">
                   {digest.one_liner}
                 </Text>
               )}
@@ -113,16 +113,16 @@ export function ResearchCard({
               <XStack gap="$3" alignItems="center">
                 {formattedDate && (
                   <XStack gap="$1" alignItems="center">
-                    <Calendar size={14} color={mutedColor} />
-                    <Text fontSize="$2" color="$colorMuted">
+                    <Calendar size={16} color={mutedColor} />
+                    <Text fontSize="$3" color="$colorMuted">
                       {formattedDate}
                     </Text>
                   </XStack>
                 )}
                 {paper.journal && (
                   <XStack gap="$1" alignItems="center" flex={1}>
-                    <BookOpen size={14} color={mutedColor} />
-                    <Text fontSize="$2" numberOfLines={1} color="$colorMuted">
+                    <BookOpen size={16} color={mutedColor} />
+                    <Text fontSize="$3" numberOfLines={1} color="$colorMuted">
                       {paper.journal}
                     </Text>
                   </XStack>
@@ -166,11 +166,11 @@ export function ResearchCard({
           <XStack justifyContent="space-between" alignItems="flex-start">
             <XStack
               backgroundColor={`${topicColor}20`}
-              paddingHorizontal="$2"
-              paddingVertical="$1"
+              paddingHorizontal="$3"
+              paddingVertical="$1.5"
               borderRadius="$2"
             >
-              <Text fontSize="$2" fontWeight="600" color={topicColor}>
+              <Text fontSize="$3" fontWeight="600" color={topicColor}>
                 {topicMeta?.label || paper.topic}
               </Text>
             </XStack>
@@ -212,7 +212,7 @@ export function ResearchCard({
           {/* Key benefits */}
           {digest?.key_benefits && digest.key_benefits.length > 0 && (
             <YStack gap="$2">
-              <Text fontSize="$2" fontWeight="600" color="$color" opacity={0.8}>
+              <Text fontSize="$3" fontWeight="600" color="$color" opacity={0.8}>
                 KEY TAKEAWAYS
               </Text>
               {digest.key_benefits.slice(0, 3).map((benefit, index) => (
@@ -229,7 +229,7 @@ export function ResearchCard({
               padding="$2"
               gap="$1"
             >
-              <Text fontSize="$2" fontWeight="600" color={successText}>
+              <Text fontSize="$3" fontWeight="600" color={successText}>
                 WHO BENEFITS
               </Text>
               <Text fontSize="$3" color={successText} opacity={0.9}>
@@ -269,7 +269,7 @@ export function ResearchCard({
                 paddingVertical="$1"
                 borderRadius="$1"
               >
-                <Text fontSize="$2" fontWeight="600" color={infoText}>
+                <Text fontSize="$3" fontWeight="600" color={infoText}>
                   Open Access
                 </Text>
               </XStack>

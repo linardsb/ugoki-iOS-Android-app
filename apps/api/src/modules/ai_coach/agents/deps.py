@@ -37,3 +37,6 @@ class UgokiAgentDeps:
 
     # Health profile info (fasting safety, etc.)
     health_context: str = ""
+
+    # Conversation summary from earlier messages (for context continuity)
+    conversation_summary: str = ""

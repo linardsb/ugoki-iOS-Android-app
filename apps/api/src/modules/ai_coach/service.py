@@ -945,12 +945,13 @@ class AICoachService(AICoachInterface):
         """
         Convert database message format to Pydantic AI ModelMessage format.
 
-        Implements conversation compaction by prepending summary context
-        when available, reducing the need to load full history.
+        NOTE: Summary is no longer injected here as fake messages.
+        Instead, it's passed to the agent deps for system prompt injection.
+        This avoids confusing the model with fake conversation turns.
 
         Args:
             history: List of {role, content} dicts (recent messages only if compacted)
-            summary: Optional conversation summary from compaction
+            summary: Optional conversation summary (now handled separately via deps)
 
         Returns:
             List of Pydantic AI message objects
@@ -964,22 +965,8 @@ class AICoachService(AICoachInterface):
 
         messages = []
 
-        # If we have a summary, add it as context at the beginning
-        # This replaces loading the full conversation history
-        if summary:
-            summary_context = (
-                f"[Earlier conversation context - use this to maintain continuity]\n"
-                f"{summary}\n"
-                f"[End of earlier context - recent messages follow]"
-            )
-            messages.append(
-                ModelRequest(parts=[UserPromptPart(content=summary_context)])
-            )
-            messages.append(
-                ModelResponse(parts=[TextPart(content="I have context from our earlier conversation and will use it to help you.")])
-            )
-
         # Convert recent history to Pydantic AI format
+        # Summary is now injected via system prompt, not as fake messages
         for msg in history:
             if msg["role"] == "user":
                 messages.append(
@@ -1102,12 +1089,14 @@ Conversation:
         self,
         identity_id: str,
         skills: list[str] | None = None,
+        conversation_summary: str | None = None,
     ) -> UgokiAgentDeps:
         """Create agent dependencies for streaming with full user context.
 
         Args:
             identity_id: User's identity ID
             skills: Optional list of activated skills for memory filtering
+            conversation_summary: Optional summary from earlier conversation for context continuity
         """
         # Build all context in parallel
         user_context = await self._build_user_context(identity_id)
@@ -1131,6 +1120,7 @@ Conversation:
             memories=memory_context,
             user_context=combined_user_context,
             health_context=health_context,
+            conversation_summary=conversation_summary or "",
         )
 
     async def _build_memory_context(
@@ -1367,19 +1357,25 @@ Conversation:
 
         # Load conversation history for existing conversations
         message_history = None
+        conversation_summary = None
         if not is_new_conversation:
-            history, summary = await self._load_conversation_history(session_id)
+            history, conversation_summary = await self._load_conversation_history(session_id)
             # Exclude the current message we just saved (last item)
             if history and len(history) > 1:
-                message_history = self._convert_to_pydantic_messages(history[:-1], summary)
+                # Summary is now passed to deps, not injected as fake messages
+                message_history = self._convert_to_pydantic_messages(history[:-1])
 
         # Route query to determine which skills to activate (progressive disclosure)
         activated_skills = route_query(request.message)
         if activated_skills:
             logger.debug(f"Activated skills for query: {activated_skills}")
 
-        # Get agent dependencies with skill-filtered memories
-        deps = await self._get_agent_deps(identity_id, skills=activated_skills)
+        # Get agent dependencies with skill-filtered memories and conversation summary
+        deps = await self._get_agent_deps(
+            identity_id,
+            skills=activated_skills,
+            conversation_summary=conversation_summary,
+        )
 
         # Stream response from agent
         full_response = ""

@@ -7,15 +7,13 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  useColorScheme,
   Alert,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text, Button } from 'tamagui';
-import { useThemeStore } from '@/shared/stores/theme';
+import { YStack, XStack, Text, Button, useTheme } from 'tamagui';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -46,19 +44,21 @@ type UploadState = 'idle' | 'selected' | 'uploading' | 'success';
 export default function BloodworkHubScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>('upload');
 
-  // Theme
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const borderColor = isDark ? '#2c2c2e' : '#e5e7eb';
+  // Theme-aware colors from design tokens
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const borderColor = theme.borderColor.val;
+  const primaryColor = theme.primary.val;
+  const successColor = theme.success.val;
+  const successSubtle = theme.successSubtle.val;
+  const warningColor = theme.warning.val;
+  const infoColor = theme.info.val;
 
   // Upload state
   const [uploadState, setUploadState] = useState<UploadState>('idle');
@@ -189,15 +189,17 @@ export default function BloodworkHubScreen() {
         >
           {/* Success header */}
           <YStack
-            backgroundColor={cardBackground}
+            backgroundColor="$cardBackground"
             padding="$4"
             borderRadius="$3"
+            borderWidth={1}
+            borderColor="$cardBorder"
             alignItems="center"
             gap="$2"
             marginBottom="$4"
           >
-            <View style={[styles.successIcon, { backgroundColor: 'rgba(34, 197, 94, 0.15)' }]}>
-              <CheckCircle size={36} color="#22c55e" weight="thin" />
+            <View style={[styles.successIcon, { backgroundColor: successSubtle }]}>
+              <CheckCircle size={36} color={successColor} weight="thin" />
             </View>
             <Text fontSize={18} fontWeight="bold" style={{ color: textColor }}>
               Analysis Complete
@@ -233,12 +235,14 @@ export default function BloodworkHubScreen() {
             <Button
               size="$5"
               height={48}
-              backgroundColor={cardBackground}
+              backgroundColor="$cardBackground"
               borderRadius="$4"
+              borderWidth={1}
+              borderColor="$cardBorder"
               pressStyle={{ scale: 0.98 }}
               onPress={handleReset}
             >
-              <Text style={{ color: textColor }} fontWeight="600">
+              <Text color="$color" fontWeight="600">
                 Upload Another
               </Text>
             </Button>
@@ -252,17 +256,19 @@ export default function BloodworkHubScreen() {
       return (
         <YStack flex={1} padding="$4" gap="$4">
           <YStack
-            backgroundColor={cardBackground}
+            backgroundColor="$cardBackground"
             padding="$4"
             borderRadius="$3"
+            borderWidth={1}
+            borderColor="$cardBorder"
             alignItems="center"
             gap="$3"
           >
-            <View style={[styles.fileIcon, { backgroundColor: isDark ? '#2c2c2e' : '#f3f4f6' }]}>
+            <View style={[styles.fileIcon, { backgroundColor: theme.backgroundHover.val }]}>
               {isPDF ? (
-                <File size={40} color="#3b82f6" weight="thin" />
+                <File size={40} color={infoColor} weight="thin" />
               ) : (
-                <Image size={40} color="#22c55e" weight="thin" />
+                <Image size={40} color={successColor} weight="thin" />
               )}
             </View>
             <YStack alignItems="center" gap="$1">
@@ -304,13 +310,15 @@ export default function BloodworkHubScreen() {
             <Button
               size="$5"
               height={48}
-              backgroundColor={cardBackground}
+              backgroundColor="$cardBackground"
               borderRadius="$4"
+              borderWidth={1}
+              borderColor="$cardBorder"
               pressStyle={{ scale: 0.98 }}
               onPress={handleReset}
               disabled={uploadState === 'uploading'}
             >
-              <Text style={{ color: textColor }} fontWeight="600">
+              <Text color="$color" fontWeight="600">
                 Choose Different File
               </Text>
             </Button>
@@ -327,11 +335,11 @@ export default function BloodworkHubScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Instructions */}
-        <YStack backgroundColor={cardBackground} padding="$4" borderRadius="$3" gap="$3" marginBottom="$4">
-          <Text fontSize={18} fontWeight="bold" style={{ color: textColor }}>
+        <YStack backgroundColor="$cardBackground" padding="$4" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$3" marginBottom="$4">
+          <Text fontSize={18} fontWeight="bold" color="$color">
             Upload Blood Test Results
           </Text>
-          <Text fontSize={14} style={{ color: mutedColor }} lineHeight={22}>
+          <Text fontSize={14} color="$colorMuted" lineHeight={22}>
             Take a photo or select an image of your blood test results. Our AI will
             automatically extract and analyze your biomarkers.
           </Text>
@@ -344,34 +352,37 @@ export default function BloodworkHubScreen() {
           </Text>
 
           <UploadOption
-            icon={<File size={24} color="#3b82f6" weight="thin" />}
-            iconBg="#3b82f6"
+            icon={<File size={24} color={infoColor} weight="thin" />}
+            iconBg={infoColor}
             title="Upload PDF"
             subtitle="Select a PDF file of your blood test results"
             onPress={handlePickPDF}
             cardBackground={cardBackground}
+            cardBorder={cardBorder}
             textColor={textColor}
             mutedColor={mutedColor}
           />
 
           <UploadOption
-            icon={<Image size={24} color="#22c55e" weight="thin" />}
-            iconBg="#22c55e"
+            icon={<Image size={24} color={successColor} weight="thin" />}
+            iconBg={successColor}
             title="Photo Library"
             subtitle="Select a photo or screenshot of your results"
             onPress={() => handlePickImage(false)}
             cardBackground={cardBackground}
+            cardBorder={cardBorder}
             textColor={textColor}
             mutedColor={mutedColor}
           />
 
           <UploadOption
-            icon={<Camera size={24} color="#f59e0b" weight="thin" />}
-            iconBg="#f59e0b"
+            icon={<Camera size={24} color={warningColor} weight="thin" />}
+            iconBg={warningColor}
             title="Take Photo"
             subtitle="Capture your results with camera"
             onPress={() => handlePickImage(true)}
             cardBackground={cardBackground}
+            cardBorder={cardBorder}
             textColor={textColor}
             mutedColor={mutedColor}
           />
@@ -379,17 +390,17 @@ export default function BloodworkHubScreen() {
 
         {/* Tips */}
         <YStack
-          backgroundColor={isDark ? '#1a1a1d' : '#f9fafb'}
+          backgroundColor="$backgroundHover"
           padding="$3"
           borderRadius="$3"
           gap="$2"
         >
-          <Text fontSize={14} fontWeight="600" style={{ color: textColor }}>
+          <Text fontSize={14} fontWeight="600" color="$color">
             Tips for best results
           </Text>
-          <TipItem color="#14b8a6" text="PDF files work best for accurate parsing" mutedColor={mutedColor} />
-          <TipItem color="#14b8a6" text="For photos, ensure good lighting and focus" mutedColor={mutedColor} />
-          <TipItem color="#14b8a6" text="Include the full results page with reference ranges" mutedColor={mutedColor} />
+          <TipItem color={successColor} text="PDF files work best for accurate parsing" mutedColor={mutedColor} />
+          <TipItem color={successColor} text="For photos, ensure good lighting and focus" mutedColor={mutedColor} />
+          <TipItem color={successColor} text="Include the full results page with reference ranges" mutedColor={mutedColor} />
         </YStack>
       </ScrollView>
     );
@@ -399,8 +410,8 @@ export default function BloodworkHubScreen() {
     if (historyLoading) {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center">
-          <ActivityIndicator size="large" color="#14b8a6" />
-          <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }}>
+          <ActivityIndicator size="large" color={primaryColor} />
+          <Text fontSize={14} marginTop="$2" color="$colorMuted">
             Loading history...
           </Text>
         </YStack>
@@ -411,10 +422,10 @@ export default function BloodworkHubScreen() {
       return (
         <YStack flex={1} alignItems="center" justifyContent="center" padding="$4">
           <Drop size={64} color={mutedColor} weight="thin" />
-          <Text fontSize={18} fontWeight="600" marginTop="$3" style={{ color: textColor }}>
+          <Text fontSize={18} fontWeight="600" marginTop="$3" color="$color">
             No Blood Tests Yet
           </Text>
-          <Text fontSize={14} marginTop="$2" style={{ color: mutedColor }} textAlign="center">
+          <Text fontSize={14} marginTop="$2" color="$colorMuted" textAlign="center">
             Upload your first blood test to start tracking your biomarkers over time.
           </Text>
           <Button
@@ -451,33 +462,35 @@ export default function BloodworkHubScreen() {
               activeOpacity={0.7}
             >
               <XStack
-                backgroundColor={cardBackground}
+                backgroundColor="$cardBackground"
                 padding="$4"
                 borderRadius="$3"
+                borderWidth={1}
+                borderColor="$cardBorder"
                 alignItems="center"
                 justifyContent="space-between"
               >
                 <YStack flex={1} gap="$1">
-                  <Text fontSize={16} fontWeight="600" style={{ color: textColor }}>
+                  <Text fontSize={16} fontWeight="600" color="$color">
                     {formatDate(group.test_date)}
                   </Text>
                   <XStack gap="$3" marginTop="$1">
                     <XStack alignItems="center" gap="$1">
-                      <CheckCircle size={14} color="#22c55e" weight="fill" />
-                      <Text fontSize={13} style={{ color: mutedColor }}>
+                      <CheckCircle size={14} color={successColor} weight="fill" />
+                      <Text fontSize={13} color="$colorMuted">
                         {group.normal_count} normal
                       </Text>
                     </XStack>
                     {group.abnormal_count > 0 && (
                       <XStack alignItems="center" gap="$1">
-                        <Warning size={14} color="#f59e0b" weight="fill" />
-                        <Text fontSize={13} style={{ color: mutedColor }}>
+                        <Warning size={14} color={warningColor} weight="fill" />
+                        <Text fontSize={13} color="$colorMuted">
                           {group.abnormal_count} flagged
                         </Text>
                       </XStack>
                     )}
                   </XStack>
-                  <Text fontSize={13} marginTop="$1" style={{ color: mutedColor }}>
+                  <Text fontSize={13} marginTop="$1" color="$colorMuted">
                     {group.biomarker_count} biomarkers
                   </Text>
                 </YStack>
@@ -500,23 +513,23 @@ export default function BloodworkHubScreen() {
         paddingVertical="$2"
         gap="$2"
         borderBottomWidth={1}
-        borderBottomColor={borderColor}
+        borderBottomColor="$borderColor"
       >
         <TabButton
           label="Upload"
           isActive={activeTab === 'upload'}
           onPress={() => setActiveTab('upload')}
-          activeColor="#14b8a6"
+          activeColor={primaryColor}
           inactiveColor={mutedColor}
-          backgroundColor={activeTab === 'upload' ? 'rgba(20, 184, 166, 0.1)' : 'transparent'}
+          backgroundColor={activeTab === 'upload' ? `${primaryColor}15` : 'transparent'}
         />
         <TabButton
           label="History"
           isActive={activeTab === 'history'}
           onPress={() => setActiveTab('history')}
-          activeColor="#14b8a6"
+          activeColor={primaryColor}
           inactiveColor={mutedColor}
-          backgroundColor={activeTab === 'history' ? 'rgba(20, 184, 166, 0.1)' : 'transparent'}
+          backgroundColor={activeTab === 'history' ? `${primaryColor}15` : 'transparent'}
           badge={historyData?.length || 0}
         />
       </XStack>
@@ -590,6 +603,7 @@ function UploadOption({
   subtitle,
   onPress,
   cardBackground,
+  cardBorder,
   textColor,
   mutedColor,
 }: {
@@ -599,6 +613,7 @@ function UploadOption({
   subtitle: string;
   onPress: () => void;
   cardBackground: string;
+  cardBorder: string;
   textColor: string;
   mutedColor: string;
 }) {
@@ -608,6 +623,8 @@ function UploadOption({
         backgroundColor={cardBackground}
         padding="$4"
         borderRadius="$3"
+        borderWidth={1}
+        borderColor={cardBorder}
         alignItems="center"
         gap="$3"
       >

@@ -12,12 +12,10 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
-  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import { Plus, MagnifyingGlass, Ticket } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -36,18 +34,13 @@ export default function ChallengesScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('browse');
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const subtleColor = isDark ? '#71717a' : '#9ca3af';
+  // Theme-aware colors from design tokens
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleColor = theme.colorSubtle.val;
+  const primaryColor = theme.primary.val;
 
   const {
     data: allChallenges,
@@ -120,7 +113,14 @@ export default function ChallengesScreen() {
       {/* Tabs */}
       <XStack paddingHorizontal="$4" paddingVertical="$3" gap="$3">
         <TouchableOpacity
-          style={[styles.tab, { backgroundColor: cardBackground }, activeTab === 'browse' && styles.tabActive]}
+          style={[
+            styles.tab,
+            {
+              backgroundColor: activeTab === 'browse' ? primaryColor : cardBackground,
+              borderWidth: 1,
+              borderColor: cardBorder,
+            },
+          ]}
           onPress={() => setActiveTab('browse')}
         >
           <Text
@@ -133,7 +133,14 @@ export default function ChallengesScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tab, { backgroundColor: cardBackground }, activeTab === 'mine' && styles.tabActive]}
+          style={[
+            styles.tab,
+            {
+              backgroundColor: activeTab === 'mine' ? primaryColor : cardBackground,
+              borderWidth: 1,
+              borderColor: cardBorder,
+            },
+          ]}
           onPress={() => setActiveTab('mine')}
         >
           <Text
@@ -144,11 +151,11 @@ export default function ChallengesScreen() {
             My Challenges
           </Text>
           {myChallenges && myChallenges.length > 0 && (
-            <View style={[styles.tabBadge, activeTab === 'mine' && styles.tabBadgeActive]}>
+            <View style={[styles.tabBadge, { backgroundColor: activeTab === 'mine' ? 'white' : primaryColor }]}>
               <Text
                 fontSize={11}
                 fontWeight="700"
-                color={activeTab === 'mine' ? '#14b8a6' : 'white'}
+                style={{ color: activeTab === 'mine' ? primaryColor : 'white' }}
               >
                 {myChallenges.length}
               </Text>
@@ -186,16 +193,16 @@ export default function ChallengesScreen() {
               <XStack gap="$3">
                 <TouchableOpacity
                   onPress={handleJoinByCode}
-                  style={[styles.emptyButton, { backgroundColor: cardBackground }]}
+                  style={[styles.emptyButton, { backgroundColor: cardBackground, borderColor: primaryColor }]}
                 >
-                  <Ticket size={18} color="#14b8a6" weight="bold" />
-                  <Text color="#14b8a6" fontWeight="600" marginLeft={6}>
+                  <Ticket size={18} color={primaryColor} weight="bold" />
+                  <Text style={{ color: primaryColor }} fontWeight="600" marginLeft={6}>
                     Join with Code
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => router.push('/challenges/create')}
-                  style={[styles.emptyButton, styles.emptyButtonFilled]}
+                  onPress={() => router.push('/(modals)/challenges/create')}
+                  style={[styles.emptyButton, { backgroundColor: primaryColor, borderColor: primaryColor }]}
                 >
                   <Plus size={18} color="white" weight="bold" />
                   <Text color="white" fontWeight="600" marginLeft={6}>
@@ -227,19 +234,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
   },
-  tabActive: {
-    backgroundColor: '#14b8a6',
-  },
   tabBadge: {
-    backgroundColor: '#14b8a6',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 10,
     minWidth: 20,
     alignItems: 'center',
-  },
-  tabBadgeActive: {
-    backgroundColor: 'white',
   },
   emptyButton: {
     flexDirection: 'row',
@@ -248,10 +248,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#14b8a6',
-  },
-  emptyButtonFilled: {
-    backgroundColor: '#14b8a6',
-    borderColor: '#14b8a6',
   },
 });

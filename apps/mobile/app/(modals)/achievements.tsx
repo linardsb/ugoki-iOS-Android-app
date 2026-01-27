@@ -290,6 +290,8 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
         backgroundColor="$cardBackground"
         padding="$4"
         borderRadius="$4"
+        borderWidth={1}
+        borderColor="$cardBorder"
         alignItems="center"
         gap="$3"
         opacity={0.5}
@@ -321,6 +323,8 @@ function AchievementCard({ userAchievement }: { userAchievement: UserAchievement
       backgroundColor="$cardBackground"
       padding="$4"
       borderRadius="$4"
+      borderWidth={1}
+      borderColor="$cardBorder"
       alignItems="center"
       gap="$3"
       opacity={is_unlocked ? 1 : 0.8}

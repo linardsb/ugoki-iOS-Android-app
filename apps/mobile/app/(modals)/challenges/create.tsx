@@ -12,12 +12,10 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
-  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Warning } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
@@ -51,21 +49,21 @@ const CHALLENGE_TYPES: { value: ChallengeType; label: string; description: strin
 // Fasting Safety Warning Component
 const FastingSafetyWarning = () => (
   <XStack
-    backgroundColor="#fef9c3"
+    backgroundColor="$warningSubtle"
     borderRadius="$3"
     padding="$3"
     borderWidth={1}
-    borderColor="#eab308"
+    borderColor="$warning"
     gap="$2"
     alignItems="flex-start"
     marginTop="$2"
   >
     <Warning size={20} color="#ca8a04" weight="fill" />
     <YStack flex={1} gap="$1">
-      <Text fontSize={13} fontWeight="600" color="#a16207">
+      <Text fontSize={13} fontWeight="600" color="$warning">
         Health Notice
       </Text>
-      <Text fontSize={12} color="#a16207" lineHeight={16}>
+      <Text fontSize={12} color="$warning" lineHeight={16}>
         For experienced fasters only. Not suitable if you have diabetes, eating disorders, are pregnant/breastfeeding, or have medical conditions. Consult your doctor first.
       </Text>
     </YStack>
@@ -78,23 +76,18 @@ export default function CreateChallengeScreen() {
   const router = useRouter();
   const createChallenge = useCreateChallenge();
 
-  // Theme detection
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const backgroundColor = isDark ? '#121216' : '#fafafa';
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const inputBackground = isDark ? '#2c2c2e' : 'white';
-  const borderColor = isDark ? '#3c3c3e' : '#e4e4e7';
-  const cardBorderColor = isDark ? 'transparent' : '#D4D2CE'; // Design system token: $cardBorder
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const placeholderColor = isDark ? '#71717a' : '#9ca3af';
-  const selectedBg = isDark ? '#14b8a620' : '#d1fae5';
+  // Theme-aware colors from design tokens
+  const backgroundColor = theme.background.val;
+  const cardBackground = theme.cardBackground.val;
+  const inputBackground = theme.backgroundHover.val;
+  const borderColor = theme.borderColor.val;
+  const cardBorderColor = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const placeholderColor = theme.colorSubtle.val;
+  const selectedBg = theme.successSubtle.val;
+  const primaryColor = theme.primary.val;
+  const warningColor = theme.warning.val;
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');

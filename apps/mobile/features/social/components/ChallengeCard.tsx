@@ -86,7 +86,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
               <Text fontSize="$4" fontWeight="600" color="$color" numberOfLines={1}>
                 {challenge.name}
               </Text>
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 {challenge.participant_count} participants
               </Text>
             </YStack>
@@ -97,7 +97,7 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
                 paddingVertical="$1"
                 borderRadius="$lg"
               >
-                <Text fontSize="$2" fontWeight="600" color="$primary">
+                <Text fontSize="$3" fontWeight="600" color="$primary">
                   #{challenge.my_rank}
                 </Text>
               </XStack>
@@ -115,20 +115,20 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
           {/* Header */}
           <XStack justifyContent="space-between" alignItems="flex-start">
             <YStack flex={1} gap="$1">
+              <Text fontSize="$3" fontWeight="500" color="$colorMuted">
+                {typeLabel}
+              </Text>
               <Text fontSize="$5" fontWeight="700" color="$color">
                 {challenge.name}
-              </Text>
-              <Text fontSize="$2" color="$colorMuted">
-                {typeLabel}
               </Text>
             </YStack>
             <XStack
               backgroundColor={statusColors.bg}
-              paddingHorizontal="$2.5"
-              paddingVertical="$1"
+              paddingHorizontal="$3"
+              paddingVertical="$1.5"
               borderRadius="$lg"
             >
-              <Text fontSize="$2" fontWeight="600" color={statusColors.text}>
+              <Text fontSize="$3" fontWeight="600" color={statusColors.text}>
                 {challenge.status ? challenge.status.charAt(0).toUpperCase() + challenge.status.slice(1) : 'Unknown'}
               </Text>
             </XStack>
@@ -143,15 +143,15 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
 
           {/* Stats Row */}
           <XStack gap="$4">
-            <XStack alignItems="center" gap="$1">
-              <Users size={16} color={mutedColor} />
-              <Text fontSize="$2" color="$colorMuted">
+            <XStack alignItems="center" gap="$2">
+              <Users size={18} color={mutedColor} />
+              <Text fontSize="$3" color="$colorMuted">
                 {challenge.participant_count}/{challenge.max_participants}
               </Text>
             </XStack>
-            <XStack alignItems="center" gap="$1">
-              <Calendar size={16} color={mutedColor} />
-              <Text fontSize="$2" color="$colorMuted">
+            <XStack alignItems="center" gap="$2">
+              <Calendar size={18} color={mutedColor} />
+              <Text fontSize="$3" color="$colorMuted">
                 {challenge.days_remaining !== null
                   ? `${challenge.days_remaining}d left`
                   : challenge.status === 'upcoming'
@@ -160,9 +160,9 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
               </Text>
             </XStack>
             {challenge.my_rank && (
-              <XStack alignItems="center" gap="$1">
-                <Trophy size={16} color={primaryColor} />
-                <Text fontSize="$2" color="$primary" fontWeight="600">
+              <XStack alignItems="center" gap="$2">
+                <Trophy size={18} color={primaryColor} />
+                <Text fontSize="$3" color="$primary" fontWeight="600">
                   #{challenge.my_rank}
                 </Text>
               </XStack>
@@ -173,10 +173,10 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
           {challenge.is_participating && (
             <YStack gap="$2">
               <XStack justifyContent="space-between">
-                <Text fontSize="$2" color="$colorMuted">
+                <Text fontSize="$3" color="$colorMuted">
                   Your Progress
                 </Text>
-                <Text fontSize="$2" fontWeight="600" color="$color">
+                <Text fontSize="$3" fontWeight="600" color="$color">
                   {Math.round(challenge.my_progress || 0)} / {challenge.goal_value}{' '}
                   {challenge.goal_unit || ''}
                 </Text>
@@ -194,10 +194,10 @@ export function ChallengeCard({ challenge, variant = 'default', onPress }: Chall
             <XStack
               backgroundColor="$backgroundHover"
               borderRadius="$2"
-              padding="$2"
+              padding="$3"
               justifyContent="center"
             >
-              <Text fontSize="$2" color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 Join Code:{' '}
                 <Text fontWeight="700" color="$color">
                   {challenge.join_code}

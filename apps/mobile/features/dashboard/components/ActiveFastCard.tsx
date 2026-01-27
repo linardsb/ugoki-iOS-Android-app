@@ -72,7 +72,7 @@ export function ActiveFastCard() {
               <Text fontSize="$5" fontWeight="bold" color="white">
                 Start Your Fast
               </Text>
-              <Text fontSize="$2" color="rgba(255,255,255,0.8)">
+              <Text fontSize="$3" color="rgba(255,255,255,0.9)">
                 Tap to begin fasting
               </Text>
             </YStack>
@@ -152,8 +152,8 @@ export function ActiveFastCard() {
             }}
           >
             <XStack gap="$2" alignItems="center">
-              <ForkKnife size={16} color="white" weight="thin" />
-              <Text fontSize="$2" color="white" fontWeight="500">
+              <ForkKnife size={18} color="white" weight="thin" />
+              <Text fontSize="$3" color="white" fontWeight="500">
                 How to break your fast safely
               </Text>
             </XStack>

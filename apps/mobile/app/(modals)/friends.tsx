@@ -12,12 +12,10 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  useColorScheme,
 } from 'react-native';
 import { YStack, XStack, Text, useTheme } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useThemeStore } from '@/shared/stores/theme';
 import { MagnifyingGlass, UserPlus, Bell, X } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -35,20 +33,16 @@ export default function FriendsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  // Theme - compute effective theme same as root layout
-  const colorScheme = useColorScheme();
-  const { mode: themeMode } = useThemeStore();
-  const systemTheme = colorScheme || 'light';
-  const effectiveTheme = themeMode === 'system' ? systemTheme : themeMode;
-  const isDark = effectiveTheme === 'dark';
-
-  // Theme-aware colors
-  const cardBackground = isDark ? '#1c1c1e' : 'white';
-  const textColor = isDark ? '#ffffff' : '#1f2937';
-  const mutedColor = isDark ? '#a1a1aa' : '#6b7280';
-  const subtleColor = isDark ? '#71717a' : '#9ca3af';
-  const inputBackground = isDark ? '#2c2c2e' : 'white';
-  const inputTextColor = isDark ? '#ffffff' : '#2B2B32';
+  // Theme-aware colors from design tokens
+  const cardBackground = theme.cardBackground.val;
+  const cardBorder = theme.cardBorder.val;
+  const textColor = theme.color.val;
+  const mutedColor = theme.colorMuted.val;
+  const subtleColor = theme.colorSubtle.val;
+  const inputBackground = theme.backgroundHover.val;
+  const inputTextColor = theme.color.val;
+  const primaryColor = theme.primary.val;
+  const errorColor = theme.error.val;
 
   const { data: friends, isLoading, refetch, isRefetching } = useFriends();
   const { data: searchResults } = useSearchUsers(searchQuery, 20);
@@ -113,7 +107,7 @@ export default function FriendsScreen() {
               <View>
                 <Bell size={24} color={theme.color.val} weight="regular" />
                 {requestCount > 0 && (
-                  <View style={styles.badge}>
+                  <View style={[styles.badge, { backgroundColor: errorColor }]}>
                     <Text fontSize={10} color="white" fontWeight="700">
                       {requestCount > 9 ? '9+' : requestCount}
                     </Text>
@@ -132,8 +126,10 @@ export default function FriendsScreen() {
       <XStack paddingHorizontal="$4" paddingVertical="$3">
         <XStack
           flex={1}
-          backgroundColor={inputBackground}
+          backgroundColor="$cardBackground"
           borderRadius="$3"
+          borderWidth={1}
+          borderColor="$cardBorder"
           paddingHorizontal="$3"
           alignItems="center"
           gap="$2"
@@ -184,7 +180,7 @@ export default function FriendsScreen() {
                     !user.is_friend && (
                       <TouchableOpacity
                         onPress={() => handleAddFriend(user.identity_id)}
-                        style={styles.addButton}
+                        style={[styles.addButton, { backgroundColor: primaryColor }]}
                         disabled={sendRequest.isPending}
                       >
                         <UserPlus size={18} color="white" weight="bold" />
@@ -237,7 +233,10 @@ export default function FriendsScreen() {
                 <Text fontSize={14} style={{ color: subtleColor }} textAlign="center">
                   Search for users or add friends by their friend code
                 </Text>
-                <TouchableOpacity onPress={handleAddByCode} style={styles.emptyAddButton}>
+                <TouchableOpacity
+                  onPress={handleAddByCode}
+                  style={[styles.emptyAddButton, { backgroundColor: primaryColor }]}
+                >
                   <UserPlus size={20} color="white" weight="bold" />
                   <Text color="white" fontWeight="600" marginLeft={8}>
                     Add Friend
@@ -268,14 +267,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#14b8a6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyAddButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14b8a6',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 24,
@@ -284,7 +281,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -6,
     right: -6,
-    backgroundColor: '#ef4444',
     borderRadius: 10,
     minWidth: 18,
     height: 18,

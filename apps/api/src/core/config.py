@@ -55,6 +55,7 @@ class Settings(BaseSettings):
 
     # Anthropic (paid) - only if you want to use Claude
     anthropic_api_key: str = ""
+    anthropic_model: str = "claude-3-5-haiku-20241022"
 
     # OpenAI (paid)
     openai_api_key: str = ""

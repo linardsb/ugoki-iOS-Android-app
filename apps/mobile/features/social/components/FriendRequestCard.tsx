@@ -99,7 +99,7 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
           <Image source={{ uri: request.avatar_url }} style={[styles.avatar, { backgroundColor: mutedBgColor }]} />
         ) : (
           <RNView style={[styles.avatarPlaceholder, { backgroundColor: primaryColor }]}>
-            <Text color="white" fontSize={16} fontWeight="600">
+            <Text color="white" fontSize="$4" fontWeight="600">
               {initials}
             </Text>
           </RNView>
@@ -109,24 +109,24 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
       {/* User Info */}
       <TouchableOpacity onPress={handleViewProfile} style={{ flex: 1 }} activeOpacity={0.7}>
         <YStack gap="$1">
-          <Text fontSize={16} fontWeight="600" color="$color">
+          <Text fontSize="$4" fontWeight="600" color="$color">
             {name}
           </Text>
           <XStack gap="$2" alignItems="center">
             {request.username && (
-              <Text fontSize={13} color="$colorMuted">
+              <Text fontSize="$3" color="$colorMuted">
                 @{request.username}
               </Text>
             )}
             {request.level && (
               <RNView style={[styles.levelBadge, { backgroundColor: primaryBgColor }]}>
-                <Text fontSize={11} fontWeight="600" color="$primary">
+                <Text fontSize="$3" fontWeight="600" color="$primary">
                   Lvl {request.level}
                 </Text>
               </RNView>
             )}
           </XStack>
-          <Text fontSize={12} color="$colorSubtle">
+          <Text fontSize="$3" color="$colorSubtle">
             {timeSince(request.created_at)}
           </Text>
         </YStack>
@@ -152,7 +152,7 @@ export function FriendRequestCard({ request, type }: FriendRequestCardProps) {
         </XStack>
       ) : (
         <RNView style={[styles.pendingBadge, { backgroundColor: mutedBgColor }]}>
-          <Text fontSize={12} fontWeight="500" color="$colorMuted">
+          <Text fontSize="$3" fontWeight="500" color="$colorMuted">
             Pending
           </Text>
         </RNView>
