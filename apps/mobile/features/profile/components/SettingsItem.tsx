@@ -1,4 +1,4 @@
-import { XStack, Text, useTheme } from 'tamagui';
+import { XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { CaretRight } from 'phosphor-react-native';
 import { AppSwitch } from '@/shared/components/ui';
 

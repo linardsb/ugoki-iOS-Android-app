@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { Card } from '@/shared/components/ui';
 import { useRouter } from 'expo-router';
 import { Star, CaretRight } from 'phosphor-react-native';

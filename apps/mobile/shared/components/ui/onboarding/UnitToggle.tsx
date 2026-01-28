@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable } from 'react-native';
-import { XStack, Text } from 'tamagui';
+import { XStack, Text } from '@/shared/components/tamagui';
 import * as Haptics from 'expo-haptics';
 
 interface UnitToggleProps {

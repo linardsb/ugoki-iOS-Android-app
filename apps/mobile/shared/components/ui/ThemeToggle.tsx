@@ -4,7 +4,7 @@
  */
 
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from 'tamagui';
+import { useTheme } from '@/shared/components/tamagui';
 import { Sun, Moon } from 'phosphor-react-native';
 import { useCallback } from 'react';
 import { useThemeStore } from '@/shared/stores/theme';

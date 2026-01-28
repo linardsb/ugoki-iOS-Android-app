@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { Users, Calendar, Trophy, Flag } from 'phosphor-react-native';
 import { Card, ProgressBar, IconButton } from '@/shared/components/ui';

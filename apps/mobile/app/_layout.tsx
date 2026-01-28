@@ -5,16 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { TamaguiProvider, Theme } from '@tamagui/core';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
-import { PortalProvider } from 'tamagui';
+import { PortalProvider } from '@/shared/components/tamagui';
 import config from '@/shared/theme/tamagui.config';
 import { queryClient } from '@/shared/api/query-client';
 import { initApiClient, setApiAuthCache } from '@/shared/api/client';
@@ -81,12 +75,14 @@ export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
   const { mode: themeMode, isLoaded: themeLoaded, loadTheme } = useThemeStore();
 
-  // Load fonts
+  // Load fonts from centralized config
   const [fontsLoaded] = useFonts({
-    Inter: Inter_400Regular,
-    InterMedium: Inter_500Medium,
-    InterSemiBold: Inter_600SemiBold,
-    InterBold: Inter_700Bold,
+    'Homizio-Thin': require('@/assets/fonts/homizio_thin.ttf'),
+    'Homizio-Light': require('@/assets/fonts/homizio_light.ttf'),
+    Homizio: require('@/assets/fonts/homizio_regular.ttf'),
+    'Homizio-Medium': require('@/assets/fonts/homizio_medium.ttf'),
+    'Homizio-Bold': require('@/assets/fonts/homizio_bold.ttf'),
+    'Homizio-Black': require('@/assets/fonts/homizio_black.ttf'),
   });
 
   // Initialize auth state from storage

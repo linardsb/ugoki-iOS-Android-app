@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { ScreenHeader } from '@/shared/components/ui';
 import Svg, { Path, Circle, Line, Text as SvgText, Rect } from 'react-native-svg';
 import {

@@ -3,7 +3,7 @@
  * Uses theme tokens for all colors - no hardcoded values.
  */
 
-import { View, Text, XStack, YStack, useTheme } from 'tamagui';
+import { View, Text, XStack, YStack, useTheme } from '@/shared/components/tamagui';
 import { TouchableOpacity } from 'react-native';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { Card, Badge } from '@/shared/components/ui';

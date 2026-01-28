@@ -1,4 +1,4 @@
-import { ScrollView, XStack, Text } from 'tamagui';
+import { ScrollView, XStack, Text } from '@/shared/components/tamagui';
 import type { QuickAction } from '../types';
 
 interface QuickActionsProps {

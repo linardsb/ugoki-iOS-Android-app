@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenHeader } from '@/shared/components/ui';
 import {

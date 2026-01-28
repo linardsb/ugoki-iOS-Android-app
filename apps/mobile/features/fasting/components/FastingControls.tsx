@@ -1,4 +1,4 @@
-import { YStack, XStack, Button, Text, AlertDialog, useTheme } from 'tamagui';
+import { YStack, XStack, Button, Text, AlertDialog, useTheme } from '@/shared/components/tamagui';
 import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import { Play, Pause, Stop, Plus } from 'phosphor-react-native';

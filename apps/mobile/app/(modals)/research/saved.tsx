@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, Text, useTheme } from 'tamagui';
+import { YStack, Text, useTheme } from '@/shared/components/tamagui';
 import { BookmarkSimple } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {

@@ -1,4 +1,4 @@
-import { YStack, useTheme } from 'tamagui';
+import { YStack, useTheme } from '@/shared/components/tamagui';
 import Svg, { Circle } from 'react-native-svg';
 import Animated, {
   useAnimatedProps,

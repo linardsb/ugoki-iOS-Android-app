@@ -3,7 +3,7 @@
  * Displays a single activity event with icon, title, description, and time
  */
 
-import { View, Text, XStack, YStack } from 'tamagui';
+import { View, Text, XStack, YStack } from '@/shared/components/tamagui';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, Router } from 'expo-router';

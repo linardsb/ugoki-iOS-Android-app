@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from 'tamagui';
+import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from '@/shared/components/tamagui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';

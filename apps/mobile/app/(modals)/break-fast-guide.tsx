@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Button, ScrollView, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Button, ScrollView, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Check, WarningCircle, ForkKnife } from 'phosphor-react-native';

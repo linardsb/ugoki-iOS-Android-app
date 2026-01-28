@@ -1,6 +1,6 @@
 import { View, ScrollView, RefreshControl, Alert, Linking, StyleSheet } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { YStack, XStack, Text, Button } from 'tamagui';
+import { YStack, XStack, Text, Button } from '@/shared/components/tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';

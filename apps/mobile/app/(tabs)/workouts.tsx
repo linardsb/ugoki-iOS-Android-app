@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, ScrollView, RefreshControl, StyleSheet } from 'react-native';
-import { YStack, XStack, Text, Input } from 'tamagui';
+import { YStack, XStack, Text, Input } from '@/shared/components/tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';

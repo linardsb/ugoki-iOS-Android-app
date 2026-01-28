@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 import { FlatList, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { View, Text, YStack, XStack, Input, useTheme } from 'tamagui';
+import { View, Text, YStack, XStack, Input, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BookmarkSimple } from 'phosphor-react-native';

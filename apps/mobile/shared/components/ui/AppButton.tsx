@@ -1,4 +1,4 @@
-import { Button, Text, Spinner, styled, GetProps, TamaguiElement } from 'tamagui';
+import { Button, Text, Spinner, styled, GetProps, TamaguiElement } from '@/shared/components/tamagui';
 import * as Haptics from 'expo-haptics';
 import { forwardRef, type ForwardedRef } from 'react';
 

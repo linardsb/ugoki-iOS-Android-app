@@ -1,4 +1,4 @@
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from '@/shared/components/tamagui';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

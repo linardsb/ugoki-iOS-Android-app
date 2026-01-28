@@ -119,9 +119,9 @@ export const colors = {
 
 export const typography = {
   fontFamily: {
-    heading: 'Inter',
-    body: 'Inter',
-    mono: 'Inter',
+    heading: 'Homizio',
+    body: 'Homizio',
+    mono: 'Homizio',
   },
 
   // Font sizes (in pixels, converted to rem-equivalent for mobile)

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from '@/shared/components/tamagui';
 import {
   BookmarkSimple,
   ArrowSquareOut,

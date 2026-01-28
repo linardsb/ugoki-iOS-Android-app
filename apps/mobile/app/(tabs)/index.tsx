@@ -1,5 +1,5 @@
 import { ScrollView, RefreshControl, Modal, Pressable, StyleSheet } from 'react-native';
-import { YStack, Text, XStack, useTheme, Button } from 'tamagui';
+import { YStack, Text, XStack, useTheme, Button } from '@/shared/components/tamagui';
 import { useCallback, useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';

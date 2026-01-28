@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import { Check } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 

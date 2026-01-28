@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ScrollView, StyleSheet, Pressable } from 'react-native';
-import { YStack, XStack, H2, Text, Button, Progress, useTheme } from 'tamagui';
+import { YStack, XStack, H2, Text, Button, Progress, useTheme } from '@/shared/components/tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';

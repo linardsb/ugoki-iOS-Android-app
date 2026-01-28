@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable } from 'react-native';
-import { YStack, Text, useTheme } from 'tamagui';
+import { YStack, Text, useTheme } from '@/shared/components/tamagui';
 import * as Haptics from 'expo-haptics';
 
 interface CircularIconButtonProps {

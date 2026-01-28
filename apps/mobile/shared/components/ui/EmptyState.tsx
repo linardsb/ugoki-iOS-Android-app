@@ -1,4 +1,4 @@
-import { YStack, Text, Button } from 'tamagui';
+import { YStack, Text, Button } from '@/shared/components/tamagui';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;

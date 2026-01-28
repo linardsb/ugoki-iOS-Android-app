@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image, View as RNView } from 'react-native';
-import { XStack, YStack, Text, useTheme } from 'tamagui';
+import { XStack, YStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { CaretRight } from 'phosphor-react-native';
 

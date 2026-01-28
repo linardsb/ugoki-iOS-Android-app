@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useMemo, useEffect } from 'react';
 import { FlatList, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { CaretRight } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 

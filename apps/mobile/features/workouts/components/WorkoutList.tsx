@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, Spinner, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Spinner, useTheme } from '@/shared/components/tamagui';
 import { FlatList, ListRenderItem, ScrollView } from 'react-native';
 import { Barbell } from 'phosphor-react-native';
 import { WorkoutCard } from './WorkoutCard';

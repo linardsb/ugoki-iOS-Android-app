@@ -1,5 +1,5 @@
 import { Image, StyleSheet } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import { Robot, Lightning, Timer, Scales, Brain } from 'phosphor-react-native';
 import type { Gender } from '@/features/profile';
 
@@ -91,9 +91,6 @@ export function WelcomeMessage({ onSuggestionPress, userGender }: WelcomeMessage
 
       {/* Suggestions */}
       <YStack gap="$3" width="100%">
-        <Text fontSize="$3" color="$colorMuted" textAlign="center">
-          Try asking:
-        </Text>
         <YStack gap="$2">
           {suggestions.map((suggestion) => {
             const Icon = suggestion.icon;

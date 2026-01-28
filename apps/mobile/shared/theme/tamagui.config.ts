@@ -1,5 +1,4 @@
 import { createTamagui, createTokens } from '@tamagui/core';
-import { createInterFont } from '@tamagui/font-inter';
 import { shorthands } from '@tamagui/shorthands';
 import { tokens as defaultTokens } from '@tamagui/config/v3';
 import { createMedia } from '@tamagui/react-native-media-driver';
@@ -12,6 +11,7 @@ import {
   shadowsDark,
   typography,
 } from './tokens';
+import { appFonts } from './fonts';
 
 // =============================================================================
 // TOKENS
@@ -90,64 +90,10 @@ const tokens = createTokens({
 });
 
 // =============================================================================
-// FONTS WITH TYPOGRAPHY SCALE
+// FONTS - Imported from modular fonts.ts
 // =============================================================================
-
-const interFont = createInterFont({
-  size: {
-    1: typography.fontSize.xs,    // 12
-    2: typography.fontSize.sm,    // 14
-    3: typography.fontSize.base,  // 16
-    4: typography.fontSize.lg,    // 18
-    5: typography.fontSize.xl,    // 20
-    6: typography.fontSize['2xl'], // 24
-    7: typography.fontSize['3xl'], // 30
-    8: typography.fontSize['4xl'], // 36
-    9: typography.fontSize['5xl'], // 48
-    // Semantic aliases
-    xs: typography.fontSize.xs,
-    sm: typography.fontSize.sm,
-    base: typography.fontSize.base,
-    lg: typography.fontSize.lg,
-    xl: typography.fontSize.xl,
-    '2xl': typography.fontSize['2xl'],
-    '3xl': typography.fontSize['3xl'],
-    '4xl': typography.fontSize['4xl'],
-    '5xl': typography.fontSize['5xl'],
-  },
-  weight: {
-    1: typography.fontWeight.normal,
-    3: typography.fontWeight.medium,
-    5: typography.fontWeight.semibold,
-    7: typography.fontWeight.bold,
-    9: typography.fontWeight.extrabold,
-    // Named weights
-    normal: typography.fontWeight.normal,
-    medium: typography.fontWeight.medium,
-    semibold: typography.fontWeight.semibold,
-    bold: typography.fontWeight.bold,
-    extrabold: typography.fontWeight.extrabold,
-  },
-  letterSpacing: {
-    1: typography.letterSpacing.tighter,
-    2: typography.letterSpacing.tight,
-    3: typography.letterSpacing.normal,
-    4: typography.letterSpacing.wide,
-    5: typography.letterSpacing.wider,
-    // Named
-    tighter: typography.letterSpacing.tighter,
-    tight: typography.letterSpacing.tight,
-    normal: typography.letterSpacing.normal,
-    wide: typography.letterSpacing.wide,
-    wider: typography.letterSpacing.wider,
-  },
-});
-
-const fonts = {
-  heading: interFont,
-  body: interFont,
-  mono: interFont,
-};
+// Font configuration is centralized in ./fonts.ts
+// To change fonts, update that file only
 
 // =============================================================================
 // MEDIA QUERIES
@@ -342,12 +288,15 @@ const config = createTamagui({
     light: lightTheme,
     dark: darkTheme,
   },
-  fonts,
+  fonts: appFonts,
   media,
   shorthands,
   defaultTheme: 'light',
   shouldAddPrefersColorThemes: true,
   themeClassNameOnRoot: true,
+  settings: {
+    defaultFont: 'body',
+  },
 });
 
 export type AppConfig = typeof config;
@@ -363,3 +312,4 @@ export default config;
 // =============================================================================
 
 export { shadows, shadowsDark, typography, radius, spacing } from './tokens';
+export { getFontFamily, defaultFontFamily, fontFamilyNames } from './fonts';

@@ -1,4 +1,4 @@
-import { XStack, Text, styled, GetProps } from 'tamagui';
+import { XStack, Text, styled, GetProps } from '@/shared/components/tamagui';
 import { Pressable } from 'react-native';
 
 /**

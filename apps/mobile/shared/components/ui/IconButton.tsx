@@ -1,4 +1,4 @@
-import { Circle, styled, GetProps } from 'tamagui';
+import { Circle, styled, GetProps } from '@/shared/components/tamagui';
 import { Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 

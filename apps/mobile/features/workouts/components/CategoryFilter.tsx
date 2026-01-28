@@ -3,7 +3,7 @@
  * Uses theme tokens for all colors - no hardcoded values.
  */
 
-import { XStack, Text, ScrollView, useTheme } from 'tamagui';
+import { XStack, Text, ScrollView, useTheme } from '@/shared/components/tamagui';
 import { Lightning, Barbell, Play, ArrowsOutCardinal, Heart, SquaresFour } from 'phosphor-react-native';
 import type { WorkoutType } from '../types';
 

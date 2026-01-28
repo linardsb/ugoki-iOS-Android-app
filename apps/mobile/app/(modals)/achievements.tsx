@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from 'tamagui';
+import { YStack, XStack, Text, ScrollView, Button, Spinner, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {

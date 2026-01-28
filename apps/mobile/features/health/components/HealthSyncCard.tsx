@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { Platform, Alert } from 'react-native';
-import { YStack, XStack, Text, Button, Spinner, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Button, Spinner, useTheme } from '@/shared/components/tamagui';
 import {
   Heart,
   Lightning,

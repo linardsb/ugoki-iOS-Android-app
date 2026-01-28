@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { Timer, Play, CaretRight, ForkKnife } from 'phosphor-react-native';
 import { Card, ProgressBar } from '@/shared/components/ui';

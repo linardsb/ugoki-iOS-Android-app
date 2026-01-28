@@ -1,4 +1,4 @@
-import { YStack, Spinner, Text, styled, GetProps } from 'tamagui';
+import { YStack, Spinner, Text, styled, GetProps } from '@/shared/components/tamagui';
 
 interface LoadingSpinnerProps {
   size?: 'small' | 'large';

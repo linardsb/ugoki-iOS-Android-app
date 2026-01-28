@@ -12,7 +12,7 @@ import {
   Dimensions,
   Pressable,
 } from 'react-native';
-import { Text } from 'tamagui';
+import { Text } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {

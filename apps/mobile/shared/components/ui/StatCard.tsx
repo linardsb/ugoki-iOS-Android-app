@@ -1,4 +1,4 @@
-import { XStack, Text } from 'tamagui';
+import { XStack, Text } from '@/shared/components/tamagui';
 import { Card } from './Card';
 
 interface StatCardProps {

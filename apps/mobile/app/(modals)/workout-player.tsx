@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import { YStack, XStack, Text, Button, Spinner, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Button, Spinner, useTheme } from '@/shared/components/tamagui';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Alert, Vibration } from 'react-native';

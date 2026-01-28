@@ -1,4 +1,4 @@
-import { YStack, Text } from 'tamagui';
+import { YStack, Text } from '@/shared/components/tamagui';
 
 interface SettingsSectionProps {
   title?: string;

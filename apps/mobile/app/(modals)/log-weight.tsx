@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { YStack, XStack, Text, Button, Input, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Button, Input, useTheme } from '@/shared/components/tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';

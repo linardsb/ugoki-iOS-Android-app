@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { XStack, Input, Button, useTheme } from 'tamagui';
+import { XStack, Input, Button, useTheme } from '@/shared/components/tamagui';
 import { PaperPlaneRight } from 'phosphor-react-native';
 
 interface ChatInputProps {

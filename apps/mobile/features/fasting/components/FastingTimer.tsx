@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { YStack, Text, XStack } from 'tamagui';
+import { YStack, Text, XStack } from '@/shared/components/tamagui';
 import Animated, {
   useSharedValue,
   useAnimatedProps,

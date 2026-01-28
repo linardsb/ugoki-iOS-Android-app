@@ -1,5 +1,5 @@
 import { Alert, Pressable } from 'react-native';
-import { YStack, XStack, Text, Button, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Button, useTheme } from '@/shared/components/tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X, Camera, Image, Trash } from 'phosphor-react-native';

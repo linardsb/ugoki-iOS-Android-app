@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { Card } from './Card';
 
 /**

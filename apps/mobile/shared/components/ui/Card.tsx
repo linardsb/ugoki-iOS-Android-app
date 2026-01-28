@@ -1,4 +1,4 @@
-import { YStack, styled, GetProps } from 'tamagui';
+import { YStack, styled, GetProps } from '@/shared/components/tamagui';
 
 export const Card = styled(YStack, {
   name: 'Card',

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View } from 'react-native';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 
 interface AbstractBulletsProps {
   bullets: string[];

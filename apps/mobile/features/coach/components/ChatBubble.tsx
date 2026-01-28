@@ -1,5 +1,5 @@
 import { Image, StyleSheet } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import { Robot, User } from 'phosphor-react-native';
 import type { ChatMessage } from '../types';
 import type { Gender } from '@/features/profile';

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { XStack, Text, useTheme } from 'tamagui';
+import { XStack, Text, useTheme } from '@/shared/components/tamagui';
 import {
   ForkKnife,
   Lightning,

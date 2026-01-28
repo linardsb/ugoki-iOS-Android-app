@@ -1,4 +1,4 @@
-import { XStack, Text, styled, GetProps, useTheme } from 'tamagui';
+import { XStack, Text, styled, GetProps, useTheme } from '@/shared/components/tamagui';
 
 /**
  * StatusBadge - A badge component for displaying status indicators

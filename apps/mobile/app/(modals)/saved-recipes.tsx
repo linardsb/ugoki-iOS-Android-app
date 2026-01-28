@@ -4,7 +4,7 @@
 
 import { useCallback } from 'react';
 import { FlatList, RefreshControl, ActivityIndicator } from 'react-native';
-import { View, Text, YStack } from 'tamagui';
+import { View, Text, YStack } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

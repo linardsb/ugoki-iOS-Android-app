@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { View, ScrollView, KeyboardAvoidingView, Platform, Alert, StyleSheet, TouchableOpacity, Text as RNText } from 'react-native';
-import { YStack, XStack, Text, Button } from 'tamagui';
+import { YStack, XStack, Text, Button } from '@/shared/components/tamagui';
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -186,7 +186,7 @@ export default function CoachScreen() {
                     userGender={userGender}
                   />
                 )}
-                {isTyping && !isStreaming && <TypingIndicator />}
+                {isTyping && !isStreaming && <TypingIndicator userGender={userGender} />}
               </ScrollView>
             )}
 

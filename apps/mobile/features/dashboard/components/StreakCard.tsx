@@ -1,4 +1,4 @@
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { Card } from '@/shared/components/ui';
 import { Fire, Barbell, Calendar } from 'phosphor-react-native';
 import type { IconProps } from 'phosphor-react-native';

@@ -3,7 +3,7 @@
  */
 
 import { ScrollView } from 'react-native';
-import { XStack, Text, useTheme } from 'tamagui';
+import { XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { MealType, MEAL_TYPE_LABELS } from '../types';
 
 interface MealTypeFilterProps {

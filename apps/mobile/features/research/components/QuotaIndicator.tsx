@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { XStack, Text, useTheme } from 'tamagui';
+import { XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { MagnifyingGlass } from 'phosphor-react-native';
 import type { UserSearchQuota } from '../types';
 

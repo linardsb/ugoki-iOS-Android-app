@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
-import { XStack, YStack } from 'tamagui';
+import { Image, StyleSheet } from 'react-native';
+import { XStack, YStack, Text } from '@/shared/components/tamagui';
 import { Robot } from 'phosphor-react-native';
+import type { Gender } from '@/features/profile';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,7 +14,15 @@ import Animated, {
 
 const AnimatedYStack = Animated.createAnimatedComponent(YStack);
 
-export function TypingIndicator() {
+// Coach avatar images
+const coachMaleAvatar = require('../../../assets/coach-male.webp');
+const coachFemaleAvatar = require('../../../assets/coach-female.webp');
+
+interface TypingIndicatorProps {
+  userGender?: Gender | null;
+}
+
+export function TypingIndicator({ userGender }: TypingIndicatorProps) {
   const dot1 = useSharedValue(0);
   const dot2 = useSharedValue(0);
   const dot3 = useSharedValue(0);
@@ -20,29 +30,29 @@ export function TypingIndicator() {
   useEffect(() => {
     dot1.value = withRepeat(
       withSequence(
-        withTiming(-4, { duration: 300 }),
-        withTiming(0, { duration: 300 })
+        withTiming(-3, { duration: 400 }),
+        withTiming(0, { duration: 400 })
       ),
       -1,
       false
     );
     dot2.value = withDelay(
-      100,
+      150,
       withRepeat(
         withSequence(
-          withTiming(-4, { duration: 300 }),
-          withTiming(0, { duration: 300 })
+          withTiming(-3, { duration: 400 }),
+          withTiming(0, { duration: 400 })
         ),
         -1,
         false
       )
     );
     dot3.value = withDelay(
-      200,
+      300,
       withRepeat(
         withSequence(
-          withTiming(-4, { duration: 300 }),
-          withTiming(0, { duration: 300 })
+          withTiming(-3, { duration: 400 }),
+          withTiming(0, { duration: 400 })
         ),
         -1,
         false
@@ -62,6 +72,30 @@ export function TypingIndicator() {
     transform: [{ translateY: dot3.value }],
   }));
 
+  // Get coach avatar based on user's gender preference
+  const renderCoachAvatar = () => {
+    switch (userGender) {
+      case 'male':
+        return (
+          <Image
+            source={coachMaleAvatar}
+            style={styles.coachAvatarImage}
+          />
+        );
+      case 'female':
+        return (
+          <Image
+            source={coachFemaleAvatar}
+            style={styles.coachAvatarImage}
+          />
+        );
+      default:
+        return <Robot size={20} color="white" weight="fill" />;
+    }
+  };
+
+  const hasCustomAvatar = userGender === 'male' || userGender === 'female';
+
   return (
     <XStack
       width="100%"
@@ -72,49 +106,64 @@ export function TypingIndicator() {
       <XStack gap="$2" alignItems="flex-end">
         {/* Avatar */}
         <XStack
-          width={32}
-          height={32}
-          borderRadius="$6"
-          backgroundColor="$secondary"
+          width={36}
+          height={36}
+          borderRadius={18}
+          backgroundColor={hasCustomAvatar ? 'transparent' : '$secondary'}
           justifyContent="center"
           alignItems="center"
+          overflow="hidden"
         >
-          <Robot size={16} color="white" weight="thin" />
+          {renderCoachAvatar()}
         </XStack>
 
-        {/* Typing indicator */}
-        <XStack
+        {/* Thinking bubble */}
+        <YStack
           backgroundColor="$cardBackground"
-          paddingHorizontal="$4"
-          paddingVertical="$3"
+          paddingHorizontal="$3"
+          paddingVertical="$2.5"
           borderRadius="$4"
           borderBottomLeftRadius="$1"
-          gap="$2"
-          alignItems="center"
+          borderWidth={1}
+          borderColor="$cardBorder"
+          gap="$1.5"
         >
-          <AnimatedYStack
-            width={8}
-            height={8}
-            borderRadius="$6"
-            backgroundColor="$colorMuted"
-            style={dot1Style}
-          />
-          <AnimatedYStack
-            width={8}
-            height={8}
-            borderRadius="$6"
-            backgroundColor="$colorMuted"
-            style={dot2Style}
-          />
-          <AnimatedYStack
-            width={8}
-            height={8}
-            borderRadius="$6"
-            backgroundColor="$colorMuted"
-            style={dot3Style}
-          />
-        </XStack>
+          <Text fontSize="$2" color="$colorMuted" fontStyle="italic">
+            Thinking...
+          </Text>
+          <XStack gap="$1.5" alignItems="center" justifyContent="center">
+            <AnimatedYStack
+              width={6}
+              height={6}
+              borderRadius={3}
+              backgroundColor="$colorMuted"
+              style={dot1Style}
+            />
+            <AnimatedYStack
+              width={6}
+              height={6}
+              borderRadius={3}
+              backgroundColor="$colorMuted"
+              style={dot2Style}
+            />
+            <AnimatedYStack
+              width={6}
+              height={6}
+              borderRadius={3}
+              backgroundColor="$colorMuted"
+              style={dot3Style}
+            />
+          </XStack>
+        </YStack>
       </XStack>
     </XStack>
   );
 }
+
+const styles = StyleSheet.create({
+  coachAvatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+});

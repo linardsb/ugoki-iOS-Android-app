@@ -1,4 +1,4 @@
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import { ArrowDown, ArrowUp, Check, Warning } from 'phosphor-react-native';
 import type { ParsedBiomarker, BiomarkerFlag } from '../types';
 import { categorizeBiomarkers } from '../hooks';

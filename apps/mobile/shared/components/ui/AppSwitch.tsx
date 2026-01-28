@@ -1,4 +1,4 @@
-import { XStack, Circle, useTheme } from 'tamagui';
+import { XStack, Circle, useTheme } from '@/shared/components/tamagui';
 import { Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 

@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { YStack, Text, styled, GetProps } from 'tamagui';
+import { YStack, Text, styled, GetProps } from '@/shared/components/tamagui';
 
 const AvatarContainer = styled(YStack, {
   name: 'Avatar',

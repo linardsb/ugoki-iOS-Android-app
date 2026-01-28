@@ -3,7 +3,7 @@
  * Uses theme tokens for all colors - no hardcoded values.
  */
 
-import { YStack, XStack, Text, Image, useTheme } from 'tamagui';
+import { YStack, XStack, Text, Image, useTheme } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { Clock, Fire, Barbell, Lightning, Play } from 'phosphor-react-native';
 import { Card } from '@/shared/components/ui';

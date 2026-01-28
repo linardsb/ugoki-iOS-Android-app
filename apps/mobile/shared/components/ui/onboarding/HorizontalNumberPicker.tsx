@@ -1,6 +1,6 @@
 import React, { useRef, useCallback, useMemo, useEffect, useState } from 'react';
 import { FlatList, Dimensions, NativeSyntheticEvent, NativeScrollEvent, LayoutChangeEvent } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

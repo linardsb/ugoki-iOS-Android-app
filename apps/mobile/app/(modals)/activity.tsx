@@ -4,13 +4,13 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, XStack, YStack, Spinner } from 'tamagui';
+import { View, Text, XStack, YStack, Spinner } from '@/shared/components/tamagui';
 import { FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
-import { useTheme } from 'tamagui';
+import { useTheme } from '@/shared/components/tamagui';
 import {
   useActivityFeed,
   groupFeedByDate,

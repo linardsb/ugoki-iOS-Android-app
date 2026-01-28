@@ -1,5 +1,5 @@
 import { Pressable, Image } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { YStack, XStack, Text } from '@/shared/components/tamagui';
 import { useRouter } from 'expo-router';
 import { User, Camera } from 'phosphor-react-native';
 import type { UserProfile } from '../types';

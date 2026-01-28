@@ -13,7 +13,7 @@ import {
   Alert,
   Share,
 } from 'react-native';
-import { YStack, XStack, Text, useTheme } from 'tamagui';
+import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Users, Calendar, Trophy, Clock, ShareNetwork, SignOut, Copy } from 'phosphor-react-native';

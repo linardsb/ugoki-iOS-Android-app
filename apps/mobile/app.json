@@ -55,7 +55,19 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/homizio_thin.ttf",
+            "./assets/fonts/homizio_light.ttf",
+            "./assets/fonts/homizio_regular.ttf",
+            "./assets/fonts/homizio_medium.ttf",
+            "./assets/fonts/homizio_bold.ttf",
+            "./assets/fonts/homizio_black.ttf"
+          ]
+        }
+      ],
       "expo-splash-screen",
       [
         "@kingstinct/react-native-healthkit",
