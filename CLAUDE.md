@@ -12,13 +12,32 @@ A mobile wellness app combining **Intermittent Fasting (IF)** with **High-Intens
 
 ---
 
+## SESSION START PROTOCOL (MANDATORY)
+
+**Before responding to ANY task:**
+1. Read `docs/INDEX.md`
+2. Read relevant subdirectory CLAUDE.md files based on the task
+3. State what you read before proceeding
+
+**Before ANY code changes:**
+1. Report what you found
+2. Propose the change
+3. **WAIT for user approval** - do NOT implement without explicit confirmation
+
+**Enforcement:**
+- If AI jumps into code changes without asking → stop immediately
+- If AI's first response doesn't mention reading docs → red flag
+- User can set up hooks to remind AI of this protocol
+
+---
+
 ## How CLAUDE.md Files Work Together
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                     Root CLAUDE.md (THIS FILE)                          │
 │                  Quick Reference + Context Index                        │
-│                    (Updated Jan 24, 2026)                               │
+│                    (Updated Jan 28, 2026)                               │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                 ┌───────────────────┼───────────────────┐
@@ -73,6 +92,7 @@ connects them all and provides overall context.
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic 2.0 |
 | AI | Pydantic AI, Claude 3.5 Sonnet/Haiku |
 | Mobile | Expo SDK 52, React Native, Tamagui, Zustand, TanStack Query |
+| Blockchain | Cardano (Preprod), Blockfrost API, Lucid Evolution SDK |
 | Infra | Fly.io, PostgreSQL, Cloudflare R2, Expo Push |
 
 ---
@@ -123,6 +143,8 @@ Each subdirectory has a CLAUDE.md that documents current state, issues, and guid
 | Known bugs & issues | [docs/tracking/BUGS.md](docs/tracking/BUGS.md) |
 | Development guides | [docs/guides/](docs/guides/) |
 | Best practices & standards | [docs/standards/](docs/standards/) |
+| **Cardano & $UI Token** | [scripts/cardano/README.md](scripts/cardano/README.md) |
+| **Wallet Feature** | [apps/mobile/features/wallet/](apps/mobile/features/wallet/) |
 
 ---
 
@@ -154,6 +176,9 @@ ugoki_1_0/
 │   └── mobile/                    # Expo React Native
 │       ├── app/                   # Screens (Expo Router)
 │       └── features/              # Feature modules
+│           └── wallet/            # Cardano wallet & $UI token
+├── scripts/
+│   └── cardano/                   # Token minting scripts & economics
 └── docs/                          # Documentation
     ├── product/                   # PRD, roadmap, decisions
     ├── architecture/              # System design
@@ -306,7 +331,8 @@ This ensures every new context loaded gets current application state without re-
   - Overall MVP status and deployment readiness
   - Quick commands and mandatory rules
   - Guidance on maintaining CLAUDE.md files going forward
-- **Updated:** Jan 24, 2026
+  - Cardano wallet and $UI token integration references
+- **Updated:** Jan 28, 2026
 - **Read when:** Starting a new context, deploying, or major changes
 
 ### 📋 docs/product/CLAUDE.md
@@ -383,7 +409,7 @@ This ensures every new context loaded gets current application state without re-
 
 ---
 
-## Quick Status Check (Jan 24, 2026)
+## Quick Status Check (Jan 28, 2026)
 
 When loading new context, check these status indicators:
 
@@ -396,5 +422,6 @@ When loading new context, check these status indicators:
 | **Security Standards** | ✅ 100% | JWT, rate limiting, PHI handling, GDPR compliance |
 | **API Examples** | ✅ Complete | 20+ response examples added |
 | **Deployment Ready** | ✅ YES | Pending Fly.io, EAS, app store submission |
+| **$UI Token Integration** | 🔄 In Progress | Wallet feature, token economics designed, minting scripts ready |
 
-**Bottom line:** Application is production-ready. Documentation is accurate and complete. Proceed with Phase 2 deployment.
+**Bottom line:** Application is production-ready. Documentation is accurate and complete. Cardano wallet integration in progress with $UI token economics designed.
