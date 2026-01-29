@@ -64,3 +64,15 @@ coverage/
 
 # Claude Code
 **/CLAUDE.md
+
+# Playwright MCP
+.playwright-mcp/
+
+# Internal documents (not source code)
+test_documents/
+design_references/
+DESIGN_SYSTEM_PLAN.md
+DOCUMENTATION_AUDIT_REPORT.md
+UGOKI_COMPLETE_AUDIT_2026-01-24.md
+UGOKI_Color_Palette_Proposal.docx
+USER_TEST_REPORT_2026-01-24.md
