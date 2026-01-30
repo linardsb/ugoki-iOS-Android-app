@@ -11,10 +11,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  FlatList,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { YStack, Text, useTheme } from '@/shared/components/tamagui';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useAuthStore } from '@/shared/stores/auth';
 import {
   useTeamMessages,
   useTeamMentionMembers,
@@ -39,8 +39,8 @@ const EDIT_WINDOW_MS = 15 * 60 * 1000;
 
 export function TeamChat({ teamId, teamName }: TeamChatProps) {
   const theme = useTheme();
-  const { user } = useAuth();
-  const flashListRef = useRef<FlashList<TeamMessage>>(null);
+  const { identity } = useAuthStore();
+  const flatListRef = useRef<FlatList<TeamMessage>>(null);
 
   const [messageText, setMessageText] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -113,7 +113,7 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
             onSuccess: () => {
               setMessageText('');
               // Scroll to top (newest message)
-              flashListRef.current?.scrollToOffset({ offset: 0, animated: true });
+              flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
             },
             onError: (error) => {
               Alert.alert('Error', error.message || 'Failed to send message');
@@ -185,12 +185,12 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
   // Check if message can still be edited
   const canEditMessage = useCallback(
     (message: TeamMessage) => {
-      if (message.sender_id !== user?.id) return false;
+      if (message.sender_id !== identity?.id) return false;
       const createdAt = new Date(message.created_at).getTime();
       const now = Date.now();
       return now - createdAt < EDIT_WINDOW_MS;
     },
-    [user?.id]
+    [identity?.id]
   );
 
   // Render message item
@@ -198,14 +198,14 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
     ({ item }: { item: TeamMessage }) => (
       <MessageBubble
         message={item}
-        isOwnMessage={item.sender_id === user?.id}
+        isOwnMessage={item.sender_id === identity?.id}
         onAddReaction={(emoji) => handleAddReaction(item.id, emoji)}
         onRemoveReaction={(emoji) => handleRemoveReaction(item.id, emoji)}
         onEdit={
           canEditMessage(item) ? () => handleStartEdit(item) : undefined
         }
         onDelete={
-          item.sender_id === user?.id
+          item.sender_id === identity?.id
             ? () => handleDelete(item.id)
             : undefined
         }
@@ -213,7 +213,7 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
       />
     ),
     [
-      user?.id,
+      identity?.id,
       handleAddReaction,
       handleRemoveReaction,
       handleStartEdit,
@@ -279,12 +279,11 @@ export function TeamChat({ teamId, teamName }: TeamChatProps) {
 
       {/* Messages list (inverted for chat) */}
       <View style={styles.listContainer}>
-        <FlashList
-          ref={flashListRef}
+        <FlatList
+          ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
           keyExtractor={(item) => item.id}
-          estimatedItemSize={80}
           inverted
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}

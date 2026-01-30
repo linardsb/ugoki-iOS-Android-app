@@ -46,6 +46,35 @@ Each bug follows this pattern:
 
 ## Resolved Issues
 
+### BUG-014: Challenge templates endpoint returning 500 error
+
+**Status:** Resolved | **Severity:** High | **Reported:** 2026-01-30 | **Resolved:** 2026-01-30
+
+**Description:**
+The `/api/v1/social/challenges/templates` endpoint was returning 500 Internal Server Error because of a case mismatch between the database and Python enum values.
+
+**Files Affected:**
+- `apps/api/src/modules/social/service.py:3206-3221` (get_challenge_templates)
+- `apps/api/src/modules/social/service.py:3271-3280` (create_challenge_from_template)
+
+**Root Cause:**
+The database stores challenge type values in uppercase (e.g., "FASTING_STREAK") but the `ChallengeType` Python enum uses lowercase values (e.g., "fasting_streak"). When the service tried to convert `ChallengeType(orm.challenge_type)`, it failed with "'FASTING_STREAK' is not a valid ChallengeType".
+
+**Fix:**
+Added `.lower()` conversion when reading challenge_type from ORM to match enum values:
+```python
+# Before
+challenge_type=ChallengeType(orm.challenge_type),
+
+# After
+challenge_type_str = orm.challenge_type.lower() if orm.challenge_type else "total_xp"
+challenge_type=ChallengeType(challenge_type_str),
+```
+
+Applied the fix in both `get_challenge_templates` and `create_challenge_from_template` methods.
+
+---
+
 ### BUG-013: HealthSyncCard button too squashed
 
 **Status:** Resolved | **Severity:** Low | **Reported:** 2026-01-23 | **Resolved:** 2026-01-23

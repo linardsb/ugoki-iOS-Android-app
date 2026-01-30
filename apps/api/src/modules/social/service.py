@@ -3205,11 +3205,14 @@ class SocialService(SocialInterface):
 
         templates = []
         for orm in result.scalars():
+            # Convert challenge_type to lowercase for enum compatibility
+            # DB stores uppercase (FASTING_STREAK), enum uses lowercase (fasting_streak)
+            challenge_type_str = orm.challenge_type.lower() if orm.challenge_type else "total_xp"
             templates.append(ChallengeTemplate(
                 id=orm.id,
                 name=orm.name,
                 description=orm.description,
-                challenge_type=ChallengeType(orm.challenge_type),
+                challenge_type=ChallengeType(challenge_type_str),
                 duration_days=orm.duration_days,
                 goal_value=orm.goal_value,
                 goal_unit=orm.goal_unit,
@@ -3266,10 +3269,12 @@ class SocialService(SocialInterface):
         challenge_name = custom_name or template.name
 
         # Create the challenge using existing method
+        # Convert challenge_type to lowercase for enum compatibility
+        challenge_type_str = template.challenge_type.lower() if template.challenge_type else "total_xp"
         challenge = await self.create_challenge(
             identity_id=identity_id,
             name=challenge_name,
-            challenge_type=ChallengeType(template.challenge_type),
+            challenge_type=ChallengeType(challenge_type_str),
             goal_value=template.goal_value,
             start_date=start_date,
             end_date=end_date,
