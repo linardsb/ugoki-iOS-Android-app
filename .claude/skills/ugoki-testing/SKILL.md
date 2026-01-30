@@ -4,7 +4,11 @@ description: >
   UGOKI testing with pytest and the comprehensive API test script. Load when:
   writing tests, creating fixtures, mocking services, running test suites, or
   debugging test failures. Keywords: test, pytest, fixture, mock, assert,
-  async, test_api.py, coverage, TDD.
+  async, test_api.py, coverage, TDD, pytest_asyncio, conftest, db_session,
+  identity, auth_token, auth_headers, AsyncMock, MagicMock, patch, freeze_time,
+  httpx, AsyncClient, ASGITransport, uv run pytest, --cov, -v, -s, -x, --lf,
+  test_create, test_list, test_get, test_delete, test_update, 401, 422, 404,
+  failing test, test not found, test error, unit test, integration test, e2e.
 ---
 
 # UGOKI Testing

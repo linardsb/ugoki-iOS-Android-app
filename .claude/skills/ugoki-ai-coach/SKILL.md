@@ -4,7 +4,12 @@ description: >
   UGOKI AI Coach module with Pydantic AI and Claude. Load when: working on AI
   chat, creating agent tools, modifying coach behavior, adding AI features,
   streaming responses, or safety filtering. Keywords: AI, coach, Pydantic AI,
-  Claude, agent, tool, chat, streaming, safety, user insights.
+  Claude, agent, tool, chat, streaming, safety, user insights, anthropic,
+  claude-3-5-sonnet, claude-3-5-haiku, Logfire, RunContext, deps, dependencies,
+  CoachDependencies, CoachResponse, system_prompt, @coach_agent.tool, run_stream,
+  StreamingResponse, text/event-stream, SSE, blocked topics, medical redirect,
+  BLOCKED_TOPICS, check_safety, ai_coach/, agents/, tools/, prompts/, safety.py,
+  wellness, fasting advice, workout advice, personalization, suggestions.
 ---
 
 # UGOKI AI Coach Development

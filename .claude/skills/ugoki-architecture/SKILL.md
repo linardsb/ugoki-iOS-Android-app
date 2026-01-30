@@ -5,7 +5,11 @@ description: >
   UGOKI work session or when you need to understand the system design. Use for:
   module boundaries, primitives (IDENTITY, TIME_WINDOW, ACTIVITY_EVENT, METRIC,
   PROGRESSION), black box principles, project structure, tech stack overview,
-  or answering "which module owns X?" questions.
+  or answering "which module owns X?" questions. Keywords: architecture, overview,
+  structure, module, black box, primitive, which module, who owns, codebase,
+  project structure, tech stack, data flow, interface, cross-module, monorepo,
+  apps/api, apps/mobile, identity, time_keeper, metrics, progression, content,
+  ai_coach, notification, profile, event_journal, social, research, UGOKI.
 ---
 
 # UGOKI Architecture

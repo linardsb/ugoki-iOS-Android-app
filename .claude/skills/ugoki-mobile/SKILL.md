@@ -5,7 +5,12 @@ description: >
   Query. Load when: building screens, creating components, working with
   navigation, hooks, state, styling, dark mode, or animations. Keywords: screen,
   component, Expo, React Native, Tamagui, Zustand, TanStack Query, hook, useQuery,
-  useMutation, navigation, modal, tab, dark mode, theme, TouchableOpacity.
+  useMutation, navigation, modal, tab, dark mode, theme, TouchableOpacity, mobile,
+  iOS, Android, app, YStack, XStack, Card, ScrollView, RefreshControl, SafeArea,
+  useSafeAreaInsets, Pressable, hitSlop, font, color, palette, hex, styling,
+  AsyncStorage, persist, reanimated, animation, Phosphor, icon, router, expo-router,
+  useLocalSearchParams, features/, shared/, components/, stores/, queryKey,
+  invalidateQueries, useColorScheme, useAppTheme, conditional rendering, crash.
 ---
 
 # UGOKI Mobile Development

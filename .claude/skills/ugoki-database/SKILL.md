@@ -4,7 +4,13 @@ description: >
   UGOKI database with SQLAlchemy 2.0 and Alembic. Load when: creating models,
   writing migrations, adding indexes, querying data, or debugging database
   issues. Keywords: ORM, SQLAlchemy, Alembic, migration, schema, table, column,
-  index, query, database, PostgreSQL, SQLite, async, relationship.
+  index, query, database, PostgreSQL, SQLite, async, relationship, orm.py,
+  Mapped, mapped_column, ForeignKey, ondelete, CASCADE, primary_key, nullable,
+  DateTime, String, Float, Integer, Boolean, Text, JSON, Enum, SQLEnum,
+  __tablename__, __table_args__, Index, select, update, delete, func, count,
+  sum, avg, coalesce, scalar_one_or_none, scalars, joinedload, selectinload,
+  upgrade, downgrade, revision, autogenerate, alembic/versions, ugoki.db,
+  aiosqlite, asyncpg, duplicate index, refresh, commit, add, execute.
 ---
 
 # UGOKI Database Development

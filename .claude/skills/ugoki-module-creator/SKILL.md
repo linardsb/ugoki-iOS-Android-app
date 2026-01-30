@@ -4,7 +4,11 @@ description: >
   Step-by-step guide for creating a new UGOKI module from scratch. Load when:
   adding a new backend module, scaffolding a new feature, or creating both
   backend and mobile for a new capability. Keywords: new module, create,
-  scaffold, feature, checklist.
+  scaffold, feature, checklist, new feature, add module, build module, create
+  endpoint, new table, new entity, from scratch, boilerplate, template, starter,
+  mkdir, touch, include_router, register module, full stack, backend + mobile,
+  end-to-end, planning, phase 1, phase 2, phase 3, models.py, orm.py, service.py,
+  routes.py, types.ts, hooks, useQuery, useMutation, TanStack, Zustand store.
 ---
 
 # Create New UGOKI Module

@@ -5,7 +5,12 @@ description: >
   creating/modifying API endpoints, writing services, working with Pydantic
   models, FastAPI routes, dependency injection, or any backend Python code.
   Keywords: endpoint, route, FastAPI, Pydantic, service, API, backend, POST,
-  GET, PATCH, DELETE, request, response, module, async, Depends.
+  GET, PATCH, DELETE, request, response, module, async, Depends, router, APIRouter,
+  HTTPException, Query, Path, BaseModel, Field, field_validator, from_attributes,
+  model_dump, model_validate, exclude_unset, 422, 404, 500, status_code, uvicorn,
+  src/modules, routes.py, service.py, models.py, interface.py, __init__.py,
+  create, update, delete, list, get_by_id, soft delete, pagination, cursor,
+  cross-module, dependency, get_current_identity, get_db, refresh, commit.
 ---
 
 # UGOKI API Development
