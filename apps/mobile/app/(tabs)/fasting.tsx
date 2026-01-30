@@ -15,6 +15,7 @@ import {
   useFastingHistory,
 } from '@/features/fasting';
 import { useStreaks } from '@/features/dashboard';
+import { useStreakMilestoneMonitor } from '@/features/wallet';
 import { ThemeToggle } from '@/shared/components/ui';
 
 export default function FastingScreen() {
@@ -27,6 +28,9 @@ export default function FastingScreen() {
   // Fetch streaks and fasting history
   const { data: streaks, refetch: refetchStreaks } = useStreaks();
   const { data: fastingHistory, refetch: refetchHistory } = useFastingHistory({ limit: 100 });
+
+  // Monitor streaks for milestone rewards (7-day, 30-day)
+  useStreakMilestoneMonitor(streaks);
 
   // Get fasting streak
   const fastingStreak = streaks?.find((s) => s.streak_type === 'fasting');

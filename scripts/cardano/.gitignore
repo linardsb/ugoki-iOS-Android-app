@@ -1,0 +1,15 @@
+# Never commit seed phrases or private keys
+*.seed
+*.key
+*.skey
+*.vkey
+seed.txt
+keys/
+
+# Node modules
+node_modules/
+bun.lockb
+
+# Environment files that might contain secrets
+.env
+.env.local

@@ -383,6 +383,69 @@ Each decision follows this structure:
 
 ---
 
+### DEC-028: Social Module Cross-Module ORM Access
+**Date:** January 2026 | **Status:** Accepted (Deferred Refactor)
+
+**Context:** The SOCIAL module imports ORM models from PROFILE, PROGRESSION, TIME_KEEPER, and EVENT_JOURNAL modules for leaderboard queries, user search, and challenge progress calculation. This violates the black box principle (DEC-001).
+
+**Decision:** Accept cross-module ORM access in SOCIAL module for MVP. Document as intentional exception. Defer GRAPH_SERVICE refactor to post-MVP.
+
+**Rationale:**
+- **Performance requirement**: Leaderboards need `ORDER BY xp DESC LIMIT 100` in single query
+- **N+1 prevention**: Using interfaces would require 100+ individual service calls
+- **Unidirectional**: Only SOCIAL imports from others (not vice versa)
+- **Read-only**: Cross-module access limited to read operations
+- **MVP trade-off**: Refactoring adds complexity without user-facing benefit
+
+**Cross-Module Access Locations:**
+```
+social/service.py:
+├── get_leaderboard (lines 549-652)
+│   └── progression.UserLevelORM, progression.StreakORM, profile.SocialProfileORM
+├── _get_user_profile_data (lines 1264-1294)
+│   └── profile.UserProfileORM, profile.SocialProfileORM, progression.UserLevelORM
+├── search_users (lines 513-543)
+│   └── profile.SocialProfileORM
+├── _calculate_challenge_progress (lines 1452-1509)
+│   └── progression.StreakORM, time_keeper.TimeWindowORM, progression.XPTransactionORM
+└── generate_share_content (lines 1010-1093)
+    └── progression.AchievementORM, progression.StreakORM
+```
+
+**Alternatives Considered:**
+
+1. **GRAPH_SERVICE module** (Proposed, deferred)
+   - Dedicated module for cross-module aggregations
+   - `GraphServiceInterface` with `get_leaderboard()`, `get_user_social_profile()`
+   - Pros: Explicit contract, better testability, reusable
+   - Cons: Same coupling moved to new location, more modules to maintain
+
+2. **Database views** (Simpler alternative)
+   - Create `leaderboard_xp` view joining required tables
+   - Pros: No code changes, database owns aggregation
+   - Cons: View maintenance, less flexible
+
+3. **Extend existing interfaces** (Interface expansion)
+   - Add `get_level_rankings(limit, filter_ids)` to ProgressionInterface
+   - Add `get_public_profiles(identity_ids)` to ProfileInterface
+   - Pros: Maintains black box principle
+   - Cons: Interface bloat, still multiple queries
+
+**When to Revisit:**
+- Adding activity feeds or recommendations
+- Performance degradation at scale (>100k users)
+- Adding more modules that need cross-module aggregation
+- Expanding leaderboard features (weekly, seasonal)
+
+**Consequences:**
+- SOCIAL module has documented exception in ANTI_PATTERNS.md:34-69
+- Other modules MUST NOT follow this pattern without decision record
+- Schema changes in referenced modules require SOCIAL query updates
+
+**Reference:** [standards/ANTI_PATTERNS.md](../standards/ANTI_PATTERNS.md#accepted-exception-social-module-leaderboard-queries)
+
+---
+
 ## Deprecated Decisions
 
 ### DEC-D01: Redux for State Management

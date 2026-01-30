@@ -26,6 +26,7 @@ import {
   useAbandonWorkout,
   useWorkoutPlayerStore,
 } from '@/features/workouts';
+import { useRewards } from '@/features/wallet';
 import type { Exercise } from '@/features/workouts';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -43,6 +44,9 @@ export default function WorkoutPlayerScreen() {
   const { data: workout, isLoading } = useWorkout(workoutId || '');
   const primaryColor = theme.primary.val;
   const secondaryColor = theme.secondary.val;
+
+  // Wallet rewards integration
+  const { grantWorkoutReward } = useRewards();
 
   const {
     phase,
@@ -63,6 +67,14 @@ export default function WorkoutPlayerScreen() {
 
   const completeWorkout = useCompleteWorkout({
     onSuccess: () => {
+      // Grant $UGOKI reward for completing workout
+      if (workout) {
+        const reward = grantWorkoutReward(workout.duration_minutes, workout.name);
+        if (reward > 0) {
+          console.log(`[WorkoutPlayer] Earned ${reward} $UGOKI for completing ${workout.name}`);
+        }
+      }
+
       reset();
       router.replace('/(tabs)/workouts');
     },

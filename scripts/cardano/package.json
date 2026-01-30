@@ -1,0 +1,12 @@
+{
+  "name": "ugoki-cardano-scripts",
+  "version": "1.0.0",
+  "description": "Cardano token minting scripts for UGOKI",
+  "type": "module",
+  "scripts": {
+    "mint": "bun run mint-ugoki.ts"
+  },
+  "dependencies": {
+    "@lucid-evolution/lucid": "^0.3.41"
+  }
+}

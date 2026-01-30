@@ -712,6 +712,159 @@ The AI Coach includes multiple safety layers:
 
 ---
 
+## Medical-Grade RAG Upgrade Research (Jan 2026)
+
+> **Research Status:** Investigation complete. Implementation optional based on product direction.
+
+This section documents research into upgrading from standard RAG to medical-grade RAG, should UGOKI expand into medical content interpretation.
+
+### Available Medical Embedding Models
+
+| Specification | [PubMedBERT Embeddings](https://huggingface.co/NeuML/pubmedbert-base-embeddings) | [MedCPT](https://github.com/ncbi/MedCPT) |
+|---------------|-------------------|---------|
+| **Developer** | NeuML (fine-tuned from Microsoft's BiomedNLP) | NCBI/NIH |
+| **Parameters** | 110M | 100M |
+| **Embedding Dim** | 768 | 768 |
+| **Max Tokens** | 512 | 64 (query) / 512 (article) |
+| **Model Size** | ~380MB (F32) | ~400MB (F32) |
+| **Training Data** | Medical literature | 255M PubMed query-article pairs |
+| **License** | Apache 2.0 | Public domain |
+| **HF Serverless** | ✅ Yes | ⚠️ Limited |
+
+### PubMedBERT Variants
+
+| Variant | Use Case | Speed | Dimensions |
+|---------|----------|-------|------------|
+| [Standard](https://huggingface.co/NeuML/pubmedbert-base-embeddings) | Best quality | Baseline | 768 |
+| [Matryoshka](https://huggingface.co/NeuML/pubmedbert-base-embeddings-matryoshka) | Flexible storage | Same compute | 64-768 (configurable) |
+| [8M Static](https://huggingface.co/NeuML/pubmedbert-base-embeddings-8M) | CPU-only, ultra-fast | 10-100x faster | 768 |
+
+**Recommendation:** The **8M Static version** runs on CPU only (no GPU needed) and is orders of magnitude faster. This could eliminate GPU costs entirely.
+
+### Memory Requirements
+
+| Model | VRAM (Inference) | VRAM (Batch 32) | CPU RAM |
+|-------|------------------|-----------------|---------|
+| PubMedBERT | 200-300MB | 1-2GB | ~400MB |
+| MedCPT | 200-300MB | 1-2GB | ~400MB |
+| PubMedBERT-8M | 0 (CPU only) | N/A | ~50MB |
+
+**Key insight:** These models are small by modern standards. Even a $5/month VPS with no GPU can run PubMedBERT-8M.
+
+### GPU Cloud Pricing (Jan 2026)
+
+| Provider | GPU | Price/hr | Monthly (24/7) | Notes |
+|----------|-----|----------|----------------|-------|
+| [RunPod](https://www.runpod.io/pricing) | RTX 4090 | $0.34 | ~$245 | Best value |
+| [RunPod](https://www.runpod.io/pricing) | A100 80GB | $1.99-2.17 | ~$1,500 | Overkill for embeddings |
+| [RunPod](https://www.runpod.io/pricing) | T4 | $0.40 | ~$290 | Good for embeddings |
+| [Lambda Labs](https://lambda.ai/pricing) | A10G | $0.75 | ~$540 | Capacity issues |
+| [Lambda Labs](https://lambda.ai/pricing) | A100 40GB | $1.29 | ~$930 | More available |
+| Various | A10G | $0.17 | ~$120 | [Cheapest across providers](https://getdeploying.com/gpus) |
+
+### Deployment Options
+
+#### Option 1: HuggingFace Serverless (Simplest)
+
+PubMedBERT is already available on [HF Inference API](https://huggingface.co/docs/inference-providers/providers/hf-inference).
+
+```python
+from huggingface_hub import InferenceClient
+
+client = InferenceClient(model="NeuML/pubmedbert-base-embeddings")
+embedding = client.feature_extraction("diabetes treatment options")
+```
+
+**Cost:** Free tier (rate limited) or ~$0.06/1M characters (Pro)
+**Pros:** Zero infrastructure, instant setup
+**Cons:** Rate limits, cold starts, external dependency
+
+#### Option 2: PubMedBERT-8M on CPU (Most Cost-Effective)
+
+The [static 8M model](https://huggingface.co/NeuML/pubmedbert-base-embeddings-8M) runs on CPU with no GPU.
+
+```python
+from model2vec import StaticModel
+
+model = StaticModel.from_pretrained("NeuML/pubmedbert-base-embeddings-8M")
+embeddings = model.encode(["medical query here"])  # Returns 768-dim vector
+```
+
+**Cost:** $5-20/month (any VPS with 1GB RAM)
+**Pros:** Cheapest, fastest inference, no GPU vendor lock-in
+**Cons:** Slightly lower quality than full model (but still medical-tuned)
+
+#### Option 3: Full PubMedBERT on Budget GPU
+
+| Setup | Monthly Cost |
+|-------|--------------|
+| RunPod T4 (spot) | ~$100-150 |
+| RunPod RTX 4090 (spot) | ~$150-200 |
+| Cheapest A10G provider | ~$120 |
+
+#### Option 4: RunPod Serverless (Scalable)
+
+Deploy as serverless endpoint, pay only when used.
+
+**Cost estimate at 1000 requests/day:** ~$30/month
+
+### Cost Comparison Summary
+
+| Approach | Setup Time | Monthly Cost | Quality |
+|----------|------------|--------------|---------|
+| **Current (OpenAI)** | 0 | $2-5 | General |
+| **HF Serverless** | ~1 hour | $0-10 | Medical |
+| **PubMedBERT-8M (CPU)** | ~2-3 hours | $5-20 | Medical (slightly lower) |
+| **Full GPU (budget)** | ~4-6 hours | $100-150 | Medical (best) |
+| **RunPod Serverless** | ~3-4 hours | $20-50 | Medical (best) |
+
+### Implementation Requirements
+
+If upgrading to medical embeddings:
+
+```
+apps/api/src/modules/ai_coach/tools/documents.py
+├── Replace OpenAI client with Model2Vec/SentenceTransformers
+├── Keep same embedding cache logic
+└── Update vector dimension (768 vs current 1536)
+
+apps/api/src/modules/ai_coach/agents/clients.py
+├── Add medical embedding model loader
+└── Add lazy loading for model (load once, reuse)
+
+Database Migration:
+├── Update coach_documents.embedding column (VECTOR(768))
+├── Re-embed all existing documents
+└── Update HNSW index
+```
+
+### Current Recommendation
+
+**Not recommended for Phase 1** because:
+
+1. **Safety filter already blocks medical queries** - RAG is never used for medical content (`safety.py:26-51`)
+2. **Use case is wellness, not medical** - Fasting schedules and HIIT don't need PubMedBERT
+3. **Cost/benefit ratio is poor** - Infrastructure costs for features currently blocked
+
+**Would justify investment if:**
+- Expanding to bloodwork interpretation via AI
+- Integrating medical literature into coach responses
+- Building toward clinical trial integration
+- FDA/HIPAA compliance requirements
+
+### References
+
+- [NeuML/pubmedbert-base-embeddings](https://huggingface.co/NeuML/pubmedbert-base-embeddings)
+- [NeuML/pubmedbert-base-embeddings-8M](https://huggingface.co/NeuML/pubmedbert-base-embeddings-8M)
+- [MedCPT GitHub](https://github.com/ncbi/MedCPT)
+- [ncbi/MedCPT-Query-Encoder](https://huggingface.co/ncbi/MedCPT-Query-Encoder)
+- [RunPod Pricing](https://www.runpod.io/pricing)
+- [Lambda Labs Pricing](https://lambda.ai/pricing)
+- [HuggingFace Inference Providers](https://huggingface.co/docs/inference-providers/en/index)
+- [Embeddings for Medical Literature (NeuML)](https://medium.com/neuml/embeddings-for-medical-literature-74dae6abf5e0)
+
+---
+
 ## v3.0 Components
 
 ### Coach Constitution
@@ -870,6 +1023,7 @@ Tiered context loading with token budget enforcement:
 - [ ] Memory UI for user verification/editing
 - [ ] Meal suggestions based on eating window
 - [ ] Redis-based embedding cache for multi-worker deployments
+- [ ] Medical-grade embeddings (PubMedBERT) - see [research section](#medical-grade-rag-upgrade-research-jan-2026)
 
 ---
 

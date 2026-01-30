@@ -345,35 +345,92 @@ await SecureStore.setItemAsync('accessToken', token);
 
 Certificate pinning adds an additional layer of security by validating the server's SSL certificate against a known set of certificates. This prevents man-in-the-middle attacks even if a Certificate Authority is compromised.
 
-**Implementation Timeline:**
-- **MVP (Current):** Not required - relies on standard HTTPS certificate validation
-- **Phase 2 (Post-MVP):** To be implemented during production hardening phase before public App Store release
-- **Implementation Target:** 2-3 weeks into Phase 2 deployment cycle
+#### What is a Man-in-the-Middle (MITM) Attack?
 
-**Planned Approach:**
-```typescript
-// For Phase 2+ production builds with certificate pinning
-import { createHttpClient } from 'react-native-http-bridge';
+MITM is an external network attack where an attacker intercepts traffic between the app and server:
 
-const api = axios.create({
-  baseURL: API_URL,
-  httpAgent: createHttpClient({
-    certificates: ['path/to/api.ugoki.app.pem']
-  }),
-});
+```
+Normal:     App ──────────────────────► Server
+                    (encrypted HTTPS)
+
+MITM:       App ──► Attacker ──► Server
+                    (intercepts traffic)
 ```
 
-**Configuration:**
-- Generate certificate pin hashes during EAS build process
-- Store pins securely in app bundle
-- Implement pin update strategy for certificate renewal
-- Add pin validation to all API requests
-- Test on physical devices before release
+**Attack Scenarios:**
+| Scenario | Description | Likelihood |
+|----------|-------------|------------|
+| Public WiFi | Attacker controls the network (coffee shop, airport, hotel) | Medium |
+| Compromised router | Home/office router infected with malware | Low |
+| Compromised Certificate Authority | Rogue CA issues fake certificates (DigiNotar 2011, Symantec issues) | Very Low |
+| Corporate proxies | Company installs their own CA on employee devices | N/A (expected) |
 
-**Notes:**
+#### How Certificate Pinning Protects Users
+
+| Without Pinning | With Pinning |
+|-----------------|--------------|
+| App trusts ANY valid certificate signed by ANY of ~150+ trusted Certificate Authorities | App ONLY trusts the specific certificate/key for `api.ugoki.app` |
+| Attacker with rogue CA cert can intercept all traffic | Even with valid CA cert, attacker is rejected |
+
+#### Risk Assessment for UGOKI
+
+| Factor | Risk Level | Notes |
+|--------|------------|-------|
+| Health data (PHI) transmitted | **High value** | Weight, fasting times, bloodwork results |
+| Financial data | **None currently** | No payments in MVP |
+| Attack likelihood | **Low** | Most users aren't high-value targets |
+| User expectations | **Medium-High** | Fitness apps attract privacy-conscious users |
+| App Store requirement | **Not required** | But recommended for health apps |
+
+**Recommendation:** "Nice to have" for MVP launch, but **required before storing sensitive health data** like bloodwork lab values or adding payment processing.
+
+#### Implementation Timeline
+
+- **MVP (Current):** Not required - relies on standard HTTPS certificate validation
+- **Phase 2 (Post-MVP):** Implement during production hardening before public App Store release
+- **Implementation Target:** 2-3 weeks into Phase 2 deployment cycle
+
+**Prioritize implementation when:**
+- Bloodwork OCR processes actual lab values
+- Payment information is collected
+- Enterprise/corporate wellness features added (higher-value targets)
+
+#### Planned Approach
+
+```typescript
+// For Phase 2+ production builds with certificate pinning
+// Option 1: react-native-ssl-pinning
+import { fetch } from 'react-native-ssl-pinning';
+
+const response = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(data),
+  sslPinning: {
+    certs: ['api_ugoki_app'] // Certificate in app bundle
+  }
+});
+
+// Option 2: expo-secure-environment (if available)
+// Check Expo SDK updates for native pinning support
+```
+
+#### Configuration Checklist
+
+- [ ] Generate certificate pin hashes during EAS build process
+- [ ] Store pins securely in app bundle (not in JS bundle)
+- [ ] Implement pin update strategy for certificate renewal (backup pins)
+- [ ] Add pin validation to all API requests
+- [ ] Test on physical devices before release (simulators may bypass)
+- [ ] Implement graceful fallback for pin failures (show user message, not crash)
+- [ ] Plan for certificate rotation (include backup/next certificate pin)
+
+#### Notes
+
 - MVP relies on standard TLS verification through Expo SDK
 - Defer to Phase 2 to allow rapid MVP deployment without certificate management overhead
-- Required before public store submission for security-conscious users
+- Standard HTTPS is sufficient for initial launch - attackers would need to compromise a trusted CA OR control the user's network
+- Health data in transit is already encrypted via HTTPS; pinning adds defense-in-depth
 
 ---
 

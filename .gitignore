@@ -76,3 +76,13 @@ DOCUMENTATION_AUDIT_REPORT.md
 UGOKI_COMPLETE_AUDIT_2026-01-24.md
 UGOKI_Color_Palette_Proposal.docx
 USER_TEST_REPORT_2026-01-24.md
+
+# Xcode build artifacts
+DerivedData/
+**/DerivedData/
+
+# Large asset files (use cloud storage)
+exercises/
+
+# Tamagui auto-generated
+.tamagui/

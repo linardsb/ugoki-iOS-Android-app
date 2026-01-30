@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, Input } from '@/shared/components/tamagui
 import { useTheme } from '@tamagui/core';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink, UserPlus, Trash } from 'phosphor-react-native';
+import { X, Check, CaretDown, CaretUp, FileText, CaretRight, Warning, ShieldCheck, GenderMale, GenderFemale, Sparkle, Mountains, Anchor, SmileyWink, UserPlus, Trash, Wallet } from 'phosphor-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '@/shared/stores/auth';
 import { appStorage } from '@/shared/stores/storage';
@@ -21,6 +21,7 @@ import {
 import { HealthSyncCard } from '@/features/health';
 import { useChatStore, PERSONALITIES } from '@/features/coach';
 import { useNotificationPreferences, useUpdateNotificationPreferences } from '@/features/notifications';
+import { WalletConnect, TokenBalance, useIsWalletConnected } from '@/features/wallet';
 import type { UnitSystem, FastingProtocol, GoalType, Gender } from '@/features/profile';
 
 const GENDER_OPTIONS: { value: Gender; label: string; Icon: typeof GenderMale }[] = [
@@ -103,6 +104,10 @@ export default function SettingsScreen() {
   const [showProtocols, setShowProtocols] = useState(false);
   const [showNotificationDetails, setShowNotificationDetails] = useState(false);
   const [showHealthDisclaimer, setShowHealthDisclaimer] = useState(false);
+  const [showWallet, setShowWallet] = useState(false);
+
+  // Wallet state
+  const isWalletConnected = useIsWalletConnected();
 
   // Sync state when data loads
   useEffect(() => {
@@ -456,6 +461,62 @@ export default function SettingsScreen() {
                   <CaretRight size={18} color={mutedIconColor} weight="regular" />
                 </Button>
               </YStack>
+            </YStack>
+          </SettingsSection>
+
+          {/* Wallet & Blockchain Section */}
+          <SettingsSection title="Wallet & Rewards">
+            <YStack backgroundColor="$cardBackground" padding="$3" borderRadius="$3" borderWidth={1} borderColor="$cardBorder" gap="$3">
+              {/* Connection status indicator */}
+              <XStack justifyContent="space-between" alignItems="center">
+                <YStack flex={1}>
+                  <Text fontSize="$4" fontWeight="600" color="$color">
+                    Cardano Wallet
+                  </Text>
+                  <Text fontSize="$3" color="$colorMuted">
+                    {isWalletConnected ? 'Connected - earn $UGOKI tokens' : 'Connect to earn token rewards'}
+                  </Text>
+                </YStack>
+                <Button
+                  size="$3"
+                  height={36}
+                  backgroundColor={isWalletConnected ? '$primary' : '$backgroundHover'}
+                  borderRadius="$3"
+                  paddingHorizontal="$3"
+                  pressStyle={{ scale: 0.98 }}
+                  onPress={() => setShowWallet(!showWallet)}
+                >
+                  <Text
+                    fontSize="$3"
+                    color={isWalletConnected ? 'white' : '$color'}
+                    fontWeight="500"
+                  >
+                    {showWallet ? 'Hide' : isWalletConnected ? 'Manage' : 'Connect'}
+                  </Text>
+                </Button>
+              </XStack>
+
+              {/* Expanded wallet section */}
+              {showWallet && (
+                <YStack gap="$3" paddingTop="$2" borderTopWidth={1} borderTopColor="$borderColor">
+                  {/* Token balance (if connected) */}
+                  {isWalletConnected && (
+                    <TokenBalance
+                      showPendingRewards={true}
+                      onClaimPress={() => {
+                        Alert.alert(
+                          'Claim Rewards',
+                          'Token claiming will be available after $UGOKI token launch on testnet.',
+                          [{ text: 'OK' }]
+                        );
+                      }}
+                    />
+                  )}
+
+                  {/* Wallet connection */}
+                  <WalletConnect onConnected={() => {}} />
+                </YStack>
+              )}
             </YStack>
           </SettingsSection>
 

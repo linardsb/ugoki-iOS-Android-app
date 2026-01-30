@@ -12,6 +12,7 @@ import { useProfile } from '@/features/profile';
 import { RecentActivityCard } from '@/features/activity';
 import { ThemeToggle } from '@/shared/components/ui';
 import { appStorage } from '@/shared/stores/storage';
+import { useStreakMilestoneMonitor, useAchievementRewardMonitor } from '@/features/wallet';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -27,6 +28,12 @@ export default function HomeScreen() {
   const { data: weightTrend, refetch: refetchTrend } = useWeightTrend();
   const { data: workoutStats, refetch: refetchWorkoutStats } = useWorkoutStats();
   const { data: activeFast, refetch: refetchFast } = useActiveFast();
+
+  // Monitor streaks for milestone rewards (7-day, 30-day)
+  useStreakMilestoneMonitor(progression?.streaks);
+
+  // Monitor achievements for token rewards
+  useAchievementRewardMonitor(progression?.recent_achievements);
 
   // Check if we should show gender reminder
   useEffect(() => {

@@ -1,11 +1,12 @@
 import { YStack, XStack, Button, Text, AlertDialog, useTheme } from '@/shared/components/tamagui';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
 import { Play, Pause, Stop, Plus } from 'phosphor-react-native';
 import { useFastingStore } from '../stores/fastingStore';
 import { useStartFast } from '../hooks/useStartFast';
 import { useEndFast } from '../hooks/useEndFast';
 import { useExtendFast } from '../hooks/useExtendFast';
+import { useRewards } from '@/features/wallet';
 import type { FastingProtocol } from '../types';
 
 interface FastingControlsProps {
@@ -21,6 +22,11 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [showProtocolSelect, setShowProtocolSelect] = useState(false);
 
+  // Wallet rewards integration
+  const { grantFastingReward } = useRewards();
+  // Track if fast was abandoned (no reward) vs completed
+  const wasAbandonedRef = useRef(false);
+
   const startFast = useStartFast({
     onSuccess: (window) => {
       syncFromServer(window);
@@ -34,12 +40,22 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
   });
 
   const endFast = useEndFast({
-    onSuccess: () => {
+    onSuccess: (completedWindow) => {
+      // Grant $UGOKI reward if fast was completed (not abandoned)
+      if (!wasAbandonedRef.current && completedWindow.start_time && completedWindow.end_time) {
+        const reward = grantFastingReward(completedWindow.start_time, completedWindow.end_time);
+        if (reward > 0) {
+          console.log(`[FastingControls] Earned ${reward} $UGOKI for completing fast`);
+        }
+      }
+      wasAbandonedRef.current = false; // Reset for next fast
+
       reset();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       onFastEnded?.();
     },
     onError: (error) => {
+      wasAbandonedRef.current = false; // Reset on error too
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error('Failed to end fast:', error);
     },
@@ -69,6 +85,8 @@ export function FastingControls({ onFastStarted, onFastEnded }: FastingControlsP
   const handleEndFast = (abandoned: boolean = false) => {
     setShowEndConfirm(false);
     if (activeWindow) {
+      // Track if abandoned to skip reward in onSuccess
+      wasAbandonedRef.current = abandoned;
       endFast.mutate({ windowId: activeWindow.id, abandoned });
     }
   };

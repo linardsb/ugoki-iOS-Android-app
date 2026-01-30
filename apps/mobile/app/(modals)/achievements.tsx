@@ -18,6 +18,7 @@ import {
   Check,
 } from 'phosphor-react-native';
 import { useAchievements } from '@/features/dashboard';
+import { useAchievementRewardMonitor } from '@/features/wallet';
 import type { UserAchievement, AchievementType } from '@/features/dashboard';
 
 type FilterType = 'all' | AchievementType;
@@ -69,6 +70,9 @@ export default function AchievementsScreen() {
   const mutedColor = theme.colorMuted.val;
   const [filter, setFilter] = useState<FilterType>('all');
   const { data: achievements, isLoading } = useAchievements(false);
+
+  // Monitor achievements for token rewards
+  useAchievementRewardMonitor(achievements);
 
   const handleClose = () => {
     router.back();

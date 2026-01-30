@@ -65,7 +65,7 @@ async def get_leaderboard(leaderboard_type: str, limit: int = 100):
 4. If schema changes in referenced modules, update SOCIAL queries accordingly
 5. Document this dependency in module interface
 
-**Future Improvement:** Could be refactored using a GRAPH_SERVICE module for cross-module aggregations, but justified for MVP.
+**Future Improvement:** Could be refactored using a GRAPH_SERVICE module for cross-module aggregations, but justified for MVP. See [DEC-028](../product/DECISIONS.md#dec-028-social-module-cross-module-orm-access) for full analysis and alternative approaches (database views, interface expansion).
 
 ---
 
