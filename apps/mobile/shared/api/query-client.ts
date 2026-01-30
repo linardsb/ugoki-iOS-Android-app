@@ -115,5 +115,7 @@ export const queryKeys = {
     feed: () => [...queryKeys.social.all, 'feed'] as const,
     myActivity: () => [...queryKeys.social.all, 'my-activity'] as const,
     feedPreferences: () => [...queryKeys.social.all, 'feed-preferences'] as const,
+    // Challenge Templates
+    challengeTemplates: () => [...queryKeys.social.all, 'challenge-templates'] as const,
   },
 } as const;

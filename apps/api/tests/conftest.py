@@ -2,13 +2,30 @@ import os
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from unittest.mock import MagicMock
 
 from src.db.base import Base
 from src.db import get_db
 from src.main import app
+from src.core.rate_limit import limiter
 
 
 TEST_DB_PATH = "./test_ugoki.db"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def disable_rate_limiting():
+    """Disable rate limiting for all tests."""
+    # Store original state
+    original_enabled = limiter.enabled
+
+    # Disable rate limiting
+    limiter.enabled = False
+
+    yield
+
+    # Restore original state
+    limiter.enabled = original_enabled
 
 
 @pytest.fixture(scope="function")
@@ -43,7 +60,12 @@ async def client(db_session: AsyncSession):
     """Create a test client with database override."""
 
     async def override_get_db():
-        yield db_session
+        try:
+            yield db_session
+            await db_session.commit()
+        except Exception:
+            await db_session.rollback()
+            raise
 
     app.dependency_overrides[get_db] = override_get_db
 

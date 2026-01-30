@@ -26,6 +26,8 @@ from src.modules.social.models import (
     FeedItem,
     FeedPreferences,
     ChallengeTemplate,
+    ChallengeTeam,
+    ChallengeTeamLeaderboard,
     SendFriendRequestRequest,
     RespondFriendRequestRequest,
     CreateChallengeRequest,
@@ -34,6 +36,11 @@ from src.modules.social.models import (
     RespondDuoStreakInviteRequest,
     UpdateFeedPreferencesRequest,
     CreateChallengeFromTemplateRequest,
+    CelebrateAchievementResponse,
+    AchievementCelebrationList,
+    CreateTeamRequest,
+    JoinTeamRequest,
+    JoinTeamResponse,
 )
 from src.modules.social.service import SocialService
 from src.modules.profile.service import ProfileService
@@ -338,8 +345,13 @@ async def create_challenge(
     - total_xp: Most XP earned
     - consistency: Most days logged in
 
-    The creator automatically joins the challenge.
+    The creator automatically joins the challenge (unless it's a team challenge).
     A unique join code is generated for inviting others.
+
+    For team challenges:
+    - Set is_team_challenge=true
+    - Set team_size_min (default: 3) and team_size_max (default: 10)
+    - Creator must create/join a team to participate
     """
     try:
         return await service.create_challenge(
@@ -353,6 +365,9 @@ async def create_challenge(
             goal_unit=request.goal_unit,
             is_public=request.is_public,
             max_participants=request.max_participants,
+            is_team_challenge=request.is_team_challenge,
+            team_size_min=request.team_size_min,
+            team_size_max=request.team_size_max,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -386,6 +401,120 @@ async def get_my_challenges(
     """Get challenges the user is participating in."""
     return await service.get_my_challenges(identity_id, active_only)
 
+
+# =========================================================================
+# Challenge Templates (MUST be before /challenges/{challenge_id})
+# =========================================================================
+
+@router.get("/challenges/templates", response_model=list[ChallengeTemplate])
+async def get_challenge_templates(
+    active_only: bool = Query(True, description="Only return active templates"),
+    service: SocialService = Depends(get_social_service),
+) -> list[ChallengeTemplate]:
+    """
+    Get available challenge templates.
+
+    Returns pre-built challenge templates that can be used to quickly
+    create challenges with predefined settings. Templates include:
+    - 7-Day Fast Challenge
+    - Workout Week
+    - XP Sprint
+    - 30-Day Consistency
+    - And more...
+
+    Templates are sorted by display order.
+    """
+    return await service.get_challenge_templates(active_only)
+
+
+@router.post("/challenges/from-template", response_model=Challenge, status_code=status.HTTP_201_CREATED)
+async def create_challenge_from_template(
+    request: CreateChallengeFromTemplateRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> Challenge:
+    """
+    Create a challenge from a template.
+
+    This provides a one-tap way to create challenges with predefined settings.
+
+    Args:
+        template_id: The ID of the template to use
+        invite_friend_ids: Optional list of friend IDs to auto-invite
+        custom_name: Optional custom name (defaults to template name)
+        start_date: Optional start date (defaults to tomorrow)
+
+    The creator automatically joins the challenge.
+    Friends in invite_friend_ids will receive challenge invitations.
+    """
+    try:
+        return await service.create_challenge_from_template(
+            identity_id=identity_id,
+            template_id=request.template_id,
+            invite_friend_ids=request.invite_friend_ids,
+            custom_name=request.custom_name,
+            start_date=request.start_date,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# =========================================================================
+# Team Routes (static /challenges/teams/... MUST be before /challenges/{challenge_id})
+# =========================================================================
+
+@router.get("/challenges/teams/{team_id}", response_model=ChallengeTeam)
+async def get_challenge_team(
+    team_id: str,
+    include_members: bool = Query(False, description="Include team members in response"),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> ChallengeTeam:
+    """Get details of a specific team."""
+    team = await service.get_challenge_team(identity_id, team_id, include_members)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return team
+
+
+@router.post("/challenges/teams/join", response_model=JoinTeamResponse, status_code=status.HTTP_201_CREATED)
+async def join_team(
+    request: JoinTeamRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> JoinTeamResponse:
+    """
+    Join a team using its join code.
+
+    This also joins the user to the parent challenge if not already participating.
+    """
+    try:
+        return await service.join_team(identity_id, request.join_code)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/challenges/teams/{team_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
+async def leave_team(
+    team_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> None:
+    """
+    Leave a team.
+
+    For team challenges, leaving the team also leaves the challenge.
+    Team creators cannot leave while other members remain.
+    """
+    try:
+        await service.leave_team(identity_id, team_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# =========================================================================
+# Challenge by ID routes (dynamic {challenge_id} MUST come after static routes)
+# =========================================================================
 
 @router.get("/challenges/{challenge_id}", response_model=Challenge)
 async def get_challenge(
@@ -461,6 +590,54 @@ async def update_challenge_progress(
     (workouts, fasts, etc.).
     """
     await service.update_challenge_progress(identity_id)
+
+
+# =========================================================================
+# Team Challenges (Sprint 3)
+# =========================================================================
+
+@router.post("/challenges/{challenge_id}/teams", response_model=ChallengeTeam, status_code=status.HTTP_201_CREATED)
+async def create_challenge_team(
+    challenge_id: str,
+    request: CreateTeamRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> ChallengeTeam:
+    """
+    Create a team within a team challenge.
+
+    Only available for challenges where is_team_challenge=true.
+    The creator automatically joins their team.
+    A unique join code is generated for others to join the team.
+    """
+    try:
+        return await service.create_challenge_team(
+            identity_id,
+            challenge_id,
+            name=request.name,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/challenges/{challenge_id}/teams", response_model=list[ChallengeTeam])
+async def list_challenge_teams(
+    challenge_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[ChallengeTeam]:
+    """List all teams in a challenge, sorted by progress."""
+    return await service.list_challenge_teams(identity_id, challenge_id)
+
+
+@router.get("/challenges/{challenge_id}/teams/leaderboard", response_model=ChallengeTeamLeaderboard)
+async def get_team_leaderboard(
+    challenge_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> ChallengeTeamLeaderboard:
+    """Get the team leaderboard for a challenge."""
+    return await service.get_team_leaderboard(identity_id, challenge_id)
 
 
 # =========================================================================
@@ -732,57 +909,47 @@ async def update_feed_preferences(
 
 
 # =========================================================================
-# Challenge Templates
+# Achievement Celebrations (Sprint 2)
 # =========================================================================
 
-@router.get("/challenges/templates", response_model=list[ChallengeTemplate])
-async def get_challenge_templates(
-    active_only: bool = Query(True, description="Only return active templates"),
-    service: SocialService = Depends(get_social_service),
-) -> list[ChallengeTemplate]:
-    """
-    Get available challenge templates.
-
-    Returns pre-built challenge templates that can be used to quickly
-    create challenges with predefined settings. Templates include:
-    - 7-Day Fast Challenge
-    - Workout Week
-    - XP Sprint
-    - 30-Day Consistency
-    - And more...
-
-    Templates are sorted by display order.
-    """
-    return await service.get_challenge_templates(active_only)
-
-
-@router.post("/challenges/from-template", response_model=Challenge, status_code=status.HTTP_201_CREATED)
-async def create_challenge_from_template(
-    request: CreateChallengeFromTemplateRequest,
+@router.post("/achievements/{user_achievement_id}/celebrate", response_model=CelebrateAchievementResponse, status_code=status.HTTP_201_CREATED)
+async def celebrate_achievement(
+    user_achievement_id: str,
     identity_id: str = Depends(get_current_identity),
     service: SocialService = Depends(get_social_service),
-) -> Challenge:
+) -> CelebrateAchievementResponse:
     """
-    Create a challenge from a template.
+    Celebrate a friend's achievement.
 
-    This provides a one-tap way to create challenges with predefined settings.
+    This is a one-time action per achievement. Both the celebrator and the
+    achievement owner receive 5 XP as a reward for social engagement.
 
-    Args:
-        template_id: The ID of the template to use
-        invite_friend_ids: Optional list of friend IDs to auto-invite
-        custom_name: Optional custom name (defaults to template name)
-        start_date: Optional start date (defaults to tomorrow)
+    Requirements:
+    - Must be friends with the achievement owner
+    - Cannot celebrate your own achievements
+    - Can only celebrate once per achievement
 
-    The creator automatically joins the challenge.
-    Friends in invite_friend_ids will receive challenge invitations.
+    The achievement owner will receive a push notification.
     """
     try:
-        return await service.create_challenge_from_template(
-            identity_id=identity_id,
-            template_id=request.template_id,
-            invite_friend_ids=request.invite_friend_ids,
-            custom_name=request.custom_name,
-            start_date=request.start_date,
-        )
+        return await service.celebrate_achievement(identity_id, user_achievement_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/achievements/{user_achievement_id}/celebrations", response_model=AchievementCelebrationList)
+async def get_achievement_celebrations(
+    user_achievement_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> AchievementCelebrationList:
+    """
+    Get all celebrations for an achievement.
+
+    Returns a list of users who have celebrated this achievement,
+    ordered by most recent first.
+    """
+    try:
+        return await service.get_achievement_celebrations(user_achievement_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

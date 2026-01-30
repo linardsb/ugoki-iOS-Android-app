@@ -16,14 +16,15 @@ import {
 import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Plus, MagnifyingGlass, Ticket } from 'phosphor-react-native';
+import { Plus, MagnifyingGlass, Ticket, Lightning, CaretRight } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
   useChallenges,
   useMyChallenges,
   useJoinChallengeByCode,
+  useChallengeTemplates,
 } from '@/features/social/hooks';
-import { ChallengeCard } from '@/features/social/components';
+import { ChallengeCard, ChallengeTemplateCard } from '@/features/social/components';
 
 type Tab = 'browse' | 'mine';
 
@@ -57,6 +58,10 @@ export default function ChallengesScreen() {
   } = useMyChallenges(true);
 
   const joinByCode = useJoinChallengeByCode();
+
+  // Fetch templates for Quick Start section (limit to 2 for preview)
+  const { data: templates } = useChallengeTemplates();
+  const previewTemplates = templates?.slice(0, 2);
 
   const isLoading = activeTab === 'browse' ? loadingAll : loadingMine;
   const isRefetching = activeTab === 'browse' ? refetchingAll : refetchingMine;
@@ -169,6 +174,48 @@ export default function ChallengesScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
       >
+        {/* Quick Start Templates Section */}
+        {activeTab === 'browse' && previewTemplates && previewTemplates.length > 0 && (
+          <YStack paddingHorizontal="$4" paddingTop="$2" paddingBottom="$4">
+            <TouchableOpacity
+              onPress={() => router.push('/(modals)/challenges/templates')}
+              activeOpacity={0.7}
+            >
+              <XStack
+                backgroundColor={cardBackground}
+                borderRadius="$lg"
+                borderWidth={1}
+                borderColor={cardBorder}
+                padding="$4"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <XStack alignItems="center" gap="$3">
+                  <XStack
+                    width={44}
+                    height={44}
+                    borderRadius="$full"
+                    backgroundColor={primaryColor + '20'}
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Lightning size={24} color={primaryColor} weight="fill" />
+                  </XStack>
+                  <YStack>
+                    <Text fontSize={16} fontWeight="700" color="$color">
+                      Quick Start
+                    </Text>
+                    <Text fontSize={13} style={{ color: mutedColor }}>
+                      {templates?.length || 0} challenge templates
+                    </Text>
+                  </YStack>
+                </XStack>
+                <CaretRight size={20} color={mutedColor} weight="bold" />
+              </XStack>
+            </TouchableOpacity>
+          </YStack>
+        )}
+
         <YStack paddingHorizontal="$4" gap="$3">
           {isLoading ? (
             <Text fontSize={14} style={{ color: mutedColor }} textAlign="center" paddingVertical="$4">

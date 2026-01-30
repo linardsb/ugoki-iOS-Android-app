@@ -73,3 +73,28 @@ export {
   useUncheerFeedItem,
   useToggleCheer,
 } from './useFeed';
+
+// Challenge Templates
+export {
+  useChallengeTemplates,
+  useCreateChallengeFromTemplate,
+} from './useChallengeTemplates';
+
+// Achievement Celebrations (Sprint 2)
+export {
+  useAchievementCelebrations,
+  useCelebrateAchievement,
+  useHasCelebrated,
+  celebrationKeys,
+} from './useCelebrations';
+
+// Team Challenges (Sprint 3)
+export {
+  useChallengeTeams,
+  useTeamLeaderboard,
+  useChallengeTeam,
+  useCreateTeam,
+  useJoinTeam,
+  useLeaveTeam,
+  teamKeys,
+} from './useTeamChallenges';

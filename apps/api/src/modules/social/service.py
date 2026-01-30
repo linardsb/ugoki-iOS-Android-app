@@ -31,12 +31,19 @@ from src.modules.social.models import (
     FeedItem,
     FeedPreferences,
     ChallengeTemplate,
+    AchievementCelebration,
+    CelebrateAchievementResponse,
+    AchievementCelebrationList,
+    ChallengeTeam,
+    ChallengeTeamLeaderboard,
+    JoinTeamResponse,
 )
 from src.modules.social.orm import (
     FriendshipORM,
     FollowORM,
     ChallengeORM,
     ChallengeParticipantORM,
+    ChallengeTeamORM,
     DuoStreakORM,
     DuoStreakDailyORM,
     DuoStreakInviteORM,
@@ -45,6 +52,7 @@ from src.modules.social.orm import (
     FeedCheerORM,
     FeedPreferencesORM,
     ChallengeTemplateORM,
+    AchievementCelebrationORM,
 )
 
 if TYPE_CHECKING:
@@ -563,6 +571,19 @@ class SocialService(SocialInterface):
     # Leaderboards
     # =========================================================================
 
+    def _get_period_start(self, period: LeaderboardPeriod) -> datetime | None:
+        """Calculate the start datetime for a leaderboard period."""
+        now = datetime.now(UTC)
+        if period == LeaderboardPeriod.WEEK:
+            # Start of the current week (Monday 00:00 UTC)
+            days_since_monday = now.weekday()
+            week_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            return week_start - timedelta(days=days_since_monday)
+        elif period == LeaderboardPeriod.MONTH:
+            # Start of the current month
+            return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return None  # ALL_TIME - no filtering
+
     async def get_leaderboard(
         self,
         identity_id: str,
@@ -570,72 +591,119 @@ class SocialService(SocialInterface):
         period: LeaderboardPeriod = LeaderboardPeriod.WEEK,
         limit: int = 100,
     ) -> Leaderboard:
-        """Get a leaderboard."""
-        from src.modules.progression.orm import UserLevelORM, StreakORM
+        """Get a leaderboard with proper period filtering."""
+        from src.modules.progression.orm import UserLevelORM, StreakORM, XPTransactionORM
         from src.modules.profile.orm import SocialProfileORM
 
         entries = []
         my_rank = None
         my_value = None
+        period_start = self._get_period_start(period)
 
         if leaderboard_type in (LeaderboardType.GLOBAL_XP, LeaderboardType.FRIENDS_XP):
-            # XP leaderboard
-            query = select(UserLevelORM).order_by(desc(UserLevelORM.total_xp_earned))
-
+            # Determine which user IDs to include
             if leaderboard_type == LeaderboardType.FRIENDS_XP:
-                # Only friends
-                friend_ids = await self._get_friend_ids(identity_id)
-                friend_ids.append(identity_id)  # Include self
-                query = query.where(UserLevelORM.identity_id.in_(friend_ids))
+                eligible_ids = await self._get_friend_ids(identity_id)
+                eligible_ids.append(identity_id)  # Include self
             else:
                 # Global - only public profiles
-                public_ids = await self._get_public_profile_ids()
-                public_ids.append(identity_id)  # Always include self
-                query = query.where(UserLevelORM.identity_id.in_(public_ids))
+                eligible_ids = await self._get_public_profile_ids()
+                eligible_ids.append(identity_id)  # Always include self
 
-            query = query.limit(limit)
-            result = await self._db.execute(query)
+            if period == LeaderboardPeriod.ALL_TIME:
+                # For ALL_TIME, use the total_xp_earned from UserLevelORM (efficient)
+                query = (
+                    select(UserLevelORM)
+                    .where(UserLevelORM.identity_id.in_(eligible_ids))
+                    .order_by(desc(UserLevelORM.total_xp_earned))
+                    .limit(limit)
+                )
+                result = await self._db.execute(query)
 
-            rank = 0
-            for orm in result.scalars():
-                rank += 1
-                profile = await self._get_user_profile_data(orm.identity_id)
-                is_current = orm.identity_id == identity_id
+                rank = 0
+                for orm in result.scalars():
+                    rank += 1
+                    profile = await self._get_user_profile_data(orm.identity_id)
+                    is_current = orm.identity_id == identity_id
 
-                entries.append(LeaderboardEntry(
-                    rank=rank,
-                    identity_id=orm.identity_id,
-                    username=profile.get("username"),
-                    display_name=profile.get("display_name"),
-                    avatar_url=profile.get("avatar_url"),
-                    value=float(orm.total_xp_earned),
-                    is_current_user=is_current,
-                ))
+                    entries.append(LeaderboardEntry(
+                        rank=rank,
+                        identity_id=orm.identity_id,
+                        username=profile.get("username"),
+                        display_name=profile.get("display_name"),
+                        avatar_url=profile.get("avatar_url"),
+                        value=float(orm.total_xp_earned),
+                        is_current_user=is_current,
+                    ))
 
-                if is_current:
-                    my_rank = rank
-                    my_value = float(orm.total_xp_earned)
+                    if is_current:
+                        my_rank = rank
+                        my_value = float(orm.total_xp_earned)
+            else:
+                # For WEEK/MONTH, aggregate from XPTransactionORM
+                query = (
+                    select(
+                        XPTransactionORM.identity_id,
+                        func.sum(XPTransactionORM.amount).label("period_xp")
+                    )
+                    .where(
+                        XPTransactionORM.identity_id.in_(eligible_ids),
+                        XPTransactionORM.created_at >= period_start,
+                    )
+                    .group_by(XPTransactionORM.identity_id)
+                    .order_by(desc(func.sum(XPTransactionORM.amount)))
+                    .limit(limit)
+                )
+                result = await self._db.execute(query)
+
+                rank = 0
+                for row in result:
+                    rank += 1
+                    user_id = row.identity_id
+                    xp_value = float(row.period_xp or 0)
+                    profile = await self._get_user_profile_data(user_id)
+                    is_current = user_id == identity_id
+
+                    entries.append(LeaderboardEntry(
+                        rank=rank,
+                        identity_id=user_id,
+                        username=profile.get("username"),
+                        display_name=profile.get("display_name"),
+                        avatar_url=profile.get("avatar_url"),
+                        value=xp_value,
+                        is_current_user=is_current,
+                    ))
+
+                    if is_current:
+                        my_rank = rank
+                        my_value = xp_value
+
+                # If current user not in results, add them with 0 XP
+                if my_rank is None:
+                    my_value = 0.0
 
         elif leaderboard_type in (LeaderboardType.GLOBAL_STREAKS, LeaderboardType.FRIENDS_STREAKS):
             # Streak leaderboard (fasting streaks)
+            # Note: Streaks are current values, period filtering doesn't apply the same way
+            # For now, we show current streak counts regardless of period
             from src.modules.progression.models import StreakType
+
+            if leaderboard_type == LeaderboardType.FRIENDS_STREAKS:
+                eligible_ids = await self._get_friend_ids(identity_id)
+                eligible_ids.append(identity_id)
+            else:
+                eligible_ids = await self._get_public_profile_ids()
+                eligible_ids.append(identity_id)
 
             query = (
                 select(StreakORM)
-                .where(StreakORM.streak_type == StreakType.FASTING)
+                .where(
+                    StreakORM.streak_type == StreakType.FASTING,
+                    StreakORM.identity_id.in_(eligible_ids),
+                )
                 .order_by(desc(StreakORM.current_count))
+                .limit(limit)
             )
-
-            if leaderboard_type == LeaderboardType.FRIENDS_STREAKS:
-                friend_ids = await self._get_friend_ids(identity_id)
-                friend_ids.append(identity_id)
-                query = query.where(StreakORM.identity_id.in_(friend_ids))
-            else:
-                public_ids = await self._get_public_profile_ids()
-                public_ids.append(identity_id)
-                query = query.where(StreakORM.identity_id.in_(public_ids))
-
-            query = query.limit(limit)
             result = await self._db.execute(query)
 
             rank = 0
@@ -684,6 +752,9 @@ class SocialService(SocialInterface):
         goal_unit: str | None = None,
         is_public: bool = False,
         max_participants: int = 50,
+        is_team_challenge: bool = False,
+        team_size_min: int | None = None,
+        team_size_max: int | None = None,
     ) -> Challenge:
         """Create a new challenge."""
         if end_date <= start_date:
@@ -691,6 +762,19 @@ class SocialService(SocialInterface):
 
         if end_date < date.today():
             raise ValueError("Challenge cannot end in the past")
+
+        # Validate team challenge parameters
+        if is_team_challenge:
+            if team_size_min is None:
+                team_size_min = 3
+            if team_size_max is None:
+                team_size_max = 10
+            if team_size_min < 2 or team_size_max < 2:
+                raise ValueError("Team size must be at least 2")
+            if team_size_min > team_size_max:
+                raise ValueError("Minimum team size cannot exceed maximum")
+            if team_size_max > 10:
+                raise ValueError("Maximum team size is 10")
 
         join_code = secrets.token_hex(4).upper()
 
@@ -707,18 +791,23 @@ class SocialService(SocialInterface):
             join_code=join_code,
             is_public=is_public,
             max_participants=max_participants,
+            is_team_challenge=is_team_challenge,
+            team_size_min=team_size_min if is_team_challenge else None,
+            team_size_max=team_size_max if is_team_challenge else None,
         )
         self._db.add(challenge_orm)
         await self._db.flush()
 
-        # Creator automatically joins
-        await self.join_challenge(identity_id, challenge_orm.id)
+        # Creator automatically joins (for non-team challenges)
+        # For team challenges, creator joins when they create/join a team
+        if not is_team_challenge:
+            await self.join_challenge(identity_id, challenge_orm.id)
 
         await self._record_social_event(
             identity_id=identity_id,
             event_type="challenge_created",
             related_id=challenge_orm.id,
-            metadata={"name": name, "type": challenge_type.value},
+            metadata={"name": name, "type": challenge_type.value, "is_team": is_team_challenge},
         )
 
         return await self._challenge_to_model(challenge_orm, identity_id)
@@ -791,6 +880,7 @@ class SocialService(SocialInterface):
         self,
         identity_id: str,
         challenge_id: str,
+        team_id: str | None = None,
     ) -> ChallengeParticipant:
         """Join a challenge."""
         result = await self._db.execute(
@@ -800,6 +890,10 @@ class SocialService(SocialInterface):
 
         if not challenge:
             raise ValueError("Challenge not found")
+
+        # Team challenges require a team
+        if challenge.is_team_challenge and not team_id:
+            raise ValueError("Team challenges require joining through a team")
 
         # Check if already participating
         existing = await self._db.execute(
@@ -822,6 +916,25 @@ class SocialService(SocialInterface):
         if current_count >= challenge.max_participants:
             raise ValueError("Challenge is full")
 
+        # Validate team if provided
+        team_name = None
+        if team_id:
+            team_result = await self._db.execute(
+                select(ChallengeTeamORM).where(
+                    ChallengeTeamORM.id == team_id,
+                    ChallengeTeamORM.challenge_id == challenge_id,
+                )
+            )
+            team = team_result.scalar_one_or_none()
+            if not team:
+                raise ValueError("Team not found in this challenge")
+
+            # Check team size limit
+            if challenge.team_size_max and team.member_count >= challenge.team_size_max:
+                raise ValueError("Team is full")
+
+            team_name = team.name
+
         participant_orm = ChallengeParticipantORM(
             id=str(uuid4()),
             challenge_id=challenge_id,
@@ -830,15 +943,29 @@ class SocialService(SocialInterface):
             current_progress=0,
             completed=False,
             rank=current_count + 1,
+            team_id=team_id,
         )
         self._db.add(participant_orm)
+
+        # Update team member count if joining a team
+        if team_id:
+            await self._db.execute(
+                select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+            )
+            team_result = await self._db.execute(
+                select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+            )
+            team = team_result.scalar_one_or_none()
+            if team:
+                team.member_count += 1
+
         await self._db.flush()
 
         await self._record_social_event(
             identity_id=identity_id,
             event_type="challenge_joined",
             related_id=challenge_id,
-            metadata={"name": challenge.name},
+            metadata={"name": challenge.name, "team_id": team_id, "team_name": team_name},
         )
 
         profile = await self._get_user_profile_data(identity_id)
@@ -852,6 +979,8 @@ class SocialService(SocialInterface):
             completed=False,
             rank=participant_orm.rank,
             joined_at=participant_orm.joined_at,
+            team_id=team_id,
+            team_name=team_name,
         )
 
     async def join_challenge_by_code(
@@ -1019,6 +1148,326 @@ class SocialService(SocialInterface):
 
         # Update ranks for all challenges user is in
         await self._update_challenge_ranks(identity_id)
+
+    # =========================================================================
+    # Team Challenges (Sprint 3)
+    # =========================================================================
+
+    async def create_challenge_team(
+        self,
+        identity_id: str,
+        challenge_id: str,
+        name: str,
+    ) -> ChallengeTeam:
+        """Create a team within a team challenge."""
+        # Get challenge
+        result = await self._db.execute(
+            select(ChallengeORM).where(ChallengeORM.id == challenge_id)
+        )
+        challenge = result.scalar_one_or_none()
+
+        if not challenge:
+            raise ValueError("Challenge not found")
+
+        if not challenge.is_team_challenge:
+            raise ValueError("This challenge does not support teams")
+
+        # Check if team name already exists in this challenge
+        existing = await self._db.execute(
+            select(ChallengeTeamORM).where(
+                ChallengeTeamORM.challenge_id == challenge_id,
+                func.lower(ChallengeTeamORM.name) == name.lower(),
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise ValueError("A team with this name already exists in this challenge")
+
+        # Check if user is already in a team for this challenge
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == challenge_id,
+                ChallengeParticipantORM.identity_id == identity_id,
+            )
+        )
+        existing_participant = participant_result.scalar_one_or_none()
+        if existing_participant and existing_participant.team_id:
+            raise ValueError("You are already on a team in this challenge")
+
+        join_code = secrets.token_hex(4).upper()
+
+        team_orm = ChallengeTeamORM(
+            id=str(uuid4()),
+            challenge_id=challenge_id,
+            name=name,
+            created_by=identity_id,
+            join_code=join_code,
+            total_progress=0,
+            member_count=0,
+            created_at=datetime.now(UTC),
+        )
+        self._db.add(team_orm)
+        await self._db.flush()
+
+        # Creator joins their team
+        await self.join_challenge(identity_id, challenge_id, team_id=team_orm.id)
+
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="team_created",
+            related_id=team_orm.id,
+            metadata={"name": name, "challenge_id": challenge_id},
+        )
+
+        profile = await self._get_user_profile_data(identity_id)
+        return ChallengeTeam(
+            id=team_orm.id,
+            challenge_id=challenge_id,
+            name=name,
+            created_by=identity_id,
+            creator_username=profile.get("username"),
+            creator_display_name=profile.get("display_name"),
+            join_code=join_code,
+            total_progress=0,
+            member_count=1,
+            created_at=team_orm.created_at,
+        )
+
+    async def get_challenge_team(
+        self,
+        identity_id: str,
+        team_id: str,
+        include_members: bool = False,
+    ) -> ChallengeTeam | None:
+        """Get a team by ID."""
+        result = await self._db.execute(
+            select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+        )
+        team_orm = result.scalar_one_or_none()
+
+        if not team_orm:
+            return None
+
+        return await self._team_to_model(team_orm, include_members=include_members)
+
+    async def list_challenge_teams(
+        self,
+        identity_id: str,
+        challenge_id: str,
+    ) -> list[ChallengeTeam]:
+        """List all teams in a challenge."""
+        result = await self._db.execute(
+            select(ChallengeTeamORM)
+            .where(ChallengeTeamORM.challenge_id == challenge_id)
+            .order_by(desc(ChallengeTeamORM.total_progress))
+        )
+
+        teams = []
+        rank = 0
+        for team_orm in result.scalars():
+            rank += 1
+            team = await self._team_to_model(team_orm)
+            team.rank = rank
+            teams.append(team)
+
+        return teams
+
+    async def get_team_leaderboard(
+        self,
+        identity_id: str,
+        challenge_id: str,
+    ) -> ChallengeTeamLeaderboard:
+        """Get the team leaderboard for a challenge."""
+        teams = await self.list_challenge_teams(identity_id, challenge_id)
+
+        return ChallengeTeamLeaderboard(
+            challenge_id=challenge_id,
+            teams=teams,
+            total_teams=len(teams),
+        )
+
+    async def join_team(
+        self,
+        identity_id: str,
+        join_code: str,
+    ) -> JoinTeamResponse:
+        """Join a team using its join code."""
+        # Find team by join code
+        result = await self._db.execute(
+            select(ChallengeTeamORM).where(
+                func.upper(ChallengeTeamORM.join_code) == join_code.upper()
+            )
+        )
+        team = result.scalar_one_or_none()
+
+        if not team:
+            raise ValueError("Invalid team join code")
+
+        # Get challenge
+        challenge_result = await self._db.execute(
+            select(ChallengeORM).where(ChallengeORM.id == team.challenge_id)
+        )
+        challenge = challenge_result.scalar_one_or_none()
+
+        if not challenge:
+            raise ValueError("Challenge not found")
+
+        # Check if user is already in a team for this challenge
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == challenge.id,
+                ChallengeParticipantORM.identity_id == identity_id,
+            )
+        )
+        existing_participant = participant_result.scalar_one_or_none()
+
+        if existing_participant:
+            if existing_participant.team_id:
+                raise ValueError("You are already on a team in this challenge")
+            # Update existing participant to join this team
+            existing_participant.team_id = team.id
+            team.member_count += 1
+            await self._db.flush()
+        else:
+            # Join challenge with this team
+            await self.join_challenge(identity_id, challenge.id, team_id=team.id)
+
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="team_joined",
+            related_id=team.id,
+            metadata={"name": team.name, "challenge_id": challenge.id},
+        )
+
+        team_model = await self._team_to_model(team)
+        challenge_model = await self._challenge_to_model(challenge, identity_id)
+
+        return JoinTeamResponse(
+            team=team_model,
+            challenge=challenge_model,
+            message=f"Successfully joined team {team.name}!",
+        )
+
+    async def leave_team(
+        self,
+        identity_id: str,
+        team_id: str,
+    ) -> bool:
+        """Leave a team (but stay in challenge if non-team challenge)."""
+        # Get team
+        result = await self._db.execute(
+            select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+        )
+        team = result.scalar_one_or_none()
+
+        if not team:
+            raise ValueError("Team not found")
+
+        # Check if user is the team creator
+        if team.created_by == identity_id:
+            # Check if there are other members
+            member_count_result = await self._db.execute(
+                select(func.count(ChallengeParticipantORM.id)).where(
+                    ChallengeParticipantORM.team_id == team_id
+                )
+            )
+            member_count = member_count_result.scalar() or 0
+            if member_count > 1:
+                raise ValueError("Team creator cannot leave while other members remain")
+            # Delete the team if creator is the only member
+            await self._db.delete(team)
+
+        # Get participant and update
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == team.challenge_id,
+                ChallengeParticipantORM.identity_id == identity_id,
+                ChallengeParticipantORM.team_id == team_id,
+            )
+        )
+        participant = participant_result.scalar_one_or_none()
+
+        if not participant:
+            raise ValueError("Not a member of this team")
+
+        # For team challenges, leaving the team means leaving the challenge
+        await self._db.delete(participant)
+
+        # Update team member count
+        team.member_count = max(0, team.member_count - 1)
+        team.updated_at = datetime.now(UTC)
+
+        await self._db.flush()
+
+        return True
+
+    async def update_team_progress(
+        self,
+        challenge_id: str,
+    ) -> None:
+        """Update all team totals for a challenge."""
+        # Get all teams for this challenge
+        teams_result = await self._db.execute(
+            select(ChallengeTeamORM).where(ChallengeTeamORM.challenge_id == challenge_id)
+        )
+
+        for team in teams_result.scalars():
+            # Sum up all team members' progress
+            progress_result = await self._db.execute(
+                select(func.coalesce(func.sum(ChallengeParticipantORM.current_progress), 0.0))
+                .where(ChallengeParticipantORM.team_id == team.id)
+            )
+            total_progress = progress_result.scalar() or 0.0
+            team.total_progress = total_progress
+            team.updated_at = datetime.now(UTC)
+
+        await self._db.flush()
+
+    async def _team_to_model(
+        self,
+        team_orm: ChallengeTeamORM,
+        include_members: bool = False,
+    ) -> ChallengeTeam:
+        """Convert team ORM to Pydantic model."""
+        profile = await self._get_user_profile_data(team_orm.created_by)
+
+        members = None
+        if include_members:
+            members_result = await self._db.execute(
+                select(ChallengeParticipantORM)
+                .where(ChallengeParticipantORM.team_id == team_orm.id)
+                .order_by(desc(ChallengeParticipantORM.current_progress))
+            )
+            members = []
+            for member_orm in members_result.scalars():
+                member_profile = await self._get_user_profile_data(member_orm.identity_id)
+                members.append(ChallengeParticipant(
+                    id=member_orm.id,
+                    identity_id=member_orm.identity_id,
+                    username=member_profile.get("username"),
+                    display_name=member_profile.get("display_name"),
+                    avatar_url=member_profile.get("avatar_url"),
+                    current_progress=member_orm.current_progress,
+                    completed=member_orm.completed,
+                    completed_at=member_orm.completed_at,
+                    rank=member_orm.rank,
+                    joined_at=member_orm.joined_at,
+                    team_id=team_orm.id,
+                    team_name=team_orm.name,
+                ))
+
+        return ChallengeTeam(
+            id=team_orm.id,
+            challenge_id=team_orm.challenge_id,
+            name=team_orm.name,
+            created_by=team_orm.created_by,
+            creator_username=profile.get("username"),
+            creator_display_name=profile.get("display_name"),
+            join_code=team_orm.join_code,
+            total_progress=team_orm.total_progress,
+            member_count=team_orm.member_count,
+            created_at=team_orm.created_at,
+            members=members,
+        )
 
     # =========================================================================
     # Sharing
@@ -2233,6 +2682,30 @@ class SocialService(SocialInterface):
         if status == ChallengeStatus.ACTIVE:
             days_remaining = (orm.end_date - today).days
 
+        # Get team info if team challenge
+        team_count = None
+        my_team_id = None
+        my_team_name = None
+
+        if orm.is_team_challenge:
+            # Get team count
+            team_count_result = await self._db.execute(
+                select(func.count(ChallengeTeamORM.id)).where(
+                    ChallengeTeamORM.challenge_id == orm.id
+                )
+            )
+            team_count = team_count_result.scalar() or 0
+
+            # Get viewer's team if participating
+            if participant and participant.team_id:
+                team_result = await self._db.execute(
+                    select(ChallengeTeamORM).where(ChallengeTeamORM.id == participant.team_id)
+                )
+                team = team_result.scalar_one_or_none()
+                if team:
+                    my_team_id = team.id
+                    my_team_name = team.name
+
         return Challenge(
             id=orm.id,
             name=orm.name,
@@ -2254,6 +2727,12 @@ class SocialService(SocialInterface):
             is_participating=participant is not None,
             days_remaining=days_remaining,
             created_at=orm.created_at or datetime.now(UTC),
+            is_team_challenge=orm.is_team_challenge,
+            team_size_min=orm.team_size_min,
+            team_size_max=orm.team_size_max,
+            team_count=team_count,
+            my_team_id=my_team_id,
+            my_team_name=my_team_name,
         )
 
     async def _get_user_profile_data(self, identity_id: str) -> dict:
@@ -2715,3 +3194,215 @@ class SocialService(SocialInterface):
         )
 
         return challenge
+
+    # =========================================================================
+    # Achievement Celebrations (Sprint 2)
+    # =========================================================================
+
+    CELEBRATION_XP_REWARD = 5  # XP awarded to both celebrator and achiever
+
+    async def celebrate_achievement(
+        self,
+        identity_id: str,
+        user_achievement_id: str,
+    ) -> "CelebrateAchievementResponse":
+        """
+        Celebrate a friend's achievement.
+
+        Both the celebrator and the achiever receive 5 XP.
+        Each user can only celebrate an achievement once.
+
+        Args:
+            identity_id: The user celebrating
+            user_achievement_id: The user_achievement record to celebrate
+
+        Returns:
+            CelebrateAchievementResponse with celebration details
+
+        Raises:
+            ValueError: If achievement not found, not friends, self-celebration, or already celebrated
+        """
+        from src.modules.social.models import (
+            AchievementCelebration,
+            CelebrateAchievementResponse,
+        )
+        from src.modules.social.orm import AchievementCelebrationORM
+        from src.modules.progression.orm import UserAchievementORM
+
+        # Get the user achievement
+        result = await self._db.execute(
+            select(UserAchievementORM).where(
+                UserAchievementORM.id == user_achievement_id,
+                UserAchievementORM.is_unlocked == True,  # noqa: E712
+            )
+        )
+        user_achievement = result.scalar_one_or_none()
+
+        if not user_achievement:
+            raise ValueError("Achievement not found or not unlocked")
+
+        achiever_id = user_achievement.identity_id
+
+        # Cannot self-celebrate
+        if achiever_id == identity_id:
+            raise ValueError("Cannot celebrate your own achievement")
+
+        # Must be friends
+        friendship = await self._get_friendship_record(identity_id, achiever_id)
+        if not friendship or friendship.status != FriendshipStatus.ACCEPTED:
+            raise ValueError("Can only celebrate friends' achievements")
+
+        # Check if already celebrated
+        existing_result = await self._db.execute(
+            select(AchievementCelebrationORM).where(
+                AchievementCelebrationORM.user_achievement_id == user_achievement_id,
+                AchievementCelebrationORM.celebrator_identity_id == identity_id,
+            )
+        )
+        if existing_result.scalar_one_or_none():
+            raise ValueError("Already celebrated this achievement")
+
+        # Create the celebration record
+        celebration_orm = AchievementCelebrationORM(
+            id=str(uuid4()),
+            user_achievement_id=user_achievement_id,
+            celebrator_identity_id=identity_id,
+            created_at=datetime.now(UTC),
+            xp_awarded_achiever=False,
+            xp_awarded_celebrator=False,
+        )
+        self._db.add(celebration_orm)
+        await self._db.flush()
+
+        # Award XP to both parties via progression service
+        xp_awarded_celebrator = 0
+        xp_awarded_achiever = 0
+
+        if self._progression:
+            try:
+                # Award XP to celebrator
+                await self._progression.award_xp(
+                    identity_id=identity_id,
+                    amount=self.CELEBRATION_XP_REWARD,
+                    transaction_type="celebration_given",
+                    description="Celebrated a friend's achievement",
+                    related_id=user_achievement_id,
+                )
+                celebration_orm.xp_awarded_celebrator = True
+                xp_awarded_celebrator = self.CELEBRATION_XP_REWARD
+
+                # Award XP to achiever
+                await self._progression.award_xp(
+                    identity_id=achiever_id,
+                    amount=self.CELEBRATION_XP_REWARD,
+                    transaction_type="celebration_received",
+                    description="A friend celebrated your achievement",
+                    related_id=user_achievement_id,
+                )
+                celebration_orm.xp_awarded_achiever = True
+                xp_awarded_achiever = self.CELEBRATION_XP_REWARD
+            except Exception:
+                # XP award failed but celebration still recorded
+                pass
+
+        await self._db.flush()
+
+        # Record the event
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="achievement_celebrated",
+            related_id=user_achievement_id,
+            metadata={
+                "achiever_id": achiever_id,
+                "achievement_id": user_achievement.achievement_id,
+            },
+        )
+
+        # Get celebrator profile for response
+        profile = await self._get_user_profile_data(identity_id)
+
+        celebration = AchievementCelebration(
+            id=celebration_orm.id,
+            user_achievement_id=user_achievement_id,
+            celebrator_identity_id=identity_id,
+            celebrator_username=profile.get("username"),
+            celebrator_display_name=profile.get("display_name"),
+            celebrator_avatar_url=profile.get("avatar_url"),
+            created_at=celebration_orm.created_at,
+        )
+
+        return CelebrateAchievementResponse(
+            celebration=celebration,
+            xp_awarded_celebrator=xp_awarded_celebrator,
+            xp_awarded_achiever=xp_awarded_achiever,
+            message="You celebrated this achievement!",
+        )
+
+    async def get_achievement_celebrations(
+        self,
+        user_achievement_id: str,
+    ) -> "AchievementCelebrationList":
+        """
+        Get all celebrations for an achievement.
+
+        Args:
+            user_achievement_id: The user_achievement record ID
+
+        Returns:
+            AchievementCelebrationList with all celebrations
+        """
+        from src.modules.social.models import (
+            AchievementCelebration,
+            AchievementCelebrationList,
+        )
+        from src.modules.social.orm import AchievementCelebrationORM
+        from src.modules.progression.orm import UserAchievementORM
+
+        # Verify the achievement exists
+        result = await self._db.execute(
+            select(UserAchievementORM).where(UserAchievementORM.id == user_achievement_id)
+        )
+        if not result.scalar_one_or_none():
+            raise ValueError("Achievement not found")
+
+        # Get all celebrations
+        celebrations_result = await self._db.execute(
+            select(AchievementCelebrationORM)
+            .where(AchievementCelebrationORM.user_achievement_id == user_achievement_id)
+            .order_by(desc(AchievementCelebrationORM.created_at))
+        )
+
+        celebrations = []
+        for orm in celebrations_result.scalars():
+            profile = await self._get_user_profile_data(orm.celebrator_identity_id)
+            celebrations.append(AchievementCelebration(
+                id=orm.id,
+                user_achievement_id=user_achievement_id,
+                celebrator_identity_id=orm.celebrator_identity_id,
+                celebrator_username=profile.get("username"),
+                celebrator_display_name=profile.get("display_name"),
+                celebrator_avatar_url=profile.get("avatar_url"),
+                created_at=orm.created_at,
+            ))
+
+        return AchievementCelebrationList(
+            user_achievement_id=user_achievement_id,
+            celebrations=celebrations,
+            total_count=len(celebrations),
+        )
+
+    async def has_celebrated_achievement(
+        self,
+        identity_id: str,
+        user_achievement_id: str,
+    ) -> bool:
+        """Check if a user has already celebrated an achievement."""
+        from src.modules.social.orm import AchievementCelebrationORM
+
+        result = await self._db.execute(
+            select(AchievementCelebrationORM).where(
+                AchievementCelebrationORM.user_achievement_id == user_achievement_id,
+                AchievementCelebrationORM.celebrator_identity_id == identity_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None

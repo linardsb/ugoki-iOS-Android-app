@@ -75,6 +75,13 @@ export interface Challenge {
   is_participating: boolean;
   days_remaining: number | null;
   created_at: string;
+  // Team challenge fields (Sprint 3)
+  is_team_challenge: boolean;
+  team_size_min: number | null;
+  team_size_max: number | null;
+  team_count: number | null;
+  my_team_id: string | null;
+  my_team_name: string | null;
 }
 
 export interface ChallengeParticipant {
@@ -88,6 +95,9 @@ export interface ChallengeParticipant {
   completed_at: string | null;
   rank: number | null;
   joined_at: string;
+  // Team fields (Sprint 3)
+  team_id: string | null;
+  team_name: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -156,6 +166,10 @@ export interface CreateChallengeParams {
   end_date: string;
   is_public?: boolean;
   max_participants?: number;
+  // Team challenge fields (Sprint 3)
+  is_team_challenge?: boolean;
+  team_size_min?: number;
+  team_size_max?: number;
 }
 
 export interface GenerateShareContentParams {
@@ -342,3 +356,102 @@ export const FEED_ACTIVITY_TYPE_ICONS: Record<FeedActivityType, string> = {
   streak_milestone: 'Lightning',
   duo_streak_milestone: 'Users',
 };
+
+// =========================================================================
+// Challenge Templates
+// =========================================================================
+
+export interface ChallengeTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  challenge_type: ChallengeType;
+  duration_days: number;
+  goal_value: number;
+  goal_unit: string | null;
+  icon: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface CreateChallengeFromTemplateParams {
+  template_id: string;
+  invite_friend_ids?: string[];
+  custom_name?: string;
+  start_date?: string; // ISO date string YYYY-MM-DD
+}
+
+export const CHALLENGE_TEMPLATE_ICONS: Record<string, string> = {
+  fire: 'Fire',
+  barbell: 'Barbell',
+  trophy: 'Trophy',
+  lightning: 'Lightning',
+  target: 'Target',
+  calendar: 'Calendar',
+};
+
+// =========================================================================
+// Achievement Celebrations (Sprint 2)
+// =========================================================================
+
+export interface AchievementCelebration {
+  id: string;
+  user_achievement_id: string;
+  celebrator_identity_id: string;
+  celebrator_username: string | null;
+  celebrator_display_name: string | null;
+  celebrator_avatar_url: string | null;
+  created_at: string;
+}
+
+export interface CelebrateAchievementResponse {
+  celebration: AchievementCelebration;
+  xp_awarded_celebrator: number;
+  xp_awarded_achiever: number;
+  message: string;
+}
+
+export interface AchievementCelebrationList {
+  user_achievement_id: string;
+  celebrations: AchievementCelebration[];
+  total_count: number;
+}
+
+// =========================================================================
+// Team Challenges (Sprint 3)
+// =========================================================================
+
+export interface ChallengeTeam {
+  id: string;
+  challenge_id: string;
+  name: string;
+  created_by: string;
+  creator_username: string | null;
+  creator_display_name: string | null;
+  join_code: string;
+  total_progress: number;
+  member_count: number;
+  rank: number | null;
+  created_at: string;
+  members: ChallengeParticipant[] | null;
+}
+
+export interface ChallengeTeamLeaderboard {
+  challenge_id: string;
+  teams: ChallengeTeam[];
+  total_teams: number;
+}
+
+export interface CreateTeamParams {
+  name: string;
+}
+
+export interface JoinTeamParams {
+  join_code: string;
+}
+
+export interface JoinTeamResponse {
+  team: ChallengeTeam;
+  challenge: Challenge;
+  message: string;
+}

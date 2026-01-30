@@ -123,6 +123,13 @@ class Challenge(BaseModel):
     is_participating: bool = False
     days_remaining: int | None = None
     created_at: datetime
+    # Team challenge fields (Sprint 3)
+    is_team_challenge: bool = False
+    team_size_min: int | None = None
+    team_size_max: int | None = None
+    team_count: int | None = None
+    my_team_id: str | None = None
+    my_team_name: str | None = None
 
 
 class ChallengeParticipant(BaseModel):
@@ -137,6 +144,9 @@ class ChallengeParticipant(BaseModel):
     completed_at: datetime | None = None
     rank: int | None = None
     joined_at: datetime
+    # Team fields (Sprint 3)
+    team_id: str | None = None
+    team_name: str | None = None
 
 
 class LeaderboardEntry(BaseModel):
@@ -212,6 +222,10 @@ class CreateChallengeRequest(BaseModel):
     end_date: date
     is_public: bool = False
     max_participants: int = Field(50, ge=2, le=1000)
+    # Team challenge fields (Sprint 3)
+    is_team_challenge: bool = False
+    team_size_min: int | None = Field(None, ge=2, le=10)
+    team_size_max: int | None = Field(None, ge=2, le=10)
 
 
 class GenerateShareContentRequest(BaseModel):
@@ -349,3 +363,78 @@ class CreateChallengeFromTemplateRequest(BaseModel):
     invite_friend_ids: list[str] = []
     custom_name: str | None = None
     start_date: date | None = None  # Default: tomorrow
+
+
+# =========================================================================
+# Achievement Celebrations Models (Sprint 2)
+# =========================================================================
+
+class AchievementCelebration(BaseModel):
+    """A celebration of a friend's achievement."""
+    id: str
+    user_achievement_id: str
+    celebrator_identity_id: str
+    celebrator_username: str | None = None
+    celebrator_display_name: str | None = None
+    celebrator_avatar_url: str | None = None
+    created_at: datetime
+
+
+class CelebrateAchievementResponse(BaseModel):
+    """Response after celebrating an achievement."""
+    celebration: AchievementCelebration
+    xp_awarded_celebrator: int = 5
+    xp_awarded_achiever: int = 5
+    message: str = "You celebrated this achievement!"
+
+
+class AchievementCelebrationList(BaseModel):
+    """List of celebrations for an achievement."""
+    user_achievement_id: str
+    celebrations: list[AchievementCelebration] = []
+    total_count: int = 0
+
+
+# =========================================================================
+# Team Challenges Models (Sprint 3)
+# =========================================================================
+
+class ChallengeTeam(BaseModel):
+    """A team within a team challenge."""
+    id: str
+    challenge_id: str
+    name: str
+    created_by: str
+    creator_username: str | None = None
+    creator_display_name: str | None = None
+    join_code: str
+    total_progress: float = 0
+    member_count: int = 0
+    rank: int | None = None
+    created_at: datetime
+    # Members (optional, populated when fetching single team)
+    members: list["ChallengeParticipant"] | None = None
+
+
+class ChallengeTeamLeaderboard(BaseModel):
+    """Leaderboard of teams within a challenge."""
+    challenge_id: str
+    teams: list[ChallengeTeam] = []
+    total_teams: int = 0
+
+
+class CreateTeamRequest(BaseModel):
+    """Request to create a team within a team challenge."""
+    name: str = Field(..., min_length=2, max_length=100)
+
+
+class JoinTeamRequest(BaseModel):
+    """Request to join a team using its join code."""
+    join_code: str = Field(..., min_length=8, max_length=8)
+
+
+class JoinTeamResponse(BaseModel):
+    """Response after joining a team."""
+    team: ChallengeTeam
+    challenge: Challenge
+    message: str = "Successfully joined team!"

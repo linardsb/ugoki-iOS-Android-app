@@ -83,10 +83,36 @@ class ChallengeORM(Base, TimestampMixin):
     join_code: Mapped[str] = mapped_column(String(8), nullable=False, unique=True, index=True)
     is_public: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     max_participants: Mapped[int] = mapped_column(Integer, nullable=False, default=50)
+    # Team challenge fields (Sprint 3)
+    is_team_challenge: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    team_size_min: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    team_size_max: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (
         Index("ix_challenges_dates", "start_date", "end_date"),
         Index("ix_challenges_type", "challenge_type"),
+    )
+
+
+class ChallengeTeamORM(Base):
+    """Teams within a team challenge."""
+
+    __tablename__ = "challenge_teams"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    challenge_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("challenges.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_by: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    join_code: Mapped[str] = mapped_column(String(8), nullable=False, unique=True, index=True)
+    total_progress: Mapped[float] = mapped_column(Float, nullable=False, default=0)
+    member_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_challenge_teams_challenge_name", "challenge_id", "name", unique=True),
     )
 
 
@@ -107,6 +133,10 @@ class ChallengeParticipantORM(Base):
     completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Team assignment (Sprint 3)
+    team_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("challenge_teams.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     __table_args__ = (
         Index("ix_participants_challenge_identity", "challenge_id", "identity_id", unique=True),
@@ -287,4 +317,27 @@ class ChallengeTemplateORM(Base):
 
     __table_args__ = (
         Index("ix_challenge_templates_active", "is_active", "sort_order"),
+    )
+
+
+# =========================================================================
+# Achievement Celebrations (Sprint 2)
+# =========================================================================
+
+class AchievementCelebrationORM(Base):
+    """Celebrations of friends' achievements - both users earn XP."""
+
+    __tablename__ = "achievement_celebrations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_achievement_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("user_achievements.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    celebrator_identity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    xp_awarded_achiever: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    xp_awarded_celebrator: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    __table_args__ = (
+        Index("ix_achievement_celebrations_unique", "user_achievement_id", "celebrator_identity_id", unique=True),
     )
