@@ -73,17 +73,6 @@ connects them all and provides overall context.
 
 ---
 
-## Current Status
-
-**Phase:** MVP Complete - Ready for Production Deployment
-
-| Component | Status |
-|-----------|--------|
-| Backend | 11/11 modules complete |
-| Mobile | 9/9 phases complete |
-| Next | Deploy to Fly.io, EAS builds |
-
----
 
 ## Tech Stack
 
@@ -164,28 +153,96 @@ Each subdirectory has a CLAUDE.md that documents current state, issues, and guid
 - Await storage writes before navigation
 - Handle `not_found`, `expired`, `401` errors gracefully
 
+# UGOKI Development Rules
+
+## Always Load Relevant Skills
+
+Before responding to any development request, check if these skills apply:
+
+- **Backend work** (FastAPI, endpoints, services) → Load `ugoki-api-module`
+- **AI Coach** (Pydantic AI, Logfire, FastAPI) → Load `ugoki-ai-coach`
+- **Mobile work** (Expo, screens, components) → Load `ugoki-mobile`  
+- **Database work** (migrations, ORM, queries) → Load `ugoki-database`
+- **Testing** → Load `ugoki-testing`
+- **New module** → Load `ugoki-module-creator`
+- **Architecture questions** → Load `ugoki-architecture`
+
+Load `ugoki-architecture` at the start of any significant work session.
+
 ---
 
 ## Project Structure
 
 ```
 ugoki_1_0/
+├── .claude/                           # Claude Code configuration
+│   ├── skills/                        # Project-specific skills
+│   │   ├── ugoki-ai-coach/            # AI Coach development patterns
+│   │   ├── ugoki-api-module/          # Backend module patterns
+│   │   ├── ugoki-architecture/        # Architecture guidelines
+│   │   ├── ugoki-database/            # Database & migrations
+│   │   ├── ugoki-mobile/              # Mobile development patterns
+│   │   ├── ugoki-module-creator/      # New module scaffolding
+│   │   └── ugoki-testing/             # Testing patterns
+│   └── plans/                         # Implementation plans
+│
 ├── apps/
-│   ├── api/                       # Python FastAPI backend
-│   │   └── src/modules/           # 11 black box modules
-│   └── mobile/                    # Expo React Native
-│       ├── app/                   # Screens (Expo Router)
-│       └── features/              # Feature modules
-│           └── wallet/            # Cardano wallet & $UI token
+│   ├── api/                           # Python FastAPI backend
+│   │   ├── alembic/                   # Database migrations (20 versions)
+│   │   ├── scripts/                   # Seed scripts (workouts, exercises, achievements)
+│   │   ├── src/
+│   │   │   ├── modules/               # 11 black box modules
+│   │   │   │   ├── ai_coach/          # Claude-powered chat & RAG
+│   │   │   │   ├── content/           # Workouts, exercises, recipes
+│   │   │   │   ├── event_journal/     # Audit logging
+│   │   │   │   ├── identity/          # Auth, JWT, tokens
+│   │   │   │   ├── metrics/           # Health data, biomarkers
+│   │   │   │   ├── notification/      # Push notifications
+│   │   │   │   ├── profile/           # User profiles
+│   │   │   │   ├── progression/       # XP, levels, achievements
+│   │   │   │   ├── research/          # PubMed integration
+│   │   │   │   ├── social/            # Friends, challenges, leaderboards
+│   │   │   │   └── time_keeper/       # Fasting timers
+│   │   │   └── main.py                # FastAPI app entry
+│   │   └── tests/                     # Pytest test suite
+│   │
+│   └── mobile/                        # Expo React Native (SDK 52)
+│       ├── app/                       # Expo Router screens
+│       │   ├── (auth)/                # Login, register, onboarding
+│       │   ├── (modals)/              # Workout player, achievements, settings
+│       │   └── (tabs)/                # Main tab navigation
+│       ├── features/                  # Feature modules
+│       │   ├── auth/                  # Authentication hooks & stores
+│       │   ├── bloodwork/             # OCR upload & analysis
+│       │   ├── coach/                 # AI Coach chat UI & streaming
+│       │   ├── dashboard/             # Home screen, stats
+│       │   ├── fasting/               # Timer, protocols
+│       │   ├── health/                # HealthKit/Health Connect sync
+│       │   ├── profile/               # User profile screens
+│       │   ├── research/              # PubMed search UI
+│       │   ├── social/                # Friends, challenges
+│       │   ├── wallet/                # Cardano wallet & $UI token
+│       │   └── workouts/              # Workout library & player
+│       ├── shared/                    # Shared utilities
+│       │   ├── api/                   # API client, React Query
+│       │   └── stores/                # Global Zustand stores
+│       └── components/                # Reusable UI components
+│
 ├── scripts/
-│   └── cardano/                   # Token minting scripts & economics
-└── docs/                          # Documentation
-    ├── product/                   # PRD, roadmap, decisions
-    ├── architecture/              # System design
-    ├── guides/                    # How-to guides
-    ├── standards/                 # Best practices
-    ├── features/                  # Feature specs
-    └── tracking/                  # Bugs, changelog
+│   └── cardano/                       # $UI token minting & economics
+│
+├── packages/
+│   └── interfaces/                    # Shared TypeScript interfaces
+│
+├── docs/                              # Documentation
+│   ├── product/                       # PRD, roadmap, decisions
+│   ├── architecture/                  # System design, patterns, modules
+│   ├── features/                      # 10 feature specifications
+│   ├── guides/                        # Development guides
+│   ├── standards/                     # Security, coding standards
+│   └── tracking/                      # Bugs, changelog, sessions
+│
+└── design_references/                 # UI/UX design mockups (gitignored)
 ```
 
 ---
