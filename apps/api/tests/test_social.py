@@ -712,6 +712,72 @@ class TestLeaderboards:
         assert leaderboard["type"] == "global_xp"
         assert leaderboard["period"] == "all_time"
 
+    @pytest.mark.asyncio
+    async def test_get_global_workouts_leaderboard(self, client: AsyncClient):
+        """Get global workouts leaderboard with period filtering."""
+        user = await create_test_identity(client)
+        user_id = user["identity"]["id"]
+
+        response = await client.get(
+            f"{API}/social/leaderboards/global_workouts?period=week",
+            headers=get_auth_header(user_id)
+        )
+
+        assert response.status_code == 200
+        leaderboard = response.json()
+        assert leaderboard["type"] == "global_workouts"
+        assert leaderboard["period"] == "week"
+        assert "entries" in leaderboard
+
+    @pytest.mark.asyncio
+    async def test_get_global_fasts_leaderboard(self, client: AsyncClient):
+        """Get global fasts leaderboard with period filtering."""
+        user = await create_test_identity(client)
+        user_id = user["identity"]["id"]
+
+        response = await client.get(
+            f"{API}/social/leaderboards/global_fasts?period=week",
+            headers=get_auth_header(user_id)
+        )
+
+        assert response.status_code == 200
+        leaderboard = response.json()
+        assert leaderboard["type"] == "global_fasts"
+        assert leaderboard["period"] == "week"
+        assert "entries" in leaderboard
+
+    @pytest.mark.asyncio
+    async def test_get_friends_workouts_leaderboard(self, client: AsyncClient):
+        """Get friends workouts leaderboard."""
+        user = await create_test_identity(client)
+        user_id = user["identity"]["id"]
+
+        response = await client.get(
+            f"{API}/social/leaderboards/friends_workouts?period=month",
+            headers=get_auth_header(user_id)
+        )
+
+        assert response.status_code == 200
+        leaderboard = response.json()
+        assert leaderboard["type"] == "friends_workouts"
+        assert leaderboard["period"] == "month"
+
+    @pytest.mark.asyncio
+    async def test_get_friends_fasts_leaderboard_all_time(self, client: AsyncClient):
+        """Get friends fasts leaderboard with all_time period."""
+        user = await create_test_identity(client)
+        user_id = user["identity"]["id"]
+
+        response = await client.get(
+            f"{API}/social/leaderboards/friends_fasts?period=all_time",
+            headers=get_auth_header(user_id)
+        )
+
+        assert response.status_code == 200
+        leaderboard = response.json()
+        assert leaderboard["type"] == "friends_fasts"
+        assert leaderboard["period"] == "all_time"
+
 
 # =============================================================================
 # Achievement Celebrations Tests (Sprint 2)

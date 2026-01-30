@@ -314,14 +314,21 @@ async def get_leaderboard(
 
     Types:
     - global_xp: All public profiles by total XP
-    - global_streaks: All public profiles by fasting streak
+    - global_streaks: All public profiles by current fasting streak
     - friends_xp: Friends by total XP
-    - friends_streaks: Friends by fasting streak
+    - friends_streaks: Friends by current fasting streak
+    - global_workouts: All public profiles by workout count
+    - friends_workouts: Friends by workout count
+    - global_fasts: All public profiles by completed fasts count
+    - friends_fasts: Friends by completed fasts count
 
     Periods:
-    - week: This week's data
+    - week: This week's data (Mon-Sun UTC)
     - month: This month's data
     - all_time: All-time data
+
+    Note: Streak leaderboards show current streak values regardless of period.
+    Workout and fasting count leaderboards properly filter by period.
     """
     return await service.get_leaderboard(identity_id, leaderboard_type, period, limit)
 

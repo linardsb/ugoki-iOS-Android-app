@@ -726,6 +726,121 @@ class SocialService(SocialInterface):
                     my_rank = rank
                     my_value = float(orm.current_count)
 
+        elif leaderboard_type in (LeaderboardType.GLOBAL_WORKOUTS, LeaderboardType.FRIENDS_WORKOUTS):
+            # Workout count leaderboard with period filtering
+            from src.modules.content.orm import WorkoutSessionORM
+            from src.modules.content.models import SessionStatus
+
+            if leaderboard_type == LeaderboardType.FRIENDS_WORKOUTS:
+                eligible_ids = await self._get_friend_ids(identity_id)
+                eligible_ids.append(identity_id)
+            else:
+                eligible_ids = await self._get_public_profile_ids()
+                eligible_ids.append(identity_id)
+
+            # Build query for completed workouts in the period
+            conditions = [
+                WorkoutSessionORM.identity_id.in_(eligible_ids),
+                WorkoutSessionORM.status == SessionStatus.COMPLETED,
+            ]
+            if period_start:
+                conditions.append(WorkoutSessionORM.completed_at >= period_start)
+
+            query = (
+                select(
+                    WorkoutSessionORM.identity_id,
+                    func.count(WorkoutSessionORM.id).label("workout_count")
+                )
+                .where(*conditions)
+                .group_by(WorkoutSessionORM.identity_id)
+                .order_by(desc(func.count(WorkoutSessionORM.id)))
+                .limit(limit)
+            )
+            result = await self._db.execute(query)
+
+            rank = 0
+            for row in result:
+                rank += 1
+                user_id = row.identity_id
+                count_value = float(row.workout_count or 0)
+                profile = await self._get_user_profile_data(user_id)
+                is_current = user_id == identity_id
+
+                entries.append(LeaderboardEntry(
+                    rank=rank,
+                    identity_id=user_id,
+                    username=profile.get("username"),
+                    display_name=profile.get("display_name"),
+                    avatar_url=profile.get("avatar_url"),
+                    value=count_value,
+                    is_current_user=is_current,
+                ))
+
+                if is_current:
+                    my_rank = rank
+                    my_value = count_value
+
+            if my_rank is None:
+                my_value = 0.0
+
+        elif leaderboard_type in (LeaderboardType.GLOBAL_FASTS, LeaderboardType.FRIENDS_FASTS):
+            # Fasting count leaderboard with period filtering
+            from src.modules.time_keeper.orm import TimeWindowORM
+            from src.modules.time_keeper.models import WindowType, WindowState
+
+            if leaderboard_type == LeaderboardType.FRIENDS_FASTS:
+                eligible_ids = await self._get_friend_ids(identity_id)
+                eligible_ids.append(identity_id)
+            else:
+                eligible_ids = await self._get_public_profile_ids()
+                eligible_ids.append(identity_id)
+
+            # Build query for completed fasts in the period
+            conditions = [
+                TimeWindowORM.identity_id.in_(eligible_ids),
+                TimeWindowORM.window_type == WindowType.FAST,
+                TimeWindowORM.state == WindowState.COMPLETED,
+            ]
+            if period_start:
+                conditions.append(TimeWindowORM.end_time >= period_start)
+
+            query = (
+                select(
+                    TimeWindowORM.identity_id,
+                    func.count(TimeWindowORM.id).label("fast_count")
+                )
+                .where(*conditions)
+                .group_by(TimeWindowORM.identity_id)
+                .order_by(desc(func.count(TimeWindowORM.id)))
+                .limit(limit)
+            )
+            result = await self._db.execute(query)
+
+            rank = 0
+            for row in result:
+                rank += 1
+                user_id = row.identity_id
+                count_value = float(row.fast_count or 0)
+                profile = await self._get_user_profile_data(user_id)
+                is_current = user_id == identity_id
+
+                entries.append(LeaderboardEntry(
+                    rank=rank,
+                    identity_id=user_id,
+                    username=profile.get("username"),
+                    display_name=profile.get("display_name"),
+                    avatar_url=profile.get("avatar_url"),
+                    value=count_value,
+                    is_current_user=is_current,
+                ))
+
+                if is_current:
+                    my_rank = rank
+                    my_value = count_value
+
+            if my_rank is None:
+                my_value = 0.0
+
         return Leaderboard(
             type=leaderboard_type,
             period=period,

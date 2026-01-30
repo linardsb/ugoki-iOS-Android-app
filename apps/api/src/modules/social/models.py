@@ -32,6 +32,11 @@ class LeaderboardType(str, Enum):
     FRIENDS_XP = "friends_xp"
     FRIENDS_STREAKS = "friends_streaks"
     CHALLENGE = "challenge"
+    # Activity count leaderboards with period filtering (Sprint 2)
+    GLOBAL_WORKOUTS = "global_workouts"
+    FRIENDS_WORKOUTS = "friends_workouts"
+    GLOBAL_FASTS = "global_fasts"
+    FRIENDS_FASTS = "friends_fasts"
 
 
 class LeaderboardPeriod(str, Enum):

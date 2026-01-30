@@ -27,6 +27,11 @@ export {
   useGlobalStreaksLeaderboard,
   useFriendsXPLeaderboard,
   useFriendsStreaksLeaderboard,
+  // Activity count leaderboards (Sprint 2)
+  useGlobalWorkoutsLeaderboard,
+  useFriendsWorkoutsLeaderboard,
+  useGlobalFastsLeaderboard,
+  useFriendsFastsLeaderboard,
 } from './useLeaderboards';
 
 // Challenges

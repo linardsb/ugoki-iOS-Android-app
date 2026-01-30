@@ -13,7 +13,17 @@ export type ChallengeType = 'fasting_streak' | 'workout_count' | 'total_xp' | 'c
 
 export type ChallengeStatus = 'upcoming' | 'active' | 'completed';
 
-export type LeaderboardType = 'global_xp' | 'global_streaks' | 'friends_xp' | 'friends_streaks' | 'challenge';
+export type LeaderboardType =
+  | 'global_xp'
+  | 'global_streaks'
+  | 'friends_xp'
+  | 'friends_streaks'
+  | 'challenge'
+  // Activity count leaderboards with period filtering (Sprint 2)
+  | 'global_workouts'
+  | 'friends_workouts'
+  | 'global_fasts'
+  | 'friends_fasts';
 
 export type LeaderboardPeriod = 'week' | 'month' | 'all_time';
 
@@ -217,6 +227,11 @@ export const LEADERBOARD_TYPE_LABELS: Record<LeaderboardType, string> = {
   friends_xp: 'Friends XP',
   friends_streaks: 'Friends Streaks',
   challenge: 'Challenge',
+  // Activity count leaderboards (Sprint 2)
+  global_workouts: 'Global Workouts',
+  friends_workouts: 'Friends Workouts',
+  global_fasts: 'Global Fasts',
+  friends_fasts: 'Friends Fasts',
 };
 
 // =========================================================================

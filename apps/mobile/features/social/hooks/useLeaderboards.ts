@@ -53,3 +53,23 @@ export function useFriendsXPLeaderboard(period: LeaderboardPeriod = 'week') {
 export function useFriendsStreaksLeaderboard(period: LeaderboardPeriod = 'week') {
   return useLeaderboard('friends_streaks', period);
 }
+
+// =========================================================================
+// Activity Count Leaderboards (Sprint 2)
+// =========================================================================
+
+export function useGlobalWorkoutsLeaderboard(period: LeaderboardPeriod = 'week') {
+  return useLeaderboard('global_workouts', period);
+}
+
+export function useFriendsWorkoutsLeaderboard(period: LeaderboardPeriod = 'week') {
+  return useLeaderboard('friends_workouts', period);
+}
+
+export function useGlobalFastsLeaderboard(period: LeaderboardPeriod = 'week') {
+  return useLeaderboard('global_fasts', period);
+}
+
+export function useFriendsFastsLeaderboard(period: LeaderboardPeriod = 'week') {
+  return useLeaderboard('friends_fasts', period);
+}
