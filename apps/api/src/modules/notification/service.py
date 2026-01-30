@@ -138,6 +138,8 @@ class NotificationService(NotificationInterface):
             NotificationCategory.MOTIVATIONAL: prefs.motivational_notifications,
             NotificationCategory.REMINDER: True,
             NotificationCategory.SYSTEM: True,
+            NotificationCategory.SOCIAL: True,  # Social notifications always enabled
+            NotificationCategory.TEAM_MENTION: True,  # Team mentions always enabled
         }
         return category_map.get(category, True)
 
