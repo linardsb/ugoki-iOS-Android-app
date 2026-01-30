@@ -9,12 +9,14 @@ UGOKI helps busy professionals achieve sustainable health optimization in 15-20 
 ### Key Features
 
 - **Intermittent Fasting Timer** - Track fasting windows with multiple protocols (16:8, 18:6, 20:4)
-- **HIIT Workouts** - 16 curated workouts with video player and exercise library
+- **HIIT Workouts** - 23 curated workouts with 114 exercises, video player, and exercise library
 - **AI Coach** - Personalized guidance with constitutional AI, cross-session memory, skill-based prompts, and automated quality evaluation
+- **Health Device Sync** - Apple HealthKit and Google Health Connect integration for automated metric collection
 - **Gamification** - Streaks, XP, levels, and 21 achievements
 - **Bloodwork Analysis** - Upload blood tests, AI parses biomarkers with trend tracking
 - **Research Hub** - PubMed papers with AI-generated summaries
 - **Social** - Friends, followers, leaderboards, challenges
+- **$UI Token Wallet** - Cardano blockchain rewards for achievements and streaks (in progress)
 
 ### AI Coach (v3.0)
 
@@ -35,6 +37,7 @@ See [docs/features/ai-coach.md](docs/features/ai-coach.md) for full specificatio
 | Backend | Python 3.12, FastAPI, SQLAlchemy 2.0, Pydantic 2.0 |
 | AI | Pydantic AI, Claude 3.5 Sonnet/Haiku |
 | Mobile | Expo SDK 52, React Native, Tamagui, Zustand, TanStack Query |
+| Blockchain | Cardano (Preprod), Blockfrost API, Lucid Evolution SDK |
 | Infrastructure | Fly.io, PostgreSQL, Cloudflare R2, Expo Push |
 
 ## Quick Start
@@ -97,19 +100,30 @@ See [docs/architecture/MODULES.md](docs/architecture/MODULES.md) for detailed sp
 
 ```
 ugoki_1_0/
+├── .claude/                       # Claude Code configuration
+│   └── skills/                    # 7 project-specific AI skills
 ├── apps/
 │   ├── api/                       # Python FastAPI backend
+│   │   ├── alembic/               # Database migrations
+│   │   ├── scripts/               # Seed scripts
 │   │   ├── src/modules/           # 11 black box modules
 │   │   └── tests/
 │   └── mobile/                    # Expo React Native app
 │       ├── app/                   # Screens (Expo Router)
-│       └── features/              # Feature modules
+│       ├── features/              # 11 feature modules
+│       │   └── wallet/            # Cardano wallet & $UI token
+│       ├── shared/                # API client, global stores
+│       └── components/            # Reusable UI components
+├── scripts/
+│   └── cardano/                   # $UI token minting scripts
+├── packages/
+│   └── interfaces/                # Shared TypeScript interfaces
 ├── docs/                          # Documentation
 │   ├── product/                   # PRD, roadmap, decisions
 │   ├── architecture/              # System design
+│   ├── features/                  # 10 feature specifications
 │   ├── guides/                    # Developer guides
 │   ├── standards/                 # Best practices
-│   ├── features/                  # Feature specs
 │   └── tracking/                  # Bugs, changelog
 ├── CLAUDE.md                      # AI assistant context
 └── README.md                      # This file
