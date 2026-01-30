@@ -341,3 +341,79 @@ class AchievementCelebrationORM(Base):
     __table_args__ = (
         Index("ix_achievement_celebrations_unique", "user_achievement_id", "celebrator_identity_id", unique=True),
     )
+
+
+# =========================================================================
+# Team Messaging (Sprint 4)
+# =========================================================================
+
+class TeamMessageORM(Base):
+    """Messages within a team chat - supports soft delete."""
+
+    __tablename__ = "team_messages"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    team_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("challenge_teams.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    sender_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_team_messages_team_created", "team_id", "created_at"),
+    )
+
+
+class TeamMessageReactionORM(Base):
+    """Emoji reactions on team messages."""
+
+    __tablename__ = "team_message_reactions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    message_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("team_messages.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    identity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    emoji: Mapped[str] = mapped_column(String(10), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("ix_team_message_reactions_unique", "message_id", "identity_id", "emoji", unique=True),
+    )
+
+
+class TeamMessageReadORM(Base):
+    """Read tracking for team messages - stores last read position per user."""
+
+    __tablename__ = "team_message_reads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    team_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("challenge_teams.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    identity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    last_read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_read_message_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("team_messages.id", ondelete="SET NULL"), nullable=True
+    )
+
+    __table_args__ = (
+        Index("ix_team_message_reads_unique", "team_id", "identity_id", unique=True),
+    )
+
+
+class TeamMessageMentionORM(Base):
+    """@mention records in team messages - tracks notification and read status."""
+
+    __tablename__ = "team_message_mentions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    message_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("team_messages.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    mentioned_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -103,3 +103,21 @@ export {
   useLeaveTeam,
   teamKeys,
 } from './useTeamChallenges';
+
+// Team Messaging (Sprint 4)
+export {
+  useTeamMessages,
+  useTeamUnreadCounts,
+  useTeamReadReceipts,
+  useTeamMentionMembers,
+  useSendTeamMessage,
+  useEditTeamMessage,
+  useDeleteTeamMessage,
+  useAddReaction,
+  useRemoveReaction,
+  useToggleReaction,
+  useMarkTeamRead,
+  useTotalUnreadCount,
+  useTeamUnreadCount,
+  messageKeys,
+} from './useTeamMessaging';

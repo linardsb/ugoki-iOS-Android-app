@@ -41,6 +41,17 @@ from src.modules.social.models import (
     CreateTeamRequest,
     JoinTeamRequest,
     JoinTeamResponse,
+    # Team Messaging (Sprint 4)
+    TeamMessage,
+    TeamMessagePage,
+    TeamUnreadCount,
+    TeamReadReceipt,
+    TeamMemberForMention,
+    SendTeamMessageRequest,
+    EditTeamMessageRequest,
+    AddReactionRequest,
+    MarkTeamReadRequest,
+    TeamMessageEmoji,
 )
 from src.modules.social.service import SocialService
 from src.modules.profile.service import ProfileService
@@ -960,3 +971,219 @@ async def get_achievement_celebrations(
         return await service.get_achievement_celebrations(user_achievement_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+# =========================================================================
+# Team Messaging (Sprint 4)
+# =========================================================================
+
+@router.post("/teams/{team_id}/messages", response_model=TeamMessage, status_code=status.HTTP_201_CREATED)
+async def send_team_message(
+    team_id: str,
+    request: SendTeamMessageRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> TeamMessage:
+    """
+    Send a message to a team chat.
+
+    Requirements:
+    - Must be a member of the team
+
+    Message content:
+    - Max 2000 characters
+    - Supports @mentions by including identity_ids in the mentions array
+
+    Mentioned users will receive push notifications.
+    """
+    try:
+        return await service.send_team_message(
+            identity_id,
+            team_id,
+            content=request.content,
+            mentions=request.mentions,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/teams/{team_id}/messages", response_model=TeamMessagePage)
+async def get_team_messages(
+    team_id: str,
+    limit: int = Query(50, ge=1, le=100),
+    before: str | None = Query(None, description="Message ID cursor for pagination"),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> TeamMessagePage:
+    """
+    Get paginated messages for a team.
+
+    Pagination:
+    - Use `before` parameter with the last message's ID to fetch older messages
+    - Response includes `has_more` and `next_cursor` for easy pagination
+
+    Messages are ordered by most recent first (descending).
+    Deleted messages show with is_deleted=true and empty content.
+    """
+    try:
+        return await service.get_team_messages(identity_id, team_id, limit, before)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch("/teams/messages/{message_id}", response_model=TeamMessage)
+async def edit_team_message(
+    message_id: str,
+    request: EditTeamMessageRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> TeamMessage:
+    """
+    Edit a message (sender only, within 15-minute window).
+
+    Requirements:
+    - Must be the original sender
+    - Message must not be deleted
+    - Must be within 15 minutes of creation
+
+    The message will show edited_at timestamp after editing.
+    """
+    try:
+        return await service.edit_team_message(identity_id, message_id, request.content)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/teams/messages/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_team_message(
+    message_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> None:
+    """
+    Delete a message (sender only, soft delete).
+
+    The message will remain visible but with is_deleted=true and empty content.
+    This allows conversation context to be preserved.
+    """
+    try:
+        await service.delete_team_message(identity_id, message_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/teams/messages/{message_id}/reactions", response_model=TeamMessage, status_code=status.HTTP_201_CREATED)
+async def add_message_reaction(
+    message_id: str,
+    request: AddReactionRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> TeamMessage:
+    """
+    Add an emoji reaction to a message.
+
+    Supported emojis:
+    - thumbs_up (👍)
+    - fire (🔥)
+    - hundred (💯)
+    - heart (❤️)
+    - clap (👏)
+    - rocket (🚀)
+
+    Each user can only add one reaction per emoji per message.
+    """
+    try:
+        return await service.add_message_reaction(identity_id, message_id, request.emoji.value)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/teams/messages/{message_id}/reactions/{emoji}", response_model=TeamMessage)
+async def remove_message_reaction(
+    message_id: str,
+    emoji: TeamMessageEmoji,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> TeamMessage:
+    """
+    Remove an emoji reaction from a message.
+
+    Returns the updated message with reaction counts.
+    """
+    try:
+        return await service.remove_message_reaction(identity_id, message_id, emoji.value)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/teams/{team_id}/read", status_code=status.HTTP_204_NO_CONTENT)
+async def mark_team_read(
+    team_id: str,
+    request: MarkTeamReadRequest | None = None,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> None:
+    """
+    Mark team messages as read.
+
+    If last_read_message_id is provided, marks up to that message as read.
+    If not provided, marks all messages in the team as read.
+
+    This updates the unread count for the team.
+    """
+    try:
+        message_id = request.last_read_message_id if request else None
+        await service.mark_team_read(identity_id, team_id, message_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/teams/unread", response_model=list[TeamUnreadCount])
+async def get_team_unread_counts(
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[TeamUnreadCount]:
+    """
+    Get unread message counts for all teams the user is in.
+
+    Returns a list of teams with unread counts and last message timestamps.
+    Use this to display unread badges on team list.
+    """
+    return await service.get_team_unread_counts(identity_id)
+
+
+@router.get("/teams/{team_id}/read-receipts", response_model=list[TeamReadReceipt])
+async def get_team_read_receipts(
+    team_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[TeamReadReceipt]:
+    """
+    Get read receipts for all team members.
+
+    Shows when each team member last read the chat.
+    Useful for showing read indicators next to messages.
+    """
+    try:
+        return await service.get_team_read_receipts(identity_id, team_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/teams/{team_id}/members/mention", response_model=list[TeamMemberForMention])
+async def get_team_members_for_mention(
+    team_id: str,
+    query: str | None = Query(None, description="Search query to filter members"),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[TeamMemberForMention]:
+    """
+    Get team members for @mention autocomplete.
+
+    Returns all team members except the current user.
+    Optionally filter by username or display name with the query parameter.
+    """
+    try:
+        return await service.get_team_members_for_mention(identity_id, team_id, query)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

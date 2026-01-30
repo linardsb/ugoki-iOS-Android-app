@@ -53,6 +53,10 @@ from src.modules.social.orm import (
     FeedPreferencesORM,
     ChallengeTemplateORM,
     AchievementCelebrationORM,
+    TeamMessageORM,
+    TeamMessageReactionORM,
+    TeamMessageReadORM,
+    TeamMessageMentionORM,
 )
 
 if TYPE_CHECKING:
@@ -3521,3 +3525,772 @@ class SocialService(SocialInterface):
             )
         )
         return result.scalar_one_or_none() is not None
+
+    # =========================================================================
+    # Team Messaging (Sprint 4)
+    # =========================================================================
+
+    MESSAGE_EDIT_WINDOW_MINUTES = 15
+
+    async def _verify_team_membership(
+        self,
+        identity_id: str,
+        team_id: str,
+    ) -> ChallengeTeamORM | None:
+        """Verify user is a member of the team. Returns team if valid."""
+        # Get the team
+        result = await self._db.execute(
+            select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+        )
+        team = result.scalar_one_or_none()
+        if not team:
+            return None
+
+        # Check if user is a participant in the challenge with this team
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == team.challenge_id,
+                ChallengeParticipantORM.identity_id == identity_id,
+                ChallengeParticipantORM.team_id == team_id,
+            )
+        )
+        if not participant_result.scalar_one_or_none():
+            return None
+
+        return team
+
+    def _parse_mentions(self, content: str) -> list[str]:
+        """Parse @mentions from message content. Returns list of usernames."""
+        import re
+        # Match @username patterns (alphanumeric and underscore)
+        pattern = r'@(\w+)'
+        return re.findall(pattern, content)
+
+    async def send_team_message(
+        self,
+        identity_id: str,
+        team_id: str,
+        content: str,
+        mentions: list[str] | None = None,
+    ) -> "TeamMessage":
+        """
+        Send a message to a team chat.
+
+        Args:
+            identity_id: The sender
+            team_id: The team to send to
+            content: Message content (max 2000 chars)
+            mentions: Optional list of identity_ids to mention
+
+        Returns:
+            The created message
+
+        Raises:
+            ValueError: If not a team member or content too long
+        """
+        from src.modules.social.models import TeamMessage, TeamMessageReaction
+        from src.modules.social.orm import TeamMessageORM, TeamMessageMentionORM
+
+        # Verify team membership
+        team = await self._verify_team_membership(identity_id, team_id)
+        if not team:
+            raise ValueError("Not a member of this team")
+
+        if len(content) > 2000:
+            raise ValueError("Message content too long (max 2000 characters)")
+
+        now = datetime.now(UTC)
+
+        # Create the message
+        message_orm = TeamMessageORM(
+            id=str(uuid4()),
+            team_id=team_id,
+            sender_id=identity_id,
+            content=content,
+            created_at=now,
+        )
+        self._db.add(message_orm)
+        await self._db.flush()
+
+        # Process mentions
+        mention_ids = mentions or []
+        valid_mentions = []
+
+        if mention_ids:
+            # Validate mentioned users are team members
+            for mentioned_id in mention_ids:
+                if mentioned_id == identity_id:
+                    continue  # Skip self-mentions
+                participant_result = await self._db.execute(
+                    select(ChallengeParticipantORM).where(
+                        ChallengeParticipantORM.challenge_id == team.challenge_id,
+                        ChallengeParticipantORM.team_id == team_id,
+                        ChallengeParticipantORM.identity_id == mentioned_id,
+                    )
+                )
+                if participant_result.scalar_one_or_none():
+                    valid_mentions.append(mentioned_id)
+
+                    # Create mention record
+                    mention_orm = TeamMessageMentionORM(
+                        id=str(uuid4()),
+                        message_id=message_orm.id,
+                        mentioned_id=mentioned_id,
+                    )
+                    self._db.add(mention_orm)
+
+        await self._db.flush()
+
+        # Get sender profile
+        profile = await self._get_user_profile_data(identity_id)
+
+        # Record event
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="team_message_sent",
+            related_id=message_orm.id,
+            metadata={
+                "team_id": team_id,
+                "mention_count": len(valid_mentions),
+            },
+        )
+
+        return TeamMessage(
+            id=message_orm.id,
+            team_id=team_id,
+            sender_id=identity_id,
+            sender_username=profile.get("username"),
+            sender_display_name=profile.get("display_name"),
+            sender_avatar_url=profile.get("avatar_url"),
+            content=content,
+            created_at=message_orm.created_at,
+            reactions=[],
+            mentions=valid_mentions,
+        )
+
+    async def get_team_messages(
+        self,
+        identity_id: str,
+        team_id: str,
+        limit: int = 50,
+        before: str | None = None,
+    ) -> "TeamMessagePage":
+        """
+        Get paginated messages for a team.
+
+        Args:
+            identity_id: The requesting user
+            team_id: The team to get messages for
+            limit: Max messages to return (default 50)
+            before: Message ID cursor for pagination
+
+        Returns:
+            TeamMessagePage with messages and pagination info
+        """
+        from src.modules.social.models import TeamMessage, TeamMessageReaction, TeamMessagePage
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReactionORM, TeamMessageMentionORM
+
+        # Verify team membership
+        if not await self._verify_team_membership(identity_id, team_id):
+            raise ValueError("Not a member of this team")
+
+        # Build query
+        query = (
+            select(TeamMessageORM)
+            .where(TeamMessageORM.team_id == team_id)
+            .order_by(desc(TeamMessageORM.created_at))
+            .limit(limit + 1)  # Fetch one extra to check for more
+        )
+
+        if before:
+            # Get the cursor message's created_at
+            cursor_result = await self._db.execute(
+                select(TeamMessageORM.created_at).where(TeamMessageORM.id == before)
+            )
+            cursor_time = cursor_result.scalar_one_or_none()
+            if cursor_time:
+                query = query.where(TeamMessageORM.created_at < cursor_time)
+
+        result = await self._db.execute(query)
+        message_orms = list(result.scalars())
+
+        # Check if there are more messages
+        has_more = len(message_orms) > limit
+        if has_more:
+            message_orms = message_orms[:limit]
+
+        messages = []
+        for msg_orm in message_orms:
+            # Get sender profile
+            profile = await self._get_user_profile_data(msg_orm.sender_id)
+
+            # Get reactions
+            reactions_result = await self._db.execute(
+                select(TeamMessageReactionORM).where(TeamMessageReactionORM.message_id == msg_orm.id)
+            )
+            reaction_orms = list(reactions_result.scalars())
+
+            # Group reactions by emoji
+            reaction_map: dict[str, list[str]] = {}
+            for r in reaction_orms:
+                if r.emoji not in reaction_map:
+                    reaction_map[r.emoji] = []
+                reaction_map[r.emoji].append(r.identity_id)
+
+            reactions = [
+                TeamMessageReaction(
+                    emoji=emoji,
+                    count=len(user_ids),
+                    users=user_ids,
+                    i_reacted=identity_id in user_ids,
+                )
+                for emoji, user_ids in reaction_map.items()
+            ]
+
+            # Get mentions
+            mentions_result = await self._db.execute(
+                select(TeamMessageMentionORM.mentioned_id).where(
+                    TeamMessageMentionORM.message_id == msg_orm.id
+                )
+            )
+            mentions = [m for m in mentions_result.scalars()]
+
+            messages.append(TeamMessage(
+                id=msg_orm.id,
+                team_id=msg_orm.team_id,
+                sender_id=msg_orm.sender_id,
+                sender_username=profile.get("username"),
+                sender_display_name=profile.get("display_name"),
+                sender_avatar_url=profile.get("avatar_url"),
+                content=msg_orm.content if not msg_orm.deleted_at else "",
+                created_at=msg_orm.created_at,
+                edited_at=msg_orm.edited_at,
+                is_deleted=msg_orm.deleted_at is not None,
+                reactions=reactions,
+                mentions=mentions,
+            ))
+
+        next_cursor = messages[-1].id if messages and has_more else None
+
+        return TeamMessagePage(
+            messages=messages,
+            has_more=has_more,
+            next_cursor=next_cursor,
+        )
+
+    async def edit_team_message(
+        self,
+        identity_id: str,
+        message_id: str,
+        content: str,
+    ) -> "TeamMessage":
+        """
+        Edit a message within the 15-minute window.
+
+        Args:
+            identity_id: The requesting user (must be sender)
+            message_id: The message to edit
+            content: New content
+
+        Returns:
+            The updated message
+
+        Raises:
+            ValueError: If not sender, message deleted, or edit window expired
+        """
+        from src.modules.social.models import TeamMessage
+        from src.modules.social.orm import TeamMessageORM
+
+        result = await self._db.execute(
+            select(TeamMessageORM).where(TeamMessageORM.id == message_id)
+        )
+        msg_orm = result.scalar_one_or_none()
+
+        if not msg_orm:
+            raise ValueError("Message not found")
+
+        if msg_orm.sender_id != identity_id:
+            raise ValueError("Only the sender can edit this message")
+
+        if msg_orm.deleted_at:
+            raise ValueError("Cannot edit deleted message")
+
+        # Check edit window
+        now = datetime.now(UTC)
+        time_since_creation = (now - msg_orm.created_at).total_seconds() / 60
+        if time_since_creation > self.MESSAGE_EDIT_WINDOW_MINUTES:
+            raise ValueError(f"Edit window expired (messages can only be edited within {self.MESSAGE_EDIT_WINDOW_MINUTES} minutes)")
+
+        if len(content) > 2000:
+            raise ValueError("Message content too long (max 2000 characters)")
+
+        # Update the message
+        msg_orm.content = content
+        msg_orm.edited_at = now
+        await self._db.flush()
+
+        # Get the full message
+        return await self._get_team_message(identity_id, msg_orm)
+
+    async def delete_team_message(
+        self,
+        identity_id: str,
+        message_id: str,
+    ) -> bool:
+        """
+        Soft-delete a message (sender only).
+
+        Args:
+            identity_id: The requesting user (must be sender)
+            message_id: The message to delete
+
+        Returns:
+            True if deleted
+
+        Raises:
+            ValueError: If not sender or already deleted
+        """
+        from src.modules.social.orm import TeamMessageORM
+
+        result = await self._db.execute(
+            select(TeamMessageORM).where(TeamMessageORM.id == message_id)
+        )
+        msg_orm = result.scalar_one_or_none()
+
+        if not msg_orm:
+            raise ValueError("Message not found")
+
+        if msg_orm.sender_id != identity_id:
+            raise ValueError("Only the sender can delete this message")
+
+        if msg_orm.deleted_at:
+            raise ValueError("Message already deleted")
+
+        msg_orm.deleted_at = datetime.now(UTC)
+        await self._db.flush()
+
+        return True
+
+    async def add_message_reaction(
+        self,
+        identity_id: str,
+        message_id: str,
+        emoji: str,
+    ) -> "TeamMessage":
+        """
+        Add an emoji reaction to a message.
+
+        Args:
+            identity_id: The user adding the reaction
+            message_id: The message to react to
+            emoji: The emoji reaction (must be valid TeamMessageEmoji)
+
+        Returns:
+            The updated message
+
+        Raises:
+            ValueError: If not team member or invalid emoji
+        """
+        from src.modules.social.models import TeamMessageEmoji
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReactionORM
+
+        # Validate emoji
+        if not any(e.value == emoji for e in TeamMessageEmoji):
+            raise ValueError(f"Invalid emoji. Must be one of: {[e.value for e in TeamMessageEmoji]}")
+
+        # Get the message
+        result = await self._db.execute(
+            select(TeamMessageORM).where(TeamMessageORM.id == message_id)
+        )
+        msg_orm = result.scalar_one_or_none()
+
+        if not msg_orm:
+            raise ValueError("Message not found")
+
+        # Verify team membership
+        if not await self._verify_team_membership(identity_id, msg_orm.team_id):
+            raise ValueError("Not a member of this team")
+
+        if msg_orm.deleted_at:
+            raise ValueError("Cannot react to deleted message")
+
+        # Check if already reacted with this emoji
+        existing_result = await self._db.execute(
+            select(TeamMessageReactionORM).where(
+                TeamMessageReactionORM.message_id == message_id,
+                TeamMessageReactionORM.identity_id == identity_id,
+                TeamMessageReactionORM.emoji == emoji,
+            )
+        )
+        if existing_result.scalar_one_or_none():
+            raise ValueError("Already reacted with this emoji")
+
+        # Add the reaction
+        reaction_orm = TeamMessageReactionORM(
+            id=str(uuid4()),
+            message_id=message_id,
+            identity_id=identity_id,
+            emoji=emoji,
+            created_at=datetime.now(UTC),
+        )
+        self._db.add(reaction_orm)
+        await self._db.flush()
+
+        return await self._get_team_message(identity_id, msg_orm)
+
+    async def remove_message_reaction(
+        self,
+        identity_id: str,
+        message_id: str,
+        emoji: str,
+    ) -> "TeamMessage":
+        """
+        Remove an emoji reaction from a message.
+
+        Args:
+            identity_id: The user removing the reaction
+            message_id: The message
+            emoji: The emoji to remove
+
+        Returns:
+            The updated message
+
+        Raises:
+            ValueError: If reaction doesn't exist
+        """
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReactionORM
+
+        # Get the message
+        result = await self._db.execute(
+            select(TeamMessageORM).where(TeamMessageORM.id == message_id)
+        )
+        msg_orm = result.scalar_one_or_none()
+
+        if not msg_orm:
+            raise ValueError("Message not found")
+
+        # Find and remove the reaction
+        reaction_result = await self._db.execute(
+            select(TeamMessageReactionORM).where(
+                TeamMessageReactionORM.message_id == message_id,
+                TeamMessageReactionORM.identity_id == identity_id,
+                TeamMessageReactionORM.emoji == emoji,
+            )
+        )
+        reaction_orm = reaction_result.scalar_one_or_none()
+
+        if not reaction_orm:
+            raise ValueError("Reaction not found")
+
+        await self._db.delete(reaction_orm)
+        await self._db.flush()
+
+        return await self._get_team_message(identity_id, msg_orm)
+
+    async def mark_team_read(
+        self,
+        identity_id: str,
+        team_id: str,
+        last_read_message_id: str | None = None,
+    ) -> bool:
+        """
+        Mark team messages as read.
+
+        Args:
+            identity_id: The user
+            team_id: The team
+            last_read_message_id: Optional specific message ID, or marks all as read
+
+        Returns:
+            True if updated
+        """
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReadORM
+
+        # Verify team membership
+        if not await self._verify_team_membership(identity_id, team_id):
+            raise ValueError("Not a member of this team")
+
+        now = datetime.now(UTC)
+
+        # If no specific message, get the latest
+        if not last_read_message_id:
+            latest_result = await self._db.execute(
+                select(TeamMessageORM.id)
+                .where(TeamMessageORM.team_id == team_id)
+                .order_by(desc(TeamMessageORM.created_at))
+                .limit(1)
+            )
+            latest_id = latest_result.scalar_one_or_none()
+            last_read_message_id = latest_id
+
+        # Upsert read record
+        existing_result = await self._db.execute(
+            select(TeamMessageReadORM).where(
+                TeamMessageReadORM.team_id == team_id,
+                TeamMessageReadORM.identity_id == identity_id,
+            )
+        )
+        read_orm = existing_result.scalar_one_or_none()
+
+        if read_orm:
+            read_orm.last_read_at = now
+            read_orm.last_read_message_id = last_read_message_id
+        else:
+            read_orm = TeamMessageReadORM(
+                id=str(uuid4()),
+                team_id=team_id,
+                identity_id=identity_id,
+                last_read_at=now,
+                last_read_message_id=last_read_message_id,
+            )
+            self._db.add(read_orm)
+
+        await self._db.flush()
+        return True
+
+    async def get_team_unread_counts(
+        self,
+        identity_id: str,
+    ) -> list["TeamUnreadCount"]:
+        """
+        Get unread message counts for all teams the user is in.
+
+        Returns:
+            List of TeamUnreadCount for each team with unread messages
+        """
+        from src.modules.social.models import TeamUnreadCount
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReadORM
+
+        # Get all teams the user is in
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.identity_id == identity_id,
+                ChallengeParticipantORM.team_id.isnot(None),
+            )
+        )
+        participants = list(participant_result.scalars())
+
+        unread_counts = []
+        for participant in participants:
+            team_id = participant.team_id
+            if not team_id:
+                continue
+
+            # Get team info
+            team_result = await self._db.execute(
+                select(ChallengeTeamORM).where(ChallengeTeamORM.id == team_id)
+            )
+            team = team_result.scalar_one_or_none()
+            if not team:
+                continue
+
+            # Get user's last read time
+            read_result = await self._db.execute(
+                select(TeamMessageReadORM).where(
+                    TeamMessageReadORM.team_id == team_id,
+                    TeamMessageReadORM.identity_id == identity_id,
+                )
+            )
+            read_record = read_result.scalar_one_or_none()
+
+            # Count unread messages
+            unread_query = (
+                select(func.count(TeamMessageORM.id))
+                .where(
+                    TeamMessageORM.team_id == team_id,
+                    TeamMessageORM.deleted_at.is_(None),
+                    TeamMessageORM.sender_id != identity_id,  # Don't count own messages
+                )
+            )
+
+            if read_record and read_record.last_read_at:
+                unread_query = unread_query.where(
+                    TeamMessageORM.created_at > read_record.last_read_at
+                )
+
+            count_result = await self._db.execute(unread_query)
+            unread_count = count_result.scalar() or 0
+
+            # Get last message time
+            last_msg_result = await self._db.execute(
+                select(TeamMessageORM.created_at)
+                .where(TeamMessageORM.team_id == team_id)
+                .order_by(desc(TeamMessageORM.created_at))
+                .limit(1)
+            )
+            last_message_at = last_msg_result.scalar_one_or_none()
+
+            if unread_count > 0 or last_message_at:
+                unread_counts.append(TeamUnreadCount(
+                    team_id=team_id,
+                    team_name=team.name,
+                    challenge_id=team.challenge_id,
+                    unread_count=unread_count,
+                    last_message_at=last_message_at,
+                ))
+
+        return unread_counts
+
+    async def get_team_read_receipts(
+        self,
+        identity_id: str,
+        team_id: str,
+    ) -> list["TeamReadReceipt"]:
+        """
+        Get read receipts for all team members.
+
+        Returns:
+            List of TeamReadReceipt showing when each member last read
+        """
+        from src.modules.social.models import TeamReadReceipt
+        from src.modules.social.orm import TeamMessageReadORM
+
+        # Verify team membership
+        team = await self._verify_team_membership(identity_id, team_id)
+        if not team:
+            raise ValueError("Not a member of this team")
+
+        # Get all team members
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == team.challenge_id,
+                ChallengeParticipantORM.team_id == team_id,
+            )
+        )
+        participants = list(participant_result.scalars())
+
+        receipts = []
+        for participant in participants:
+            profile = await self._get_user_profile_data(participant.identity_id)
+
+            # Get read record
+            read_result = await self._db.execute(
+                select(TeamMessageReadORM).where(
+                    TeamMessageReadORM.team_id == team_id,
+                    TeamMessageReadORM.identity_id == participant.identity_id,
+                )
+            )
+            read_record = read_result.scalar_one_or_none()
+
+            receipts.append(TeamReadReceipt(
+                identity_id=participant.identity_id,
+                username=profile.get("username"),
+                display_name=profile.get("display_name"),
+                avatar_url=profile.get("avatar_url"),
+                last_read_at=read_record.last_read_at if read_record else participant.joined_at,
+                last_read_message_id=read_record.last_read_message_id if read_record else None,
+            ))
+
+        return receipts
+
+    async def get_team_members_for_mention(
+        self,
+        identity_id: str,
+        team_id: str,
+        query: str | None = None,
+    ) -> list["TeamMemberForMention"]:
+        """
+        Get team members for @mention autocomplete.
+
+        Args:
+            identity_id: The requesting user
+            team_id: The team
+            query: Optional search query to filter by username/display_name
+
+        Returns:
+            List of team members (excluding self)
+        """
+        from src.modules.social.models import TeamMemberForMention
+
+        # Verify team membership
+        team = await self._verify_team_membership(identity_id, team_id)
+        if not team:
+            raise ValueError("Not a member of this team")
+
+        # Get all team members except self
+        participant_result = await self._db.execute(
+            select(ChallengeParticipantORM).where(
+                ChallengeParticipantORM.challenge_id == team.challenge_id,
+                ChallengeParticipantORM.team_id == team_id,
+                ChallengeParticipantORM.identity_id != identity_id,
+            )
+        )
+        participants = list(participant_result.scalars())
+
+        members = []
+        for participant in participants:
+            profile = await self._get_user_profile_data(participant.identity_id)
+
+            # Filter by query if provided
+            if query:
+                query_lower = query.lower()
+                username = profile.get("username", "") or ""
+                display_name = profile.get("display_name", "") or ""
+                if query_lower not in username.lower() and query_lower not in display_name.lower():
+                    continue
+
+            members.append(TeamMemberForMention(
+                identity_id=participant.identity_id,
+                username=profile.get("username"),
+                display_name=profile.get("display_name"),
+                avatar_url=profile.get("avatar_url"),
+            ))
+
+        return members
+
+    async def _get_team_message(
+        self,
+        viewer_id: str,
+        msg_orm: "TeamMessageORM",
+    ) -> "TeamMessage":
+        """Helper to convert ORM message to model with all related data."""
+        from src.modules.social.models import TeamMessage, TeamMessageReaction
+        from src.modules.social.orm import TeamMessageORM, TeamMessageReactionORM, TeamMessageMentionORM
+
+        profile = await self._get_user_profile_data(msg_orm.sender_id)
+
+        # Get reactions
+        reactions_result = await self._db.execute(
+            select(TeamMessageReactionORM).where(TeamMessageReactionORM.message_id == msg_orm.id)
+        )
+        reaction_orms = list(reactions_result.scalars())
+
+        # Group reactions by emoji
+        reaction_map: dict[str, list[str]] = {}
+        for r in reaction_orms:
+            if r.emoji not in reaction_map:
+                reaction_map[r.emoji] = []
+            reaction_map[r.emoji].append(r.identity_id)
+
+        reactions = [
+            TeamMessageReaction(
+                emoji=emoji,
+                count=len(user_ids),
+                users=user_ids,
+                i_reacted=viewer_id in user_ids,
+            )
+            for emoji, user_ids in reaction_map.items()
+        ]
+
+        # Get mentions
+        mentions_result = await self._db.execute(
+            select(TeamMessageMentionORM.mentioned_id).where(
+                TeamMessageMentionORM.message_id == msg_orm.id
+            )
+        )
+        mentions = [m for m in mentions_result.scalars()]
+
+        return TeamMessage(
+            id=msg_orm.id,
+            team_id=msg_orm.team_id,
+            sender_id=msg_orm.sender_id,
+            sender_username=profile.get("username"),
+            sender_display_name=profile.get("display_name"),
+            sender_avatar_url=profile.get("avatar_url"),
+            content=msg_orm.content if not msg_orm.deleted_at else "",
+            created_at=msg_orm.created_at,
+            edited_at=msg_orm.edited_at,
+            is_deleted=msg_orm.deleted_at is not None,
+            reactions=reactions,
+            mentions=mentions,
+        )

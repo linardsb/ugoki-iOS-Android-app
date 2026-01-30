@@ -443,3 +443,112 @@ class JoinTeamResponse(BaseModel):
     team: ChallengeTeam
     challenge: Challenge
     message: str = "Successfully joined team!"
+
+
+# =========================================================================
+# Team Messaging Models (Sprint 4)
+# =========================================================================
+
+class TeamMessageEmoji(str, Enum):
+    """Supported emoji reactions for team messages."""
+    THUMBS_UP = "thumbs_up"
+    FIRE = "fire"
+    HUNDRED = "hundred"
+    HEART = "heart"
+    CLAP = "clap"
+    ROCKET = "rocket"
+
+
+# Map emoji enum to actual emoji characters for display
+TEAM_MESSAGE_EMOJI_MAP = {
+    TeamMessageEmoji.THUMBS_UP: "\U0001F44D",   # 👍
+    TeamMessageEmoji.FIRE: "\U0001F525",        # 🔥
+    TeamMessageEmoji.HUNDRED: "\U0001F4AF",     # 💯
+    TeamMessageEmoji.HEART: "\u2764\uFE0F",     # ❤️
+    TeamMessageEmoji.CLAP: "\U0001F44F",        # 👏
+    TeamMessageEmoji.ROCKET: "\U0001F680",      # 🚀
+}
+
+
+class TeamMessageReaction(BaseModel):
+    """A reaction on a team message."""
+    emoji: TeamMessageEmoji
+    count: int = 0
+    users: list[str] = []  # List of identity_ids
+    i_reacted: bool = False
+
+
+class TeamMessage(BaseModel):
+    """A message in a team chat."""
+    id: str
+    team_id: str
+    sender_id: str
+    sender_username: str | None = None
+    sender_display_name: str | None = None
+    sender_avatar_url: str | None = None
+    content: str
+    created_at: datetime
+    edited_at: datetime | None = None
+    is_deleted: bool = False
+    reactions: list[TeamMessageReaction] = []
+    mentions: list[str] = []  # List of mentioned identity_ids
+
+
+class TeamMessagePage(BaseModel):
+    """Paginated team messages response."""
+    messages: list[TeamMessage] = []
+    has_more: bool = False
+    next_cursor: str | None = None  # Message ID for cursor pagination
+    total_count: int | None = None
+
+
+class TeamUnreadCount(BaseModel):
+    """Unread message count for a team."""
+    team_id: str
+    team_name: str
+    challenge_id: str
+    unread_count: int = 0
+    last_message_at: datetime | None = None
+
+
+class TeamReadReceipt(BaseModel):
+    """Read receipt for a team member."""
+    identity_id: str
+    username: str | None = None
+    display_name: str | None = None
+    avatar_url: str | None = None
+    last_read_at: datetime
+    last_read_message_id: str | None = None
+
+
+class TeamMemberForMention(BaseModel):
+    """Team member info for @mention autocomplete."""
+    identity_id: str
+    username: str | None = None
+    display_name: str | None = None
+    avatar_url: str | None = None
+
+
+# =========================================================================
+# Team Messaging Request Models
+# =========================================================================
+
+class SendTeamMessageRequest(BaseModel):
+    """Request to send a message to a team chat."""
+    content: str = Field(..., min_length=1, max_length=2000)
+    mentions: list[str] = Field(default=[], max_length=10)  # List of identity_ids to mention
+
+
+class EditTeamMessageRequest(BaseModel):
+    """Request to edit a message (within 15-min window)."""
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+class AddReactionRequest(BaseModel):
+    """Request to add a reaction to a message."""
+    emoji: TeamMessageEmoji
+
+
+class MarkTeamReadRequest(BaseModel):
+    """Request to mark team messages as read."""
+    last_read_message_id: str | None = None  # If None, marks all as read

@@ -470,3 +470,101 @@ export interface JoinTeamResponse {
   challenge: Challenge;
   message: string;
 }
+
+// =========================================================================
+// Team Messaging (Sprint 4)
+// =========================================================================
+
+export type TeamMessageEmoji = 'thumbs_up' | 'fire' | 'hundred' | 'heart' | 'clap' | 'rocket';
+
+export const TEAM_MESSAGE_EMOJI_MAP: Record<TeamMessageEmoji, string> = {
+  thumbs_up: '\u{1F44D}',   // 👍
+  fire: '\u{1F525}',        // 🔥
+  hundred: '\u{1F4AF}',     // 💯
+  heart: '\u2764\uFE0F',    // ❤️
+  clap: '\u{1F44F}',        // 👏
+  rocket: '\u{1F680}',      // 🚀
+};
+
+export const TEAM_MESSAGE_EMOJI_LIST: TeamMessageEmoji[] = [
+  'thumbs_up',
+  'fire',
+  'hundred',
+  'heart',
+  'clap',
+  'rocket',
+];
+
+export interface TeamMessageReaction {
+  emoji: TeamMessageEmoji;
+  count: number;
+  users: string[];
+  i_reacted: boolean;
+}
+
+export interface TeamMessage {
+  id: string;
+  team_id: string;
+  sender_id: string;
+  sender_username: string | null;
+  sender_display_name: string | null;
+  sender_avatar_url: string | null;
+  content: string;
+  created_at: string;
+  edited_at: string | null;
+  is_deleted: boolean;
+  reactions: TeamMessageReaction[];
+  mentions: string[];
+}
+
+export interface TeamMessagePage {
+  messages: TeamMessage[];
+  has_more: boolean;
+  next_cursor: string | null;
+  total_count: number | null;
+}
+
+export interface TeamUnreadCount {
+  team_id: string;
+  team_name: string;
+  challenge_id: string;
+  unread_count: number;
+  last_message_at: string | null;
+}
+
+export interface TeamReadReceipt {
+  identity_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  last_read_at: string;
+  last_read_message_id: string | null;
+}
+
+export interface TeamMemberForMention {
+  identity_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
+// =========================================================================
+// Team Messaging Request Params
+// =========================================================================
+
+export interface SendTeamMessageParams {
+  content: string;
+  mentions?: string[];
+}
+
+export interface EditTeamMessageParams {
+  content: string;
+}
+
+export interface AddReactionParams {
+  emoji: TeamMessageEmoji;
+}
+
+export interface MarkTeamReadParams {
+  last_read_message_id?: string;
+}

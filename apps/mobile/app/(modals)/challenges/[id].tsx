@@ -16,7 +16,7 @@ import {
 import { YStack, XStack, Text, useTheme } from '@/shared/components/tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Users, Calendar, Trophy, Clock, ShareNetwork, SignOut, Copy } from 'phosphor-react-native';
+import { Users, Calendar, Trophy, Clock, ShareNetwork, SignOut, Copy, ChatCircle } from 'phosphor-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -25,7 +25,8 @@ import {
   useJoinChallenge,
   useLeaveChallenge,
 } from '@/features/social/hooks';
-import { LeaderboardEntryRow } from '@/features/social/components';
+import { LeaderboardEntryRow, UnreadBadge } from '@/features/social/components';
+import { useTeamUnreadCount } from '@/features/social/hooks';
 import { CHALLENGE_TYPE_LABELS, CHALLENGE_STATUS_COLORS, CHALLENGE_TYPE_UNITS } from '@/features/social/types';
 
 export default function ChallengeDetailScreen() {
@@ -50,6 +51,9 @@ export default function ChallengeDetailScreen() {
   const { data: leaderboard } = useChallengeLeaderboard(id);
   const joinChallenge = useJoinChallenge();
   const leaveChallenge = useLeaveChallenge();
+
+  // Team chat unread count (only for team challenges)
+  const teamUnreadCount = useTeamUnreadCount(challenge?.my_team_id || '');
 
   if (!id) {
     return (
@@ -245,6 +249,25 @@ export default function ChallengeDetailScreen() {
               </XStack>
             </XStack>
           </TouchableOpacity>
+
+          {/* Team Chat Button (for team challenges) */}
+          {challenge.is_team_challenge && challenge.my_team_id && (
+            <TouchableOpacity
+              onPress={() => router.push(`/challenges/team/${challenge.my_team_id}/chat`)}
+              activeOpacity={0.7}
+              style={[styles.teamChatButton, { backgroundColor: primaryColor }]}
+            >
+              <XStack alignItems="center" justifyContent="center" gap="$2">
+                <ChatCircle size={22} color="white" weight="fill" />
+                <Text color="white" fontWeight="600" fontSize={16}>
+                  Team Chat
+                </Text>
+                {teamUnreadCount > 0 && (
+                  <UnreadBadge count={teamUnreadCount} size="small" />
+                )}
+              </XStack>
+            </TouchableOpacity>
+          )}
         </YStack>
 
         {/* My Progress (if participating) */}
@@ -400,5 +423,10 @@ const styles = StyleSheet.create({
   },
   leaveButton: {
     backgroundColor: '#fee2e2',
+  },
+  teamChatButton: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 8,
   },
 });

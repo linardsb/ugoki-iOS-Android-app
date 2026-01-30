@@ -22,6 +22,8 @@ class NotificationCategory(str, Enum):
     REMINDER = "reminder"         # General reminders
     MOTIVATIONAL = "motivational" # Daily motivation
     SYSTEM = "system"             # System notifications
+    SOCIAL = "social"             # Social interactions (friend requests, etc.)
+    TEAM_MENTION = "team_mention" # @mentioned in team chat
 
 
 class NotificationStatus(str, Enum):
