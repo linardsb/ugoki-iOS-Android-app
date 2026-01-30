@@ -13,6 +13,9 @@ from src.modules.social.models import (
     ChallengeStatus,
     LeaderboardType,
     LeaderboardPeriod,
+    DuoStreakType,
+    DuoStreakInviteStatus,
+    FeedActivityType,
     Friendship,
     FriendRequest,
     Follow,
@@ -22,12 +25,26 @@ from src.modules.social.models import (
     Leaderboard,
     PublicUserProfile,
     ShareContent,
+    DuoStreak,
+    DuoStreakInvite,
+    DuoStreakMilestone,
+    FeedItem,
+    FeedPreferences,
+    ChallengeTemplate,
 )
 from src.modules.social.orm import (
     FriendshipORM,
     FollowORM,
     ChallengeORM,
     ChallengeParticipantORM,
+    DuoStreakORM,
+    DuoStreakDailyORM,
+    DuoStreakInviteORM,
+    DuoStreakMilestoneORM,
+    FeedItemORM,
+    FeedCheerORM,
+    FeedPreferencesORM,
+    ChallengeTemplateORM,
 )
 
 if TYPE_CHECKING:
@@ -1093,6 +1110,984 @@ class SocialService(SocialInterface):
         )
 
     # =========================================================================
+    # Duo Streaks
+    # =========================================================================
+
+    # Milestone thresholds and XP rewards
+    DUO_STREAK_MILESTONES = {
+        7: 100,      # Week Warriors - 100 XP each
+        14: 150,     # Fortnight Friends - 150 XP each
+        30: 300,     # Monthly Masters - 300 XP each
+        60: 500,     # Dynamic Duo - 500 XP each
+        90: 750,     # Quarter Crew - 750 XP each
+        180: 1000,   # Half-Year Heroes - 1000 XP each
+        365: 2000,   # Yearly Yoke - 2000 XP each
+    }
+
+    async def create_duo_streak_invite(
+        self,
+        identity_id: str,
+        partner_id: str,
+        streak_type: DuoStreakType,
+    ) -> DuoStreakInvite:
+        """Send a duo streak invitation to a friend."""
+        if identity_id == partner_id:
+            raise ValueError("Cannot start a duo streak with yourself")
+
+        # Verify friendship exists and is accepted
+        friendship = await self._get_friendship_record(identity_id, partner_id)
+        if not friendship or friendship.status != FriendshipStatus.ACCEPTED:
+            raise ValueError("Can only start duo streaks with friends")
+
+        # Check for existing active duo streak of this type
+        existing_streak = await self._get_duo_streak_record(identity_id, partner_id, streak_type)
+        if existing_streak and not existing_streak.ended_at:
+            raise ValueError("Active duo streak already exists with this friend")
+
+        # Check for existing pending invite
+        existing_invite = await self._db.execute(
+            select(DuoStreakInviteORM).where(
+                DuoStreakInviteORM.status == DuoStreakInviteStatus.PENDING,
+                DuoStreakInviteORM.streak_type == streak_type,
+                or_(
+                    and_(
+                        DuoStreakInviteORM.from_identity_id == identity_id,
+                        DuoStreakInviteORM.to_identity_id == partner_id,
+                    ),
+                    and_(
+                        DuoStreakInviteORM.from_identity_id == partner_id,
+                        DuoStreakInviteORM.to_identity_id == identity_id,
+                    ),
+                ),
+            )
+        )
+        pending = existing_invite.scalar_one_or_none()
+
+        if pending:
+            # If partner already sent us an invite, auto-accept it
+            if pending.from_identity_id == partner_id:
+                return await self._accept_duo_streak_invite(pending, identity_id)
+            raise ValueError("Duo streak invitation already sent to this friend")
+
+        # Create new invite
+        invite_orm = DuoStreakInviteORM(
+            id=str(uuid4()),
+            from_identity_id=identity_id,
+            to_identity_id=partner_id,
+            streak_type=streak_type,
+            status=DuoStreakInviteStatus.PENDING,
+            created_at=datetime.now(UTC),
+        )
+        self._db.add(invite_orm)
+        await self._db.flush()
+
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="duo_streak_invite_sent",
+            related_id=partner_id,
+            metadata={"streak_type": streak_type.value},
+        )
+
+        profile = await self._get_user_profile_data(identity_id)
+        return DuoStreakInvite(
+            id=invite_orm.id,
+            from_user_id=identity_id,
+            from_username=profile.get("username"),
+            from_display_name=profile.get("display_name"),
+            from_avatar_url=profile.get("avatar_url"),
+            streak_type=streak_type,
+            status=DuoStreakInviteStatus.PENDING,
+            created_at=invite_orm.created_at,
+        )
+
+    async def get_duo_streak_invites(
+        self,
+        identity_id: str,
+        direction: str = "incoming",  # "incoming" or "outgoing"
+    ) -> list[DuoStreakInvite]:
+        """Get pending duo streak invitations."""
+        if direction == "incoming":
+            query = select(DuoStreakInviteORM).where(
+                DuoStreakInviteORM.to_identity_id == identity_id,
+                DuoStreakInviteORM.status == DuoStreakInviteStatus.PENDING,
+            )
+        else:
+            query = select(DuoStreakInviteORM).where(
+                DuoStreakInviteORM.from_identity_id == identity_id,
+                DuoStreakInviteORM.status == DuoStreakInviteStatus.PENDING,
+            )
+
+        result = await self._db.execute(query.order_by(desc(DuoStreakInviteORM.created_at)))
+        invites = []
+
+        for orm in result.scalars():
+            user_id = orm.from_identity_id if direction == "incoming" else orm.to_identity_id
+            profile = await self._get_user_profile_data(user_id)
+            invites.append(DuoStreakInvite(
+                id=orm.id,
+                from_user_id=orm.from_identity_id,
+                from_username=profile.get("username"),
+                from_display_name=profile.get("display_name"),
+                from_avatar_url=profile.get("avatar_url"),
+                streak_type=orm.streak_type,
+                status=orm.status,
+                created_at=orm.created_at,
+            ))
+
+        return invites
+
+    async def respond_to_duo_streak_invite(
+        self,
+        identity_id: str,
+        invite_id: str,
+        accept: bool,
+    ) -> DuoStreak | None:
+        """Accept or decline a duo streak invitation."""
+        result = await self._db.execute(
+            select(DuoStreakInviteORM).where(DuoStreakInviteORM.id == invite_id)
+        )
+        invite = result.scalar_one_or_none()
+
+        if not invite:
+            raise ValueError("Invitation not found")
+
+        if invite.to_identity_id != identity_id:
+            raise ValueError("This invitation is not for you")
+
+        if invite.status != DuoStreakInviteStatus.PENDING:
+            raise ValueError("Invitation is no longer pending")
+
+        invite.responded_at = datetime.now(UTC)
+
+        if accept:
+            return await self._accept_duo_streak_invite(invite, identity_id)
+        else:
+            invite.status = DuoStreakInviteStatus.DECLINED
+            await self._db.flush()
+
+            await self._record_social_event(
+                identity_id=identity_id,
+                event_type="duo_streak_invite_declined",
+                related_id=invite.from_identity_id,
+            )
+            return None
+
+    async def _accept_duo_streak_invite(
+        self,
+        invite: DuoStreakInviteORM,
+        accepting_user_id: str,
+    ) -> DuoStreak:
+        """Accept a duo streak invitation and create the duo streak."""
+        invite.status = DuoStreakInviteStatus.ACCEPTED
+        invite.responded_at = datetime.now(UTC)
+
+        # Create the duo streak (ensure id_a < id_b)
+        id_a, id_b = (
+            (invite.from_identity_id, invite.to_identity_id)
+            if invite.from_identity_id < invite.to_identity_id
+            else (invite.to_identity_id, invite.from_identity_id)
+        )
+
+        duo_streak_orm = DuoStreakORM(
+            id=str(uuid4()),
+            identity_id_a=id_a,
+            identity_id_b=id_b,
+            streak_type=invite.streak_type,
+            current_count=0,
+            longest_count=0,
+            started_at=datetime.now(UTC),
+        )
+        self._db.add(duo_streak_orm)
+        await self._db.flush()
+
+        await self._record_social_event(
+            identity_id=accepting_user_id,
+            event_type="duo_streak_started",
+            related_id=duo_streak_orm.id,
+            metadata={
+                "partner_id": invite.from_identity_id,
+                "streak_type": invite.streak_type.value,
+            },
+        )
+
+        return await self._duo_streak_to_model(duo_streak_orm, accepting_user_id)
+
+    async def get_duo_streaks(
+        self,
+        identity_id: str,
+        active_only: bool = True,
+    ) -> list[DuoStreak]:
+        """Get user's duo streaks."""
+        query = select(DuoStreakORM).where(
+            or_(
+                DuoStreakORM.identity_id_a == identity_id,
+                DuoStreakORM.identity_id_b == identity_id,
+            ),
+        )
+
+        if active_only:
+            query = query.where(DuoStreakORM.ended_at.is_(None))
+
+        query = query.order_by(desc(DuoStreakORM.current_count))
+        result = await self._db.execute(query)
+
+        streaks = []
+        for orm in result.scalars():
+            streaks.append(await self._duo_streak_to_model(orm, identity_id))
+
+        return streaks
+
+    async def get_duo_streak(
+        self,
+        identity_id: str,
+        duo_streak_id: str,
+    ) -> DuoStreak | None:
+        """Get a specific duo streak."""
+        result = await self._db.execute(
+            select(DuoStreakORM).where(DuoStreakORM.id == duo_streak_id)
+        )
+        orm = result.scalar_one_or_none()
+
+        if not orm:
+            return None
+
+        # Verify user is part of this duo streak
+        if identity_id not in (orm.identity_id_a, orm.identity_id_b):
+            raise ValueError("You are not part of this duo streak")
+
+        return await self._duo_streak_to_model(orm, identity_id)
+
+    async def get_duo_streaks_at_risk(
+        self,
+        identity_id: str,
+    ) -> list[DuoStreak]:
+        """Get duo streaks where one person completed today but not the other."""
+        today = date.today()
+        at_risk_streaks = []
+
+        # Get all active duo streaks for this user
+        streaks = await self.get_duo_streaks(identity_id, active_only=True)
+
+        for streak in streaks:
+            if streak.at_risk:
+                at_risk_streaks.append(streak)
+
+        return at_risk_streaks
+
+    async def end_duo_streak(
+        self,
+        identity_id: str,
+        duo_streak_id: str,
+    ) -> bool:
+        """End a duo streak."""
+        result = await self._db.execute(
+            select(DuoStreakORM).where(DuoStreakORM.id == duo_streak_id)
+        )
+        orm = result.scalar_one_or_none()
+
+        if not orm:
+            raise ValueError("Duo streak not found")
+
+        if identity_id not in (orm.identity_id_a, orm.identity_id_b):
+            raise ValueError("You are not part of this duo streak")
+
+        if orm.ended_at:
+            raise ValueError("Duo streak already ended")
+
+        orm.ended_at = datetime.now(UTC)
+        await self._db.flush()
+
+        # Notify the other user
+        partner_id = orm.identity_id_b if orm.identity_id_a == identity_id else orm.identity_id_a
+
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="duo_streak_ended",
+            related_id=duo_streak_id,
+            metadata={
+                "partner_id": partner_id,
+                "final_count": orm.current_count,
+                "longest_count": orm.longest_count,
+            },
+        )
+
+        return True
+
+    async def record_duo_streak_activity(
+        self,
+        identity_id: str,
+        activity_type: str,  # "fasting" or "workout"
+    ) -> list[DuoStreak]:
+        """
+        Record activity completion for duo streaks.
+        Called when a user completes a fast or workout.
+        Returns list of duo streaks that were updated.
+        """
+        today = date.today()
+        updated_streaks = []
+
+        # Map activity type to streak types
+        matching_streak_types = [DuoStreakType.ANY_ACTIVITY]
+        if activity_type == "fasting":
+            matching_streak_types.append(DuoStreakType.FASTING)
+        elif activity_type == "workout":
+            matching_streak_types.append(DuoStreakType.WORKOUT)
+
+        # Get all active duo streaks for this user matching the activity type
+        query = select(DuoStreakORM).where(
+            DuoStreakORM.ended_at.is_(None),
+            DuoStreakORM.streak_type.in_(matching_streak_types),
+            or_(
+                DuoStreakORM.identity_id_a == identity_id,
+                DuoStreakORM.identity_id_b == identity_id,
+            ),
+        )
+        result = await self._db.execute(query)
+
+        for duo_streak in result.scalars():
+            # Determine if user is A or B
+            is_user_a = duo_streak.identity_id_a == identity_id
+            partner_id = duo_streak.identity_id_b if is_user_a else duo_streak.identity_id_a
+
+            # Get or create daily record for today
+            daily = await self._get_or_create_duo_streak_daily(duo_streak.id, today)
+
+            # Check if already completed today (idempotent)
+            already_completed = (
+                daily.identity_id_a_completed if is_user_a else daily.identity_id_b_completed
+            )
+            if already_completed:
+                # Already recorded for today, skip
+                updated_streaks.append(await self._duo_streak_to_model(duo_streak, identity_id))
+                continue
+
+            # Mark this user as completed for today
+            if is_user_a:
+                daily.identity_id_a_completed = True
+            else:
+                daily.identity_id_b_completed = True
+
+            # Check if BOTH users have now completed today
+            if daily.identity_id_a_completed and daily.identity_id_b_completed:
+                daily.both_completed = True
+
+                # Increment streak count
+                duo_streak.current_count += 1
+                duo_streak.last_mutual_date = today
+
+                # Update longest count if needed
+                if duo_streak.current_count > duo_streak.longest_count:
+                    duo_streak.longest_count = duo_streak.current_count
+
+                # Check for milestones
+                await self._check_duo_streak_milestone(duo_streak, identity_id, partner_id)
+
+                # Record event for feed
+                await self._record_social_event(
+                    identity_id=identity_id,
+                    event_type="duo_streak_day_completed",
+                    related_id=duo_streak.id,
+                    metadata={
+                        "partner_id": partner_id,
+                        "streak_type": duo_streak.streak_type.value,
+                        "current_count": duo_streak.current_count,
+                    },
+                )
+
+            updated_streaks.append(await self._duo_streak_to_model(duo_streak, identity_id))
+
+        await self._db.flush()
+        return updated_streaks
+
+    async def check_duo_streak_breaks(self) -> int:
+        """
+        Check for broken duo streaks. Should be called by a scheduled job at midnight UTC.
+        Returns the number of streaks that were broken.
+        """
+        yesterday = date.today() - timedelta(days=1)
+        broken_count = 0
+
+        # Find all active duo streaks with a current count > 0
+        query = select(DuoStreakORM).where(
+            DuoStreakORM.ended_at.is_(None),
+            DuoStreakORM.current_count > 0,
+        )
+        result = await self._db.execute(query)
+
+        for duo_streak in result.scalars():
+            # Check if both completed yesterday
+            daily_result = await self._db.execute(
+                select(DuoStreakDailyORM).where(
+                    DuoStreakDailyORM.duo_streak_id == duo_streak.id,
+                    DuoStreakDailyORM.activity_date == yesterday,
+                )
+            )
+            daily = daily_result.scalar_one_or_none()
+
+            # If no daily record or not both completed, streak is broken
+            if not daily or not daily.both_completed:
+                previous_count = duo_streak.current_count
+                duo_streak.current_count = 0
+
+                # Record event for both users
+                for user_id in [duo_streak.identity_id_a, duo_streak.identity_id_b]:
+                    partner_id = (
+                        duo_streak.identity_id_b
+                        if user_id == duo_streak.identity_id_a
+                        else duo_streak.identity_id_a
+                    )
+                    await self._record_social_event(
+                        identity_id=user_id,
+                        event_type="duo_streak_broken",
+                        related_id=duo_streak.id,
+                        metadata={
+                            "partner_id": partner_id,
+                            "streak_type": duo_streak.streak_type.value,
+                            "previous_count": previous_count,
+                        },
+                    )
+
+                broken_count += 1
+
+        await self._db.flush()
+        return broken_count
+
+    async def _check_duo_streak_milestone(
+        self,
+        duo_streak: DuoStreakORM,
+        user_id: str,
+        partner_id: str,
+    ) -> DuoStreakMilestone | None:
+        """Check if a milestone was reached and award XP."""
+        current_count = duo_streak.current_count
+
+        # Check if current count matches a milestone
+        if current_count not in self.DUO_STREAK_MILESTONES:
+            return None
+
+        xp_reward = self.DUO_STREAK_MILESTONES[current_count]
+
+        # Check if milestone already recorded
+        existing = await self._db.execute(
+            select(DuoStreakMilestoneORM).where(
+                DuoStreakMilestoneORM.duo_streak_id == duo_streak.id,
+                DuoStreakMilestoneORM.milestone_days == current_count,
+            )
+        )
+        if existing.scalar_one_or_none():
+            return None  # Already recorded
+
+        # Create milestone record
+        milestone_orm = DuoStreakMilestoneORM(
+            id=str(uuid4()),
+            duo_streak_id=duo_streak.id,
+            milestone_days=current_count,
+            reached_at=datetime.now(UTC),
+            xp_awarded_a=False,
+            xp_awarded_b=False,
+        )
+        self._db.add(milestone_orm)
+
+        # Award XP to both users via progression service
+        if self._progression:
+            for uid in [duo_streak.identity_id_a, duo_streak.identity_id_b]:
+                try:
+                    await self._progression.add_xp(
+                        identity_id=uid,
+                        amount=xp_reward,
+                        source=f"duo_streak_milestone_{current_count}",
+                        description=f"{current_count}-day duo streak milestone",
+                    )
+                    # Mark as awarded
+                    if uid == duo_streak.identity_id_a:
+                        milestone_orm.xp_awarded_a = True
+                    else:
+                        milestone_orm.xp_awarded_b = True
+                except Exception:
+                    pass  # Don't fail the main operation
+
+        # Record event for feed
+        await self._record_social_event(
+            identity_id=user_id,
+            event_type="duo_streak_milestone",
+            related_id=duo_streak.id,
+            metadata={
+                "partner_id": partner_id,
+                "streak_type": duo_streak.streak_type.value,
+                "milestone_days": current_count,
+                "xp_reward": xp_reward,
+            },
+        )
+
+        await self._db.flush()
+
+        return DuoStreakMilestone(
+            id=milestone_orm.id,
+            duo_streak_id=duo_streak.id,
+            milestone_days=current_count,
+            reached_at=milestone_orm.reached_at,
+        )
+
+    async def _get_duo_streak_record(
+        self,
+        identity_id: str,
+        partner_id: str,
+        streak_type: DuoStreakType,
+    ) -> DuoStreakORM | None:
+        """Get duo streak record between two users."""
+        id_a, id_b = (
+            (identity_id, partner_id)
+            if identity_id < partner_id
+            else (partner_id, identity_id)
+        )
+
+        result = await self._db.execute(
+            select(DuoStreakORM).where(
+                DuoStreakORM.identity_id_a == id_a,
+                DuoStreakORM.identity_id_b == id_b,
+                DuoStreakORM.streak_type == streak_type,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def _get_or_create_duo_streak_daily(
+        self,
+        duo_streak_id: str,
+        activity_date: date,
+    ) -> DuoStreakDailyORM:
+        """Get or create a daily record for a duo streak."""
+        result = await self._db.execute(
+            select(DuoStreakDailyORM).where(
+                DuoStreakDailyORM.duo_streak_id == duo_streak_id,
+                DuoStreakDailyORM.activity_date == activity_date,
+            )
+        )
+        daily = result.scalar_one_or_none()
+
+        if not daily:
+            daily = DuoStreakDailyORM(
+                id=str(uuid4()),
+                duo_streak_id=duo_streak_id,
+                activity_date=activity_date,
+                identity_id_a_completed=False,
+                identity_id_b_completed=False,
+                both_completed=False,
+                created_at=datetime.now(UTC),
+            )
+            self._db.add(daily)
+            await self._db.flush()
+
+        return daily
+
+    async def _duo_streak_to_model(
+        self,
+        orm: DuoStreakORM,
+        viewer_id: str,
+    ) -> DuoStreak:
+        """Convert duo streak ORM to model from viewer's perspective."""
+        # Determine partner
+        is_user_a = orm.identity_id_a == viewer_id
+        partner_id = orm.identity_id_b if is_user_a else orm.identity_id_a
+
+        # Get partner profile
+        profile = await self._get_user_profile_data(partner_id)
+
+        # Get today's completion status
+        today = date.today()
+        daily_result = await self._db.execute(
+            select(DuoStreakDailyORM).where(
+                DuoStreakDailyORM.duo_streak_id == orm.id,
+                DuoStreakDailyORM.activity_date == today,
+            )
+        )
+        daily = daily_result.scalar_one_or_none()
+
+        i_completed_today = False
+        partner_completed_today = False
+
+        if daily:
+            i_completed_today = (
+                daily.identity_id_a_completed if is_user_a else daily.identity_id_b_completed
+            )
+            partner_completed_today = (
+                daily.identity_id_b_completed if is_user_a else daily.identity_id_a_completed
+            )
+
+        # At risk = one completed but not the other
+        at_risk = (i_completed_today != partner_completed_today) and orm.current_count > 0
+
+        return DuoStreak(
+            id=orm.id,
+            partner_id=partner_id,
+            partner_username=profile.get("username"),
+            partner_display_name=profile.get("display_name"),
+            partner_avatar_url=profile.get("avatar_url"),
+            streak_type=orm.streak_type,
+            current_count=orm.current_count,
+            longest_count=orm.longest_count,
+            last_mutual_date=orm.last_mutual_date,
+            started_at=orm.started_at,
+            ended_at=orm.ended_at,
+            i_completed_today=i_completed_today,
+            partner_completed_today=partner_completed_today,
+            at_risk=at_risk,
+        )
+
+    # =========================================================================
+    # Activity Feed
+    # =========================================================================
+
+    # Activity type to preference field mapping
+    ACTIVITY_PREFERENCE_MAP = {
+        FeedActivityType.FAST_COMPLETED: "share_fasts",
+        FeedActivityType.WORKOUT_COMPLETED: "share_workouts",
+        FeedActivityType.ACHIEVEMENT_UNLOCKED: "share_achievements",
+        FeedActivityType.LEVEL_UP: "share_level_ups",
+        FeedActivityType.STREAK_MILESTONE: "share_streaks",
+        FeedActivityType.DUO_STREAK_MILESTONE: "share_duo_streaks",
+    }
+
+    async def get_friends_feed(
+        self,
+        identity_id: str,
+        limit: int = 20,
+        before: datetime | None = None,
+    ) -> list[FeedItem]:
+        """Get activity feed from friends (cursor-based pagination)."""
+        import json
+
+        # Get friend IDs
+        friend_ids = await self._get_friend_ids(identity_id)
+        if not friend_ids:
+            return []
+
+        # Build query
+        query = (
+            select(FeedItemORM)
+            .where(FeedItemORM.identity_id.in_(friend_ids))
+        )
+
+        if before:
+            query = query.where(FeedItemORM.created_at < before)
+
+        query = query.order_by(desc(FeedItemORM.created_at)).limit(limit)
+
+        result = await self._db.execute(query)
+        items = []
+
+        for orm in result.scalars():
+            i_cheered = await self._has_cheered(identity_id, orm.id)
+            metadata = None
+            if orm.item_metadata:
+                try:
+                    metadata = json.loads(orm.item_metadata)
+                except (json.JSONDecodeError, TypeError):
+                    metadata = None
+
+            items.append(FeedItem(
+                id=orm.id,
+                identity_id=orm.identity_id,
+                activity_type=orm.activity_type,
+                title=orm.title,
+                subtitle=orm.subtitle,
+                metadata=metadata,
+                cheer_count=orm.cheer_count,
+                created_at=orm.created_at,
+                display_name=orm.display_name,
+                avatar_url=orm.avatar_url,
+                i_cheered=i_cheered,
+            ))
+
+        return items
+
+    async def get_my_activity(
+        self,
+        identity_id: str,
+        limit: int = 20,
+        before: datetime | None = None,
+    ) -> list[FeedItem]:
+        """Get user's own recent activity."""
+        import json
+
+        query = select(FeedItemORM).where(FeedItemORM.identity_id == identity_id)
+
+        if before:
+            query = query.where(FeedItemORM.created_at < before)
+
+        query = query.order_by(desc(FeedItemORM.created_at)).limit(limit)
+
+        result = await self._db.execute(query)
+        items = []
+
+        for orm in result.scalars():
+            i_cheered = await self._has_cheered(identity_id, orm.id)
+            metadata = None
+            if orm.item_metadata:
+                try:
+                    metadata = json.loads(orm.item_metadata)
+                except (json.JSONDecodeError, TypeError):
+                    metadata = None
+
+            items.append(FeedItem(
+                id=orm.id,
+                identity_id=orm.identity_id,
+                activity_type=orm.activity_type,
+                title=orm.title,
+                subtitle=orm.subtitle,
+                metadata=metadata,
+                cheer_count=orm.cheer_count,
+                created_at=orm.created_at,
+                display_name=orm.display_name,
+                avatar_url=orm.avatar_url,
+                i_cheered=i_cheered,
+            ))
+
+        return items
+
+    async def cheer_feed_item(
+        self,
+        identity_id: str,
+        feed_item_id: str,
+    ) -> FeedItem:
+        """Add a cheer to a feed item."""
+        import json
+
+        # Get the feed item
+        result = await self._db.execute(
+            select(FeedItemORM).where(FeedItemORM.id == feed_item_id)
+        )
+        item = result.scalar_one_or_none()
+
+        if not item:
+            raise ValueError("Feed item not found")
+
+        # Check if already cheered
+        if await self._has_cheered(identity_id, feed_item_id):
+            raise ValueError("Already cheered this item")
+
+        # Add cheer record
+        cheer = FeedCheerORM(
+            id=str(uuid4()),
+            feed_item_id=feed_item_id,
+            identity_id=identity_id,
+            created_at=datetime.now(UTC),
+        )
+        self._db.add(cheer)
+
+        # Increment cheer count
+        item.cheer_count += 1
+        await self._db.flush()
+
+        # Record event for the item owner
+        await self._record_social_event(
+            identity_id=item.identity_id,
+            event_type="feed_item_cheered",
+            related_id=feed_item_id,
+            metadata={"cheered_by": identity_id},
+        )
+
+        metadata = None
+        if item.item_metadata:
+            try:
+                metadata = json.loads(item.item_metadata)
+            except (json.JSONDecodeError, TypeError):
+                metadata = None
+
+        return FeedItem(
+            id=item.id,
+            identity_id=item.identity_id,
+            activity_type=item.activity_type,
+            title=item.title,
+            subtitle=item.subtitle,
+            metadata=metadata,
+            cheer_count=item.cheer_count,
+            created_at=item.created_at,
+            display_name=item.display_name,
+            avatar_url=item.avatar_url,
+            i_cheered=True,
+        )
+
+    async def uncheer_feed_item(
+        self,
+        identity_id: str,
+        feed_item_id: str,
+    ) -> bool:
+        """Remove a cheer from a feed item."""
+        # Get the feed item
+        result = await self._db.execute(
+            select(FeedItemORM).where(FeedItemORM.id == feed_item_id)
+        )
+        item = result.scalar_one_or_none()
+
+        if not item:
+            raise ValueError("Feed item not found")
+
+        # Find and delete the cheer
+        cheer_result = await self._db.execute(
+            select(FeedCheerORM).where(
+                FeedCheerORM.feed_item_id == feed_item_id,
+                FeedCheerORM.identity_id == identity_id,
+            )
+        )
+        cheer = cheer_result.scalar_one_or_none()
+
+        if not cheer:
+            raise ValueError("Cheer not found")
+
+        await self._db.delete(cheer)
+
+        # Decrement cheer count
+        item.cheer_count = max(0, item.cheer_count - 1)
+        await self._db.flush()
+
+        return True
+
+    async def get_feed_preferences(
+        self,
+        identity_id: str,
+    ) -> FeedPreferences:
+        """Get user's feed sharing preferences."""
+        result = await self._db.execute(
+            select(FeedPreferencesORM).where(FeedPreferencesORM.identity_id == identity_id)
+        )
+        orm = result.scalar_one_or_none()
+
+        if not orm:
+            # Return defaults if no preferences set
+            return FeedPreferences()
+
+        return FeedPreferences(
+            share_fasts=orm.share_fasts,
+            share_workouts=orm.share_workouts,
+            share_achievements=orm.share_achievements,
+            share_level_ups=orm.share_level_ups,
+            share_streaks=orm.share_streaks,
+            share_duo_streaks=orm.share_duo_streaks,
+        )
+
+    async def update_feed_preferences(
+        self,
+        identity_id: str,
+        share_fasts: bool | None = None,
+        share_workouts: bool | None = None,
+        share_achievements: bool | None = None,
+        share_level_ups: bool | None = None,
+        share_streaks: bool | None = None,
+        share_duo_streaks: bool | None = None,
+    ) -> FeedPreferences:
+        """Update user's feed sharing preferences."""
+        result = await self._db.execute(
+            select(FeedPreferencesORM).where(FeedPreferencesORM.identity_id == identity_id)
+        )
+        orm = result.scalar_one_or_none()
+
+        if not orm:
+            # Create new preferences
+            orm = FeedPreferencesORM(
+                identity_id=identity_id,
+                share_fasts=share_fasts if share_fasts is not None else True,
+                share_workouts=share_workouts if share_workouts is not None else True,
+                share_achievements=share_achievements if share_achievements is not None else True,
+                share_level_ups=share_level_ups if share_level_ups is not None else True,
+                share_streaks=share_streaks if share_streaks is not None else True,
+                share_duo_streaks=share_duo_streaks if share_duo_streaks is not None else True,
+            )
+            self._db.add(orm)
+        else:
+            # Update existing
+            if share_fasts is not None:
+                orm.share_fasts = share_fasts
+            if share_workouts is not None:
+                orm.share_workouts = share_workouts
+            if share_achievements is not None:
+                orm.share_achievements = share_achievements
+            if share_level_ups is not None:
+                orm.share_level_ups = share_level_ups
+            if share_streaks is not None:
+                orm.share_streaks = share_streaks
+            if share_duo_streaks is not None:
+                orm.share_duo_streaks = share_duo_streaks
+            orm.updated_at = datetime.now(UTC)
+
+        await self._db.flush()
+
+        return FeedPreferences(
+            share_fasts=orm.share_fasts,
+            share_workouts=orm.share_workouts,
+            share_achievements=orm.share_achievements,
+            share_level_ups=orm.share_level_ups,
+            share_streaks=orm.share_streaks,
+            share_duo_streaks=orm.share_duo_streaks,
+        )
+
+    async def create_feed_item(
+        self,
+        identity_id: str,
+        activity_type: FeedActivityType,
+        title: str,
+        subtitle: str | None = None,
+        metadata: dict | None = None,
+    ) -> FeedItem | None:
+        """
+        Create a feed item for the user's activity.
+        Returns None if user has disabled sharing for this activity type.
+        """
+        import json
+
+        # Check user's preferences
+        prefs = await self.get_feed_preferences(identity_id)
+        pref_field = self.ACTIVITY_PREFERENCE_MAP.get(activity_type)
+        if pref_field and not getattr(prefs, pref_field, True):
+            return None  # User has disabled sharing for this type
+
+        # Get user profile data for denormalization
+        profile = await self._get_user_profile_data(identity_id)
+
+        # Create feed item
+        item = FeedItemORM(
+            id=str(uuid4()),
+            identity_id=identity_id,
+            activity_type=activity_type.value,
+            title=title,
+            subtitle=subtitle,
+            item_metadata=json.dumps(metadata) if metadata else None,
+            cheer_count=0,
+            created_at=datetime.now(UTC),
+            display_name=profile.get("display_name"),
+            avatar_url=profile.get("avatar_url"),
+        )
+        self._db.add(item)
+        await self._db.flush()
+
+        return FeedItem(
+            id=item.id,
+            identity_id=item.identity_id,
+            activity_type=item.activity_type,
+            title=item.title,
+            subtitle=item.subtitle,
+            metadata=metadata,
+            cheer_count=0,
+            created_at=item.created_at,
+            display_name=item.display_name,
+            avatar_url=item.avatar_url,
+            i_cheered=False,
+        )
+
+    async def _has_cheered(
+        self,
+        identity_id: str,
+        feed_item_id: str,
+    ) -> bool:
+        """Check if user has cheered a feed item."""
+        result = await self._db.execute(
+            select(FeedCheerORM).where(
+                FeedCheerORM.feed_item_id == feed_item_id,
+                FeedCheerORM.identity_id == identity_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    # =========================================================================
     # Private Helpers
     # =========================================================================
 
@@ -1588,3 +2583,135 @@ class SocialService(SocialInterface):
         except Exception:
             # Don't fail the main operation if event logging fails
             pass
+
+    # =========================================================================
+    # Challenge Templates
+    # =========================================================================
+
+    async def get_challenge_templates(
+        self,
+        active_only: bool = True,
+    ) -> list[ChallengeTemplate]:
+        """
+        Get available challenge templates.
+
+        Returns pre-built templates sorted by sort_order for quick challenge creation.
+        """
+        query = select(ChallengeTemplateORM)
+
+        if active_only:
+            query = query.where(ChallengeTemplateORM.is_active == True)  # noqa: E712
+
+        query = query.order_by(ChallengeTemplateORM.sort_order)
+        result = await self._db.execute(query)
+
+        templates = []
+        for orm in result.scalars():
+            templates.append(ChallengeTemplate(
+                id=orm.id,
+                name=orm.name,
+                description=orm.description,
+                challenge_type=ChallengeType(orm.challenge_type),
+                duration_days=orm.duration_days,
+                goal_value=orm.goal_value,
+                goal_unit=orm.goal_unit,
+                icon=orm.icon,
+                is_active=orm.is_active,
+                sort_order=orm.sort_order,
+            ))
+
+        return templates
+
+    async def create_challenge_from_template(
+        self,
+        identity_id: str,
+        template_id: str,
+        invite_friend_ids: list[str] | None = None,
+        custom_name: str | None = None,
+        start_date: date | None = None,
+    ) -> Challenge:
+        """
+        Create a challenge from a pre-built template.
+
+        Args:
+            identity_id: The user creating the challenge
+            template_id: The template to use
+            invite_friend_ids: Optional list of friend IDs to auto-invite
+            custom_name: Optional custom name (defaults to template name)
+            start_date: Optional start date (defaults to tomorrow)
+
+        Returns:
+            The created challenge
+
+        Raises:
+            ValueError: If template not found or invalid friends
+        """
+        # Get the template
+        result = await self._db.execute(
+            select(ChallengeTemplateORM).where(
+                ChallengeTemplateORM.id == template_id,
+                ChallengeTemplateORM.is_active == True,  # noqa: E712
+            )
+        )
+        template = result.scalar_one_or_none()
+
+        if not template:
+            raise ValueError("Challenge template not found or inactive")
+
+        # Calculate dates
+        if start_date is None:
+            start_date = date.today() + timedelta(days=1)  # Default: tomorrow
+
+        end_date = start_date + timedelta(days=template.duration_days - 1)
+
+        # Use custom name or template name
+        challenge_name = custom_name or template.name
+
+        # Create the challenge using existing method
+        challenge = await self.create_challenge(
+            identity_id=identity_id,
+            name=challenge_name,
+            challenge_type=ChallengeType(template.challenge_type),
+            goal_value=template.goal_value,
+            start_date=start_date,
+            end_date=end_date,
+            description=template.description,
+            goal_unit=template.goal_unit,
+            is_public=False,  # Template challenges are private by default
+            max_participants=50,
+        )
+
+        # Auto-invite friends if specified
+        if invite_friend_ids:
+            for friend_id in invite_friend_ids:
+                try:
+                    # Verify they are actually friends
+                    friendship = await self._get_friendship_record(identity_id, friend_id)
+                    if friendship and friendship.status == FriendshipStatus.ACCEPTED:
+                        # Record invitation event (actual invite would be via notification)
+                        await self._record_social_event(
+                            identity_id=identity_id,
+                            event_type="challenge_invite_sent",
+                            related_id=challenge.id,
+                            metadata={
+                                "friend_id": friend_id,
+                                "challenge_name": challenge_name,
+                                "template_id": template_id,
+                            },
+                        )
+                except Exception:
+                    # Don't fail if one invite fails
+                    pass
+
+        await self._record_social_event(
+            identity_id=identity_id,
+            event_type="challenge_created_from_template",
+            related_id=challenge.id,
+            metadata={
+                "template_id": template_id,
+                "template_name": template.name,
+                "invited_count": len(invite_friend_ids) if invite_friend_ids else 0,
+            },
+        )
+
+        return challenge

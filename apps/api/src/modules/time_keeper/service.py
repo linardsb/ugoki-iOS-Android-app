@@ -11,6 +11,7 @@ from src.modules.time_keeper.orm import TimeWindowORM
 
 if TYPE_CHECKING:
     from src.modules.event_journal.service import EventJournalService
+    from src.modules.social.service import SocialService
 
 
 class TimeKeeperService(TimeKeeperInterface):
@@ -29,9 +30,11 @@ class TimeKeeperService(TimeKeeperInterface):
         self,
         db: AsyncSession,
         event_journal: "EventJournalService | None" = None,
+        social_service: "SocialService | None" = None,
     ):
         self._db = db
         self._event_journal = event_journal
+        self._social_service = social_service
 
     async def open_window(
         self,
@@ -125,6 +128,13 @@ class TimeKeeperService(TimeKeeperInterface):
                 "duration_seconds": duration_seconds,
             },
         )
+
+        # Update duo streaks if completed (not abandoned)
+        if end_state == WindowState.COMPLETED:
+            await self._record_duo_streak_activity(
+                identity_id=orm.identity_id,
+                window_type=orm.window_type,
+            )
 
         return window
 
@@ -303,3 +313,31 @@ class TimeKeeperService(TimeKeeperInterface):
                 **(metadata or {}),
             },
         )
+
+    async def _record_duo_streak_activity(
+        self,
+        identity_id: str,
+        window_type: WindowType,
+    ) -> None:
+        """Record activity completion for duo streaks."""
+        if not self._social_service:
+            return
+
+        # Map window type to activity type for duo streaks
+        activity_type_map = {
+            WindowType.FAST: "fasting",
+            WindowType.WORKOUT: "workout",
+        }
+
+        activity_type = activity_type_map.get(window_type)
+        if not activity_type:
+            return  # Only fasting and workout activities count for duo streaks
+
+        try:
+            await self._social_service.record_duo_streak_activity(
+                identity_id=identity_id,
+                activity_type=activity_type,
+            )
+        except Exception:
+            # Don't fail the main operation if duo streak recording fails
+            pass

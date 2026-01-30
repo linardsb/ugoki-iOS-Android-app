@@ -16,6 +16,7 @@ import {
   CaretRight,
   Plus,
   MagnifyingGlass,
+  Fire,
 } from 'phosphor-react-native';
 import { ScreenHeader } from '@/shared/components/ui';
 import {
@@ -24,6 +25,8 @@ import {
   useMyChallenges,
   useLeaderboard,
   useFriendRequestCount,
+  useDuoStreaks,
+  useDuoStreaksAtRiskCount,
 } from '@/features/social/hooks';
 import { ChallengeCard } from '@/features/social/components/ChallengeCard';
 import { LeaderboardEntryRow } from '@/features/social/components/LeaderboardEntry';
@@ -57,7 +60,9 @@ export default function SocialScreen() {
   const { data: followers, refetch: refetchFollowers } = useFollowers();
   const { data: myChallenges, isLoading: challengesLoading, refetch: refetchChallenges } = useMyChallenges();
   const { data: leaderboard, refetch: refetchLeaderboard } = useLeaderboard('global_xp', 'all_time', 5);
+  const { data: duoStreaks, refetch: refetchDuoStreaks } = useDuoStreaks();
   const requestCount = useFriendRequestCount();
+  const duoStreaksAtRisk = useDuoStreaksAtRiskCount();
 
   const isRefreshing = friendsLoading || challengesLoading;
 
@@ -66,6 +71,7 @@ export default function SocialScreen() {
     refetchFollowers();
     refetchChallenges();
     refetchLeaderboard();
+    refetchDuoStreaks();
   };
 
   const activeChallenges = myChallenges?.filter(c => c.status === 'active') || [];
@@ -292,6 +298,31 @@ export default function SocialScreen() {
                 </YStack>
               </XStack>
               <CaretRight size={20} color={mutedColor} weight="regular" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.menuItem, { backgroundColor: cardBackground, borderWidth: 1, borderColor: cardBorderColor }]}
+              onPress={() => router.push('/(modals)/duo-streaks')}
+            >
+              <XStack alignItems="center" gap="$3" flex={1}>
+                <View style={[styles.menuIcon, { backgroundColor: secondaryBgColor }]}>
+                  <Fire size={20} color={secondaryColor} weight="regular" />
+                </View>
+                <YStack>
+                  <Text fontSize={15} fontWeight="600" color="$color">Duo Streaks</Text>
+                  <Text fontSize={13} color="$colorMuted">Stay accountable with a friend</Text>
+                </YStack>
+              </XStack>
+              <XStack alignItems="center" gap="$2">
+                {duoStreaksAtRisk > 0 ? (
+                  <View style={[styles.badge, { backgroundColor: errorColor, position: 'relative', top: 0, right: 0 }]}>
+                    <Text fontSize={10} fontWeight="700" color="white">
+                      {duoStreaksAtRisk}
+                    </Text>
+                  </View>
+                ) : null}
+                <CaretRight size={20} color={mutedColor} weight="regular" />
+              </XStack>
             </TouchableOpacity>
           </YStack>
         </YStack>

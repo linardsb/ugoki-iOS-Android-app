@@ -40,6 +40,27 @@ class LeaderboardPeriod(str, Enum):
     ALL_TIME = "all_time"
 
 
+class DuoStreakType(str, Enum):
+    FASTING = "fasting"
+    WORKOUT = "workout"
+    ANY_ACTIVITY = "any_activity"
+
+
+class DuoStreakInviteStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+
+
+class FeedActivityType(str, Enum):
+    FAST_COMPLETED = "fast_completed"
+    WORKOUT_COMPLETED = "workout_completed"
+    ACHIEVEMENT_UNLOCKED = "achievement_unlocked"
+    LEVEL_UP = "level_up"
+    STREAK_MILESTONE = "streak_milestone"
+    DUO_STREAK_MILESTONE = "duo_streak_milestone"
+
+
 # =========================================================================
 # Core Models
 # =========================================================================
@@ -198,3 +219,133 @@ class GenerateShareContentRequest(BaseModel):
     share_type: str  # achievement, streak, level_up, workout, challenge_win
     related_id: str | None = None
     custom_message: str | None = None
+
+
+# =========================================================================
+# Duo Streaks Models
+# =========================================================================
+
+class DuoStreak(BaseModel):
+    """A shared streak between two users."""
+    id: str
+    partner_id: str
+    partner_username: str | None = None
+    partner_display_name: str | None = None
+    partner_avatar_url: str | None = None
+    streak_type: DuoStreakType
+    current_count: int = 0
+    longest_count: int = 0
+    last_mutual_date: date | None = None
+    started_at: datetime
+    ended_at: datetime | None = None
+    # Today's status
+    i_completed_today: bool = False
+    partner_completed_today: bool = False
+    at_risk: bool = False  # One completed, other hasn't
+
+
+class DuoStreakInvite(BaseModel):
+    """Pending duo streak invitation."""
+    id: str
+    from_user_id: str
+    from_username: str | None = None
+    from_display_name: str | None = None
+    from_avatar_url: str | None = None
+    streak_type: DuoStreakType
+    status: DuoStreakInviteStatus
+    created_at: datetime
+
+
+class DuoStreakMilestone(BaseModel):
+    """A milestone reached in a duo streak."""
+    id: str
+    duo_streak_id: str
+    milestone_days: int  # 7, 14, 30, 60, 90, 180, 365
+    reached_at: datetime
+
+
+class CreateDuoStreakRequest(BaseModel):
+    """Request to invite someone to a duo streak."""
+    partner_id: str
+    streak_type: DuoStreakType = DuoStreakType.FASTING
+
+
+class RespondDuoStreakInviteRequest(BaseModel):
+    """Response to a duo streak invitation."""
+    accept: bool
+
+
+# =========================================================================
+# Activity Feed Models
+# =========================================================================
+
+class FeedItem(BaseModel):
+    """An activity feed item."""
+    id: str
+    identity_id: str
+    activity_type: str
+    title: str
+    subtitle: str | None = None
+    metadata: dict | None = None
+    cheer_count: int = 0
+    created_at: datetime
+    display_name: str | None = None
+    avatar_url: str | None = None
+    # Viewer-specific fields
+    i_cheered: bool = False
+
+
+class FeedCheer(BaseModel):
+    """A cheer on a feed item."""
+    id: str
+    feed_item_id: str
+    identity_id: str
+    display_name: str | None = None
+    avatar_url: str | None = None
+    created_at: datetime
+
+
+class FeedPreferences(BaseModel):
+    """User's feed sharing preferences."""
+    share_fasts: bool = True
+    share_workouts: bool = True
+    share_achievements: bool = True
+    share_level_ups: bool = True
+    share_streaks: bool = True
+    share_duo_streaks: bool = True
+
+
+class UpdateFeedPreferencesRequest(BaseModel):
+    """Request to update feed preferences."""
+    share_fasts: bool | None = None
+    share_workouts: bool | None = None
+    share_achievements: bool | None = None
+    share_level_ups: bool | None = None
+    share_streaks: bool | None = None
+    share_duo_streaks: bool | None = None
+
+
+# =========================================================================
+# Challenge Templates Models
+# =========================================================================
+
+class ChallengeTemplate(BaseModel):
+    """A pre-built challenge template."""
+    id: str
+    name: str
+    description: str | None = None
+    challenge_type: ChallengeType
+    duration_days: int
+    goal_value: float
+    goal_unit: str | None = None
+    icon: str | None = None
+    is_active: bool = True
+    sort_order: int = 0
+
+
+class CreateChallengeFromTemplateRequest(BaseModel):
+    """Request to create a challenge from a template."""
+    template_id: str
+    invite_friend_ids: list[str] = []
+    custom_name: str | None = None
+    start_date: date | None = None  # Default: tomorrow

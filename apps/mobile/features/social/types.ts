@@ -204,3 +204,141 @@ export const LEADERBOARD_TYPE_LABELS: Record<LeaderboardType, string> = {
   friends_streaks: 'Friends Streaks',
   challenge: 'Challenge',
 };
+
+// =========================================================================
+// Duo Streaks
+// =========================================================================
+
+export type DuoStreakType = 'fasting' | 'workout' | 'combined';
+
+export type DuoStreakInviteStatus = 'pending' | 'accepted' | 'declined' | 'expired';
+
+export interface DuoStreak {
+  id: string;
+  initiator_id: string;
+  partner_id: string;
+  streak_type: DuoStreakType;
+  current_streak: number;
+  longest_streak: number;
+  started_at: string;
+  last_activity_date: string | null;
+  ended_at: string | null;
+  end_reason: string | null;
+  // Partner info (denormalized for display)
+  partner_username: string | null;
+  partner_display_name: string | null;
+  partner_avatar_url: string | null;
+  // Daily status
+  my_completed_today: boolean;
+  partner_completed_today: boolean;
+  // Milestones
+  milestones: DuoStreakMilestone[];
+}
+
+export interface DuoStreakMilestone {
+  id: string;
+  duo_streak_id: string;
+  milestone_days: number;
+  xp_awarded: number;
+  reached_at: string;
+}
+
+export interface DuoStreakInvite {
+  id: string;
+  inviter_id: string;
+  invitee_id: string;
+  streak_type: DuoStreakType;
+  status: DuoStreakInviteStatus;
+  created_at: string;
+  responded_at: string | null;
+  expires_at: string;
+  // Inviter info
+  inviter_username: string | null;
+  inviter_display_name: string | null;
+  inviter_avatar_url: string | null;
+}
+
+export interface CreateDuoStreakRequest {
+  partner_id: string;
+  streak_type: DuoStreakType;
+}
+
+export interface RespondDuoStreakInviteRequest {
+  accept: boolean;
+}
+
+export const DUO_STREAK_TYPE_LABELS: Record<DuoStreakType, string> = {
+  fasting: 'Fasting',
+  workout: 'Workout',
+  combined: 'Combined',
+};
+
+export const DUO_STREAK_TYPE_ICONS: Record<DuoStreakType, string> = {
+  fasting: 'timer',
+  workout: 'barbell',
+  combined: 'fire',
+};
+
+export const DUO_STREAK_MILESTONES = [7, 14, 30, 60, 90, 180, 365] as const;
+
+// =========================================================================
+// Activity Feed
+// =========================================================================
+
+export type FeedActivityType =
+  | 'fast_completed'
+  | 'workout_completed'
+  | 'achievement_unlocked'
+  | 'level_up'
+  | 'streak_milestone'
+  | 'duo_streak_milestone';
+
+export interface FeedItem {
+  id: string;
+  identity_id: string;
+  activity_type: FeedActivityType;
+  title: string;
+  subtitle: string | null;
+  metadata: Record<string, any> | null;
+  cheer_count: number;
+  created_at: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  i_cheered: boolean;
+}
+
+export interface FeedPreferences {
+  share_fasts: boolean;
+  share_workouts: boolean;
+  share_achievements: boolean;
+  share_level_ups: boolean;
+  share_streaks: boolean;
+  share_duo_streaks: boolean;
+}
+
+export interface UpdateFeedPreferencesParams {
+  share_fasts?: boolean;
+  share_workouts?: boolean;
+  share_achievements?: boolean;
+  share_level_ups?: boolean;
+  share_streaks?: boolean;
+  share_duo_streaks?: boolean;
+}
+
+export const FEED_ACTIVITY_TYPE_LABELS: Record<FeedActivityType, string> = {
+  fast_completed: 'Completed Fast',
+  workout_completed: 'Completed Workout',
+  achievement_unlocked: 'Achievement Unlocked',
+  level_up: 'Level Up',
+  streak_milestone: 'Streak Milestone',
+  duo_streak_milestone: 'Duo Streak Milestone',
+};
+
+export const FEED_ACTIVITY_TYPE_ICONS: Record<FeedActivityType, string> = {
+  fast_completed: 'Fire',
+  workout_completed: 'Barbell',
+  achievement_unlocked: 'Trophy',
+  level_up: 'Star',
+  streak_milestone: 'Lightning',
+  duo_streak_milestone: 'Users',
+};

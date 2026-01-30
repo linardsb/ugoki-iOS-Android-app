@@ -17,6 +17,7 @@ from src.modules.event_journal.service import EventJournalService
 from src.modules.progression.service import ProgressionService
 from src.modules.progression.models import StreakType
 from src.modules.social.service import SocialService
+from src.modules.social.models import FeedActivityType
 
 router = APIRouter(tags=["time_keeper"])
 
@@ -35,15 +36,17 @@ def get_progression_service(
 def get_social_service(
     db: AsyncSession = Depends(get_db),
     event_journal: EventJournalService = Depends(get_event_journal_service),
+    progression_service: ProgressionService = Depends(get_progression_service),
 ) -> SocialService:
-    return SocialService(db, event_journal=event_journal)
+    return SocialService(db, event_journal=event_journal, progression_service=progression_service)
 
 
 def get_time_keeper_service(
     db: AsyncSession = Depends(get_db),
     event_journal: EventJournalService = Depends(get_event_journal_service),
+    social_service: SocialService = Depends(get_social_service),
 ) -> TimeKeeperService:
-    return TimeKeeperService(db, event_journal=event_journal)
+    return TimeKeeperService(db, event_journal=event_journal, social_service=social_service)
 
 
 @router.post("/windows", response_model=TimeWindow, status_code=status.HTTP_201_CREATED)
@@ -110,6 +113,9 @@ async def close_window(
 
             # Update challenge progress for any active challenges
             await social.update_challenge_progress(window.identity_id)
+
+            # Create feed item for friends' activity feed
+            await _create_feed_item_for_window(social, window)
 
         return window
     except ValueError as e:
@@ -206,3 +212,54 @@ async def get_remaining_time(
         return {"remaining_seconds": remaining}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+# =========================================================================
+# Helpers
+# =========================================================================
+
+async def _create_feed_item_for_window(
+    social: SocialService,
+    window: TimeWindow,
+) -> None:
+    """Create a feed item when a window is completed."""
+    try:
+        # Calculate duration for subtitle
+        duration_seconds = 0
+        if window.end_time and window.start_time:
+            duration_seconds = int((window.end_time - window.start_time).total_seconds())
+
+        if window.window_type == WindowType.FAST:
+            hours = duration_seconds // 3600
+            minutes = (duration_seconds % 3600) // 60
+            duration_str = f"{hours}h {minutes}m" if hours else f"{minutes}m"
+
+            await social.create_feed_item(
+                identity_id=window.identity_id,
+                activity_type=FeedActivityType.FAST_COMPLETED,
+                title="Completed a fast",
+                subtitle=f"Duration: {duration_str}",
+                metadata={
+                    "window_id": window.id,
+                    "duration_seconds": duration_seconds,
+                    "duration_hours": round(duration_seconds / 3600, 2),
+                },
+            )
+
+        elif window.window_type == WindowType.WORKOUT:
+            minutes = duration_seconds // 60
+
+            await social.create_feed_item(
+                identity_id=window.identity_id,
+                activity_type=FeedActivityType.WORKOUT_COMPLETED,
+                title="Completed a workout",
+                subtitle=f"Duration: {minutes} min",
+                metadata={
+                    "window_id": window.id,
+                    "duration_seconds": duration_seconds,
+                    "duration_minutes": minutes,
+                },
+            )
+    except Exception:
+        # Don't fail the main operation if feed item creation fails
+        pass

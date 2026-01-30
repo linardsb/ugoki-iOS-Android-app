@@ -123,6 +123,12 @@ export default function ModalsLayout() {
         }}
       />
       <Stack.Screen
+        name="duo-streaks"
+        options={{
+          presentation: 'fullScreenModal',
+        }}
+      />
+      <Stack.Screen
         name="user/[id]"
         options={{
           presentation: 'card',

@@ -48,3 +48,28 @@ export {
   useSearchUsers,
   useGenerateShareContent,
 } from './useProfiles';
+
+// Duo Streaks
+export {
+  useDuoStreaks,
+  useDuoStreak,
+  useDuoStreaksAtRisk,
+  useDuoStreakInvites,
+  useCreateDuoStreakInvite,
+  useRespondToDuoStreakInvite,
+  useEndDuoStreak,
+  useDuoStreakInviteCount,
+  useActiveDuoStreakCount,
+  useDuoStreaksAtRiskCount,
+} from './useDuoStreaks';
+
+// Activity Feed
+export {
+  useFriendsFeed,
+  useMyActivity,
+  useFeedPreferences,
+  useUpdateFeedPreferences,
+  useCheerFeedItem,
+  useUncheerFeedItem,
+  useToggleCheer,
+} from './useFeed';

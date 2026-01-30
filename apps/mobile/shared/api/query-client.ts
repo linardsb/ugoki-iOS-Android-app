@@ -106,5 +106,14 @@ export const queryKeys = {
     myChallenges: () => [...queryKeys.social.all, 'my-challenges'] as const,
     challenge: (id: string) => [...queryKeys.social.all, 'challenge', id] as const,
     challengeLeaderboard: (id: string) => [...queryKeys.social.all, 'challenge-leaderboard', id] as const,
+    // Duo Streaks
+    duoStreaks: () => [...queryKeys.social.all, 'duo-streaks'] as const,
+    duoStreak: (id: string) => [...queryKeys.social.all, 'duo-streak', id] as const,
+    duoStreakInvites: () => [...queryKeys.social.all, 'duo-streak-invites'] as const,
+    duoStreaksAtRisk: () => [...queryKeys.social.all, 'duo-streaks-at-risk'] as const,
+    // Activity Feed
+    feed: () => [...queryKeys.social.all, 'feed'] as const,
+    myActivity: () => [...queryKeys.social.all, 'my-activity'] as const,
+    feedPreferences: () => [...queryKeys.social.all, 'feed-preferences'] as const,
   },
 } as const;

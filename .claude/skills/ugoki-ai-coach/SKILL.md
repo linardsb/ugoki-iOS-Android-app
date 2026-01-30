@@ -9,7 +9,7 @@ description: >
   CoachDependencies, CoachResponse, system_prompt, @coach_agent.tool, run_stream,
   StreamingResponse, text/event-stream, SSE, blocked topics, medical redirect,
   BLOCKED_TOPICS, check_safety, ai_coach/, agents/, tools/, prompts/, safety.py,
-  wellness, fasting advice, workout advice, personalization, suggestions.
+  wellness, fasting advice, workout advice, personalisation, suggestions.
 ---
 
 # UGOKI AI Coach Development

@@ -1,6 +1,6 @@
 """FastAPI routes for SOCIAL module."""
 
-from datetime import date
+from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from src.modules.social.models import (
     ChallengeType,
     LeaderboardType,
     LeaderboardPeriod,
+    DuoStreakType,
     Friendship,
     FriendRequest,
     Follow,
@@ -20,10 +21,19 @@ from src.modules.social.models import (
     Leaderboard,
     PublicUserProfile,
     ShareContent,
+    DuoStreak,
+    DuoStreakInvite,
+    FeedItem,
+    FeedPreferences,
+    ChallengeTemplate,
     SendFriendRequestRequest,
     RespondFriendRequestRequest,
     CreateChallengeRequest,
     GenerateShareContentRequest,
+    CreateDuoStreakRequest,
+    RespondDuoStreakInviteRequest,
+    UpdateFeedPreferencesRequest,
+    CreateChallengeFromTemplateRequest,
 )
 from src.modules.social.service import SocialService
 from src.modules.profile.service import ProfileService
@@ -481,3 +491,298 @@ async def generate_share_content(
         related_id=request.related_id,
         custom_message=request.custom_message,
     )
+
+
+# =========================================================================
+# Duo Streaks
+# =========================================================================
+
+@router.post("/duo-streaks", response_model=DuoStreakInvite, status_code=status.HTTP_201_CREATED)
+async def create_duo_streak_invite(
+    request: CreateDuoStreakRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> DuoStreakInvite:
+    """
+    Invite a friend to start a duo streak.
+
+    Duo streaks require BOTH users to complete the activity each day
+    to maintain the streak. If either user misses a day, the streak resets.
+
+    Streak types:
+    - fasting: Both must complete a fast
+    - workout: Both must complete a workout
+    - any_activity: Both must complete any activity (fast or workout)
+
+    If the friend has already sent you an invite, this will auto-accept it
+    and create the duo streak immediately.
+    """
+    try:
+        return await service.create_duo_streak_invite(
+            identity_id,
+            partner_id=request.partner_id,
+            streak_type=request.streak_type,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/duo-streaks", response_model=list[DuoStreak])
+async def get_duo_streaks(
+    active_only: bool = True,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[DuoStreak]:
+    """
+    Get user's duo streaks.
+
+    By default returns only active duo streaks.
+    Set active_only=false to include ended streaks.
+    """
+    return await service.get_duo_streaks(identity_id, active_only)
+
+
+@router.get("/duo-streaks/invites", response_model=list[DuoStreakInvite])
+async def get_duo_streak_invites(
+    direction: str = Query("incoming", pattern="^(incoming|outgoing)$"),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[DuoStreakInvite]:
+    """
+    Get pending duo streak invitations.
+
+    Direction:
+    - incoming: Invitations received from others
+    - outgoing: Invitations sent to others
+    """
+    return await service.get_duo_streak_invites(identity_id, direction)
+
+
+@router.post("/duo-streaks/invites/{invite_id}/respond", response_model=DuoStreak | None)
+async def respond_to_duo_streak_invite(
+    invite_id: str,
+    request: RespondDuoStreakInviteRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> DuoStreak | None:
+    """
+    Accept or decline a duo streak invitation.
+
+    Returns the new duo streak if accepted, None if declined.
+    """
+    try:
+        return await service.respond_to_duo_streak_invite(
+            identity_id,
+            invite_id,
+            request.accept,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/duo-streaks/at-risk", response_model=list[DuoStreak])
+async def get_duo_streaks_at_risk(
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[DuoStreak]:
+    """
+    Get duo streaks at risk of breaking today.
+
+    Returns duo streaks where one person has completed their activity
+    today but the other hasn't. Use this to prompt users to complete
+    their activity or remind their partner.
+    """
+    return await service.get_duo_streaks_at_risk(identity_id)
+
+
+@router.get("/duo-streaks/{duo_streak_id}", response_model=DuoStreak)
+async def get_duo_streak(
+    duo_streak_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> DuoStreak:
+    """Get a specific duo streak."""
+    try:
+        streak = await service.get_duo_streak(identity_id, duo_streak_id)
+        if not streak:
+            raise HTTPException(status_code=404, detail="Duo streak not found")
+        return streak
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/duo-streaks/{duo_streak_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def end_duo_streak(
+    duo_streak_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> None:
+    """
+    End a duo streak.
+
+    Either participant can end the duo streak at any time.
+    The partner will be notified.
+    """
+    try:
+        await service.end_duo_streak(identity_id, duo_streak_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# =========================================================================
+# Activity Feed
+# =========================================================================
+
+@router.get("/feed", response_model=list[FeedItem])
+async def get_friends_feed(
+    limit: int = Query(20, ge=1, le=50),
+    before: datetime | None = Query(None, description="Cursor for pagination - fetch items before this timestamp"),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[FeedItem]:
+    """
+    Get activity feed from friends.
+
+    Returns feed items from friends ordered by most recent.
+    Use the `before` parameter with the `created_at` timestamp of the last item
+    to fetch the next page.
+    """
+    return await service.get_friends_feed(identity_id, limit, before)
+
+
+@router.get("/feed/my-activity", response_model=list[FeedItem])
+async def get_my_activity(
+    limit: int = Query(20, ge=1, le=50),
+    before: datetime | None = Query(None),
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> list[FeedItem]:
+    """
+    Get user's own recent activity.
+
+    Returns feed items created by the current user.
+    """
+    return await service.get_my_activity(identity_id, limit, before)
+
+
+@router.post("/feed/{feed_item_id}/cheer", response_model=FeedItem, status_code=status.HTTP_201_CREATED)
+async def cheer_feed_item(
+    feed_item_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> FeedItem:
+    """
+    Cheer a feed item.
+
+    Shows support for a friend's activity. Each user can cheer an item once.
+    """
+    try:
+        return await service.cheer_feed_item(identity_id, feed_item_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/feed/{feed_item_id}/cheer", status_code=status.HTTP_204_NO_CONTENT)
+async def uncheer_feed_item(
+    feed_item_id: str,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> None:
+    """Remove a cheer from a feed item."""
+    try:
+        await service.uncheer_feed_item(identity_id, feed_item_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/feed/preferences", response_model=FeedPreferences)
+async def get_feed_preferences(
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> FeedPreferences:
+    """
+    Get user's feed sharing preferences.
+
+    Controls which activities are shared to friends' feeds.
+    """
+    return await service.get_feed_preferences(identity_id)
+
+
+@router.patch("/feed/preferences", response_model=FeedPreferences)
+async def update_feed_preferences(
+    request: UpdateFeedPreferencesRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> FeedPreferences:
+    """
+    Update feed sharing preferences.
+
+    Control which of your activities are shared to friends' feeds.
+    Only provided fields will be updated.
+    """
+    return await service.update_feed_preferences(
+        identity_id,
+        share_fasts=request.share_fasts,
+        share_workouts=request.share_workouts,
+        share_achievements=request.share_achievements,
+        share_level_ups=request.share_level_ups,
+        share_streaks=request.share_streaks,
+        share_duo_streaks=request.share_duo_streaks,
+    )
+
+
+# =========================================================================
+# Challenge Templates
+# =========================================================================
+
+@router.get("/challenges/templates", response_model=list[ChallengeTemplate])
+async def get_challenge_templates(
+    active_only: bool = Query(True, description="Only return active templates"),
+    service: SocialService = Depends(get_social_service),
+) -> list[ChallengeTemplate]:
+    """
+    Get available challenge templates.
+
+    Returns pre-built challenge templates that can be used to quickly
+    create challenges with predefined settings. Templates include:
+    - 7-Day Fast Challenge
+    - Workout Week
+    - XP Sprint
+    - 30-Day Consistency
+    - And more...
+
+    Templates are sorted by display order.
+    """
+    return await service.get_challenge_templates(active_only)
+
+
+@router.post("/challenges/from-template", response_model=Challenge, status_code=status.HTTP_201_CREATED)
+async def create_challenge_from_template(
+    request: CreateChallengeFromTemplateRequest,
+    identity_id: str = Depends(get_current_identity),
+    service: SocialService = Depends(get_social_service),
+) -> Challenge:
+    """
+    Create a challenge from a template.
+
+    This provides a one-tap way to create challenges with predefined settings.
+
+    Args:
+        template_id: The ID of the template to use
+        invite_friend_ids: Optional list of friend IDs to auto-invite
+        custom_name: Optional custom name (defaults to template name)
+        start_date: Optional start date (defaults to tomorrow)
+
+    The creator automatically joins the challenge.
+    Friends in invite_friend_ids will receive challenge invitations.
+    """
+    try:
+        return await service.create_challenge_from_template(
+            identity_id=identity_id,
+            template_id=request.template_id,
+            invite_friend_ids=request.invite_friend_ids,
+            custom_name=request.custom_name,
+            start_date=request.start_date,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
